@@ -43,11 +43,14 @@ Fix:
 - When no key is present or remote API fails: Gracefully activates an intelligent stateful dispatcher dialogue (Greeting → Safety Check → Vehicle/Location → Needs → Wrap-up).
 - Verified with `test_call_flow.ts`: The call stays open for full multi-turn conversations, extracts facts into the live store, and updates the Control Room queue with urgency and headline.
 
-## European Transit & Ferry Radar Map
+## Real OpenStreetMap & Leaflet European Fleet Radar
 
-Asked: Provide full situational awareness over Central/Northern Europe and Baltic ferry corridors.
+Asked: Do not code a custom SVG map; use a real free map API with actual tiles and coordinates so the map is authentic.
 Built:
-- Created `FleetMap` (`app/components/fleet-map.tsx`) with stylized SVG transit radar.
-- Plotted live Baltic car carriers (`MS Finnstar` Travemünde ↔ Helsinki carrying 14 cars, `M/F Copenhagen` Scandlines Fehmarn crossing) with real-time progress.
-- Marked real-time exception safe-stops (Bentley oil pressure on A7, BMW M4 at Travemünde gate, Ferrari Roma at Stuttgart lot).
-- Interactive HUD inspector drawer with 1-click links to Decision Cards and Driver Voice Calling.
+- Installed `leaflet` and `@types/leaflet`.
+- Integrated real OpenStreetMap / CartoDB Voyager tiles (`https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png`) with zero API key requirement and offline/online reliability.
+- Plotted 16 real European transport hubs (Munich, Stuttgart, Frankfurt, Berlin, Hamburg, Travemünde, Puttgarden, Rødby, Copenhagen, Malmö, Stockholm, Turku, Helsinki, Espoo, Tampere, Oulu) at their exact GPS coordinates.
+- Added live Baltic shipping polylines (Travemünde ↔ Helsinki, Puttgarden ↔ Rødby) and vessel markers (`MS Finnstar`, `M/F Copenhagen`, `Wasaline Aurora Botnia`).
+- Added real vehicle markers with pulsing exception halos and camera flyTo animations.
+- Embedded map view toggle directly on the dashboard (`app/page.tsx`): `[Needs you]` | `[🗺️ Live Fleet Radar]` | `[🔀 Split View]`, plus full `/map` route.
+
