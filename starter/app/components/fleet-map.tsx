@@ -3,7 +3,6 @@
 import React, { useEffect, useRef, useState, useMemo } from "react"
 import Link from "next/link"
 import { Icon } from "./icons"
-import "leaflet/dist/leaflet.css"
 
 export interface MapVehicle {
   id: string
@@ -450,13 +449,50 @@ export function FleetMap() {
 
   // Initialize Real Leaflet Map with OpenStreetMap / CartoDB tiles
   useEffect(() => {
-    if (!mapContainerRef.current || mapInstanceRef.current) return
-
+    if (!mapContainerRef.current) return
     let isMounted = true
 
+    // Inject Leaflet CSS dynamically into head if not already present
+    if (typeof document !== "undefined" && !document.getElementById("leaflet-css-bundle")) {
+      const link = document.createElement("link")
+      link.id = "leaflet-css-bundle"
+      link.rel = "stylesheet"
+      link.href = "https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"
+      document.head.appendChild(link)
+    }
+
+    // Clean up any stale leaflet state on hot-reloading
+    if ((mapContainerRef.current as any)?._leaflet_id != null) {
+      if (mapInstanceRef.current) {
+        try {
+          mapInstanceRef.current.remove()
+        } catch (e) {}
+        mapInstanceRef.current = null
+      }
+      delete (mapContainerRef.current as any)._leaflet_id
+    }
+
     // Dynamically load leaflet on client
-    import("leaflet").then((L) => {
+    import("leaflet").then((leafletModule) => {
       if (!isMounted || !mapContainerRef.current) return
+      const L = (leafletModule as any).default || leafletModule
+      if (!L || typeof L.map !== "function") {
+        console.error("Leaflet could not be resolved from module", leafletModule)
+        return
+      }
+
+      // Check again if already initialized
+      if (mapInstanceRef.current) return
+
+      // Fix default Leaflet icon paths
+      try {
+        delete (L.Icon.Default.prototype as any)._getIconUrl
+        L.Icon.Default.mergeOptions({
+          iconRetinaUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon-2x.png",
+          iconUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-icon.png",
+          shadowUrl: "https://unpkg.com/leaflet@1.9.4/dist/images/marker-shadow.png",
+        })
+      } catch (e) {}
 
       // Center around Baltic Sea / Northern Europe corridor
       const map = L.map(mapContainerRef.current, {
@@ -467,7 +503,7 @@ export function FleetMap() {
         zoomControl: true,
       })
 
-      // Free OpenStreetMap CartoDB Voyager tiles (clean, calm aesthetic matching Control Room)
+      // Standard OpenStreetMap / CartoDB tiles (clean, authentic, 100% free with zero API key)
       L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
         attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
         subdomains: "abcd",
@@ -508,12 +544,23 @@ export function FleetMap() {
       const markersGroup = L.layerGroup().addTo(map)
       markersLayerRef.current = markersGroup
       mapInstanceRef.current = map
+
+      // Invalidate size once DOM layout is settled to ensure tiles fill the viewport
+      setTimeout(() => {
+        if (isMounted && map) {
+          map.invalidateSize()
+        }
+      }, 250)
+    }).catch((err) => {
+      console.error("[FleetMap] Failed to load Leaflet:", err)
     })
 
     return () => {
       isMounted = false
       if (mapInstanceRef.current) {
-        mapInstanceRef.current.remove()
+        try {
+          mapInstanceRef.current.remove()
+        } catch (e) {}
         mapInstanceRef.current = null
       }
     }
@@ -523,7 +570,9 @@ export function FleetMap() {
   useEffect(() => {
     if (!mapInstanceRef.current || !markersLayerRef.current) return
 
-    import("leaflet").then((L) => {
+    import("leaflet").then((leafletModule) => {
+      const L = (leafletModule as any).default || leafletModule
+      if (!L || !markersLayerRef.current) return
       const markersGroup = markersLayerRef.current
       markersGroup.clearLayers()
 
@@ -585,6 +634,8 @@ export function FleetMap() {
           setSelectedVessel(null)
         })
       })
+    }).catch((err) => {
+      console.error("[FleetMap] Failed to update markers:", err)
     })
   }, [filteredVehicles, selectedVehicle, selectedVessel])
 
@@ -767,7 +818,7 @@ export function FleetMap() {
           </div>
 
           {/* DOM Container for Leaflet */}
-          <div ref={mapContainerRef} style={{ width: "100%", height: "100%", minHeight: "580px" }} />
+          <div ref={mapContainerRef} style={{ width: "100%", height: "580px", minHeight: "580px", background: "#f4f3ed" }} />
         </div>
 
         {/* Side HUD / Vehicle Telemetry Inspector */}
