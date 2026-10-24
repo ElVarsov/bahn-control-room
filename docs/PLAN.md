@@ -21,7 +21,7 @@ builds against a CLI and fixtures. We plug them together at fixed checkpoints.
 
 | | **Lane A: Control room (UI)** | **Lane B: Agent + backend** |
 |---|---|---|
-| Person | Ignacio (@wasowii1) | Antoni (@AntoniKajrys) |
+| Person | Ignacio (@ElVarsov) | Antoni (@AntoniKajrys) |
 | Owns | `starter/app/(pages and components)`, `starter/app/globals.css`, `starter/lib/present/` | `starter/lib/agent/`, `starter/lib/world/` (mocks), `starter/app/api/queue`, `starter/app/api/agent/`, `starter/app/api/proposals/`, `starter/app/api/settings/`, `starter/app/api/orders/[id]/case`, new DB tables, `traces/`, `scripts/agent-*` |
 | Shared (PR + review) | `starter/lib/contracts/`, `starter/package.json`, `README.md`, `CLAUDE.md` | same |
 | Branch prefix | `ui/...` | `agent/...` |
