@@ -13,7 +13,7 @@ with their own coding agent.
 ## Lanes
 - **Lane A (UI)**: `starter/app/**` pages/components, `globals.css`, `starter/lib/present/`.
 - **Lane B (agent)**: `starter/lib/agent/`, `starter/lib/world/`, API routes for queue, case, agent, proposals, settings, `traces/`.
-- Stay inside your lane. `starter/lib/contracts/` changes only through a `contract:` PR.
+- Stay inside your lane. Tell the other person before changing `starter/lib/contracts/`.
 
 ## Working on main
 - Push straight to `main`. Always `git pull` before you start and before you push.
