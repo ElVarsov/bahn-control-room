@@ -26,4 +26,5 @@ with their own coding agent.
 - Next.js in `starter/` is a newer version than you know: read `starter/AGENTS.md` and `node_modules/next/dist/docs/` before writing Next code.
 - Run: see `starter/README.md`. Snapshot time is `2026-10-21T09:00:00Z`; use it as "now", not the real clock.
 - Put new DB tables in `starter/lib/agent/schema.ts`, never with foreign keys onto seed tables.
+- **Claude access goes through OpenRouter** (hackathon credits, about 20 EUR shared by both of us). Use the Anthropic SDK as normal; in `starter/.env` set `ANTHROPIC_BASE_URL=https://openrouter.ai/api`, `ANTHROPIC_AUTH_TOKEN=<OpenRouter key>`, `ANTHROPIC_API_KEY=` (empty). Model ids use OpenRouter slugs: `anthropic/claude-opus-5.5`, `anthropic/claude-sonnet-5.5`, `anthropic/claude-haiku-5.5`. Do not send Anthropic-only beta features (e.g. `fallbacks`) when the base URL is OpenRouter. Watch the budget: cheap model for tests, Opus for the demo.
 - Log notable prompts, rejected outputs and overrides in `docs/ai-log/<name>.md` as you go.

@@ -1,0 +1,100 @@
+{
+  "orderId": "ord-00322",
+  "orderReference": "CD-420322",
+  "headline": "The Bentley is stopped with a red warning light. The driver is safe. The dealer must choose roadside help or a tow.",
+  "facts": [
+    {
+      "id": "f1",
+      "text": "The driver is safe at a service-area car park with the engine off.",
+      "strength": "reported",
+      "sources": [{ "kind": "driver", "label": "Phone call with the agent", "actorName": "Kasper Kovelund", "at": "2026-10-21T08:44:00Z", "table": "voice_calls", "recordId": "call-322-a" }]
+    },
+    {
+      "id": "f2",
+      "text": "A red warning light came on and the car felt different when accelerating.",
+      "strength": "reported",
+      "sources": [{ "kind": "driver", "label": "Driver chat", "actorName": "Kasper Kovelund", "at": "2026-10-21T08:04:00Z", "table": "messages", "recordId": "msg-xbd0256027a9d35dd" }]
+    },
+    {
+      "id": "f3",
+      "text": "Exact location not verified. The driver says a service area on the A9 north of Munich; the last app position is 4 hours old.",
+      "strength": "unknown",
+      "sources": [
+        { "kind": "driver", "label": "Phone call with the agent", "actorName": "Kasper Kovelund", "at": "2026-10-21T08:44:00Z", "table": "voice_calls", "recordId": "call-322-a" },
+        { "kind": "system", "label": "Driver app position (stale)", "at": "2026-10-21T05:00:00Z", "table": "tracking_observations", "recordId": "track-x4ec652df41547497" }
+      ]
+    },
+    {
+      "id": "f4",
+      "text": "The dealer asked us to keep the car stopped while they ask their service contact.",
+      "strength": "reported",
+      "sources": [{ "kind": "customer", "label": "Customer email", "actorName": "Marvellin Motorhandel", "at": "2026-10-21T08:40:00Z", "table": "messages", "recordId": "msg-x61cd4aae96d91cff" }]
+    },
+    {
+      "id": "f5",
+      "text": "Delivery promised today 12:00–16:00 in Hamburg. It will be missed.",
+      "strength": "estimate",
+      "sources": [{ "kind": "customer", "label": "Delivery promise", "at": "2026-10-17T00:41:00Z", "table": "time_windows", "recordId": "win-x7c8722a53360a2ad" }]
+    },
+    {
+      "id": "f6",
+      "text": "Nobody has diagnosed the fault or cleared the car to drive on.",
+      "strength": "verified",
+      "sources": [{ "kind": "operator", "label": "Shift lead note", "actorName": "Ops shift", "at": "2026-10-21T08:31:00Z", "table": "messages", "recordId": "msg-x165129e343e8a795" }]
+    }
+  ],
+  "proposals": [
+    {
+      "id": "prop-322-call-dealer",
+      "orderId": "ord-00322",
+      "action": "handover_to_person",
+      "title": "Call Marvellin Motorhandel and ask: their own roadside service, or should we book a tow?",
+      "rationale": "Only the owner can decide what happens to the car. The agent may not contact a customer on its own, so this call is yours.",
+      "changes": [
+        { "label": "Car", "before": "Stopped at a service area", "after": "Roadside help or tow, as the dealer decides" },
+        { "label": "Delivery promise", "before": "Today 12:00–16:00, Hamburg", "after": "New time agreed after the recovery plan" }
+      ],
+      "draftMessage": {
+        "to": "Marvellin Motorhandel",
+        "channel": "phone",
+        "body": "Ask: do you send your own roadside service, or do you want us to book a tow? Where should the car go? Tell them: the driver is safe, the car is stopped and will not be driven, delivery today will be late. Do not promise a new time yet."
+      },
+      "evidence": [],
+      "status": "pending",
+      "createdAt": "2026-10-21T08:52:00Z",
+      "createdBy": "road-agent",
+      "whatHappensNext": "Tell the agent what the dealer decided in one line. It then books the tow or waits for the dealer's service, tells the driver who is coming, and drafts the new delivery time for your approval.",
+      "whatHappensAfter": "The agent is arranging what the dealer chose and will tell the driver who is coming. The new delivery time comes back to you as a draft before anyone tells the dealer."
+    }
+  ],
+  "runs": [
+    {
+      "id": "run-322-1",
+      "orderId": "ord-00322",
+      "agentId": "road-agent",
+      "trigger": "Driver reported a red warning light",
+      "state": "needs_person",
+      "startedAt": "2026-10-21T08:05:00Z",
+      "steps": [
+        { "kind": "tool_call", "at": "2026-10-21T08:05:00Z", "tool": "read_order", "input": { "orderId": "ord-00322" }, "cost": "free" },
+        { "kind": "tool_result", "at": "2026-10-21T08:05:00Z", "tool": "read_order", "summary": "Bentley Continental GT owned by Marvellin Motorhandel, due in Hamburg today 12:00–16:00." },
+        { "kind": "tool_call", "at": "2026-10-21T08:06:00Z", "tool": "read_tracking", "input": { "orderId": "ord-00322" }, "cost": "free" },
+        { "kind": "tool_result", "at": "2026-10-21T08:06:00Z", "tool": "read_tracking", "summary": "Last driver-app position is from 05:00, so it cannot place the car now." },
+        { "kind": "call", "at": "2026-10-21T08:41:00Z", "callId": "call-322-a", "status": "completed", "summary": "Called Kasper Kovelund: safe at a service-area car park, engine off, red warning on the dashboard, will not drive on. Sent a photo in the app." },
+        { "kind": "thought", "at": "2026-10-21T08:50:00Z", "text": "The owner has to choose roadside help or a tow. I cannot call the customer, so I hand this to a person with the questions ready." },
+        { "kind": "proposal", "at": "2026-10-21T08:52:00Z", "proposalId": "prop-322-call-dealer" },
+        { "kind": "stop", "at": "2026-10-21T08:52:00Z", "reason": "needs_person", "summary": "Waiting for a person to call the dealer." }
+      ]
+    }
+  ],
+  "timeline": [
+    { "id": "t1", "at": "2026-10-21T08:04:00Z", "actor": { "kind": "driver", "name": "Kasper Kovelund" }, "channel": "driver_chat", "visibility": "public", "text": "I have stopped the Bentley Continental GT on CD-420322. A red warning came on and the car felt different when accelerating." },
+    { "id": "t2", "at": "2026-10-21T08:13:00Z", "actor": { "kind": "operator", "name": "Ops support" }, "channel": "driver_chat", "visibility": "public", "text": "Thank you for stopping. Are you and the vehicle in a safe place? Please do not drive it further while we contact the owner." },
+    { "id": "t3", "at": "2026-10-21T08:22:00Z", "actor": { "kind": "driver", "name": "Kasper Kovelund" }, "channel": "driver_chat", "visibility": "public", "text": "I am safe at a service-area car park. The engine is off. I can send a dashboard photo, but I have not diagnosed the issue." },
+    { "id": "t4", "at": "2026-10-21T08:31:00Z", "actor": { "kind": "operator", "name": "Ops shift" }, "channel": "internal_note", "visibility": "internal", "text": "Human owner required. Record the safe stop, get the photo and call the customer for instructions. No recovery booking or delivery promise yet." },
+    { "id": "t5", "at": "2026-10-21T08:40:00Z", "actor": { "kind": "customer", "name": "Marvellin Motorhandel" }, "channel": "customer_email", "visibility": "public", "text": "Please keep the vehicle stopped. I will ask our service contact whether it needs roadside assistance or collection." },
+    { "id": "t6", "at": "2026-10-21T08:41:00Z", "actor": { "kind": "agent", "name": "Road agent" }, "channel": "phone", "visibility": "public", "text": "Phoned the driver (3 min). Safe, engine off, will not drive on, photo sent in the app." },
+    { "id": "t7", "at": "2026-10-21T08:49:00Z", "actor": { "kind": "operator", "name": "Ops support" }, "channel": "customer_email", "visibility": "public", "text": "We have paused the journey pending the owner's instruction. We will update the delivery estimate after the recovery plan is confirmed." },
+    { "id": "t8", "at": "2026-10-21T08:58:00Z", "actor": { "kind": "driver", "name": "Kasper Kovelund" }, "channel": "driver_chat", "visibility": "public", "text": "I will wait here. Please tell me who is collecting the car before anyone moves it." }
+  ]
+}

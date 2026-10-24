@@ -56,10 +56,33 @@
       "status": "pending",
       "createdAt": "2026-10-21T08:50:00Z",
       "createdBy": "road-agent",
-      "whatHappensNext": "On approval the agent sends the dealer this message. When the dealer agrees, it books the sailing and hotel and tells the driver. If the dealer says no, it comes back to you."
+      "whatHappensNext": "On approval the agent sends the dealer this message. When the dealer agrees, it books the sailing and hotel and tells the driver. If the dealer says no, it comes back to you.",
+      "whatHappensAfter": "The message to the dealer is on its way. The agent waits for their answer, then books the sailing and hotel and tells the driver. If the dealer says no, the case comes back to you."
     }
   ],
-  "runs": [],
+  "runs": [
+    {
+      "id": "run-299-1",
+      "orderId": "ord-00299",
+      "agentId": "road-agent",
+      "trigger": "Ferry sold out",
+      "state": "needs_person",
+      "startedAt": "2026-10-21T08:16:00Z",
+      "steps": [
+        { "kind": "tool_call", "at": "2026-10-21T08:16:00Z", "tool": "check_booking_outcome", "input": { "provider": "Vela Coast Lines" }, "cost": "free" },
+        { "kind": "tool_result", "at": "2026-10-21T08:17:00Z", "tool": "check_booking_outcome", "summary": "The 07:10 booking attempt has no reference at the ferry line. Nothing was booked or charged." },
+        { "kind": "tool_call", "at": "2026-10-21T08:20:00Z", "tool": "search_ferries", "input": { "from": "West Baltic terminal", "to": "South Finland terminal" }, "cost": "free" },
+        { "kind": "tool_result", "at": "2026-10-21T08:21:00Z", "tool": "search_ferries", "summary": "23 Oct 22:00 sold out. 24 Oct 12:00 has a vehicle slot (quote, not booked). 24 Oct 22:00 has space but arrives too late for the driver's next job." },
+        { "kind": "tool_call", "at": "2026-10-21T08:24:00Z", "tool": "read_messages", "input": { "orderId": "ord-00299" }, "cost": "free" },
+        { "kind": "tool_result", "at": "2026-10-21T08:24:00Z", "tool": "read_messages", "summary": "The driver already wrote at 08:05 that the later sailing works if the overnight stop and return travel are arranged. The dealer wants to approve any later date first." },
+        { "kind": "tool_call", "at": "2026-10-21T08:40:00Z", "tool": "search_hotels", "input": { "near": "West Baltic terminal", "night": "2026-10-23" }, "cost": "free" },
+        { "kind": "tool_result", "at": "2026-10-21T08:41:00Z", "tool": "search_hotels", "summary": "3 hotels within 10 minutes of the terminal, from € 89." },
+        { "kind": "thought", "at": "2026-10-21T08:48:00Z", "text": "Booking costs money and moves the delivery a day, and the dealer said they must approve a later date first. This needs a person." },
+        { "kind": "proposal", "at": "2026-10-21T08:50:00Z", "proposalId": "prop-299-rebook" },
+        { "kind": "stop", "at": "2026-10-21T08:50:00Z", "reason": "needs_person", "summary": "Waiting for a yes on the rebooking and the message to the dealer." }
+      ]
+    }
+  ],
   "timeline": [
     { "id": "t1", "at": "2026-10-21T07:20:00Z", "actor": { "kind": "driver", "name": "Camille Emberwick" }, "channel": "driver_chat", "visibility": "public", "text": "I have the gig for CD-420299, but I do not have a ferry reference. Is the overnight vehicle crossing booked?" },
     { "id": "t2", "at": "2026-10-21T07:38:00Z", "actor": { "kind": "operator", "name": "Ops travel" }, "channel": "internal_note", "visibility": "internal", "text": "The overnight sailing returned sold out. The later sailing has a quote only. Check driver rest and customer promise before purchase." },

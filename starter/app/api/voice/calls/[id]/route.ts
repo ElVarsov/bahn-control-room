@@ -1,14 +1,11 @@
-import { NextRequest, NextResponse } from "next/server"
-import { voiceManager } from "@/lib/voice"
+import { NextResponse } from "next/server"
+import { getCall, toResult } from "@/lib/voice"
 
 export const runtime = "nodejs"
 
-export async function GET(
-  _request: NextRequest,
-  props: { params: Promise<{ id: string }> }
-) {
-  const params = await props.params
-  const call = voiceManager.getCall(params.id)
+export async function GET(_request: Request, context: { params: Promise<{ id: string }> }) {
+  const { id } = await context.params
+  const call = getCall(id)
   if (!call) return NextResponse.json({ error: "Call not found" }, { status: 404 })
-  return NextResponse.json(call)
+  return NextResponse.json(toResult(call))
 }

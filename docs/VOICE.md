@@ -26,6 +26,7 @@ road agent ──call_driver(tool)──► lib/voice (call store + in-call agen
            call ends ──► CallResult {transcript, facts} ──► back to the road agent
 ```
 
+- **No streams through the tunnel**: Cloudflare quick tunnels buffer server-sent events, so the phone polls `/api/voice/poll` every second instead.
 - **Phone page** `/driver?d=<driverId>`: the "Bahn Driver" app. Open it once and
   leave it open. When the agent calls, it rings like a phone call (ringtone,
   vibration, Accept / Decline).
@@ -45,6 +46,15 @@ road agent ──call_driver(tool)──► lib/voice (call store + in-call agen
 - **No answer / declined**: returns `no_answer` or `declined`; the road agent
   decides when to try again ("retry in 15 min") and shows that in the trace.
 
+## The driver calls Bahn
+
+The driver page has a **Call Bahn** button. The in-call agent answers at once
+("Bahn operations, this is the AI assistant. What's happening?"), already knowing the
+driver's current jobs from the dataset. It works out which order the call is about,
+and when the call ends it leaves a one-line `queue_headline` and an urgency. The
+control room shows it in "Needs you" as **Driver called in** within a few seconds.
+Lane B can react to every finished inbound call with `onInboundCall(handler)`.
+
 ## The contract (what Lane B calls)
 
 ```ts
@@ -56,6 +66,21 @@ const result = await callDriver({ orderId, driverId, driverName, purpose, questi
 `callDriver` resolves when the call ends. It is a **free** tool: drivers may be
 contacted without approval. It must never be pointed at a customer.
 
+## Claude access
+
+We use the organisers' OpenRouter credits. In `starter/.env`:
+
+```
+ANTHROPIC_API_KEY=
+ANTHROPIC_BASE_URL=https://openrouter.ai/api
+ANTHROPIC_AUTH_TOKEN=<your OpenRouter key>
+VOICE_MODEL=anthropic/claude-haiku-5.5
+```
+
+A call is about 8 to 10 short turns: well under 1 cent on Haiku 5.5, roughly
+10 to 20 cents on Opus 5.5 (same prices as Anthropic's own API). Test with Haiku,
+decide on the demo model later.
+
 ## Try it
 
 ```sh
@@ -65,3 +90,15 @@ cloudflared tunnel --url http://localhost:3000   # second terminal
 # open https://<tunnel>/driver?d=drv-140 on the phone, tap "Go on shift"
 npm run voice:call -- drv-140 ord-00299          # third terminal: the agent calls you
 ```
+
+## Troubleshooting (found in the first real test, 24 Oct)
+
+- **Phone says speech is unavailable or "not-allowed"**: the mic is blocked. In Chrome
+  tap the icon left of the address bar, then Permissions, then Microphone: Allow. If it
+  is not listed: Android Settings, Apps, Chrome, Permissions, Microphone: Allow. Then use
+  **Test microphone** on the driver page before the call. The text box always works as a fallback.
+- **Agent hangs up at once with "technical problem"**: check the dev server log. On a
+  laptop with antivirus HTTPS scanning (Norton) Node rejects the certificate; start the
+  server with `NODE_USE_SYSTEM_CA=1` (PowerShell: `$env:NODE_USE_SYSTEM_CA = '1'; npm run dev`).
+- **Phone never rings**: make sure the phone page shows "On shift" and the driver id in
+  the link matches the one you call.

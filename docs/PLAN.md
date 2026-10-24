@@ -56,7 +56,10 @@ Goal: a non-engineer opens it and in 5 seconds knows what needs them and what to
 5. **Trust dial** settings page: per `ActionKind`, ask first / do and tell / do
    quietly; `message_customer` locked to ask first.
 6. **Empty, loading and error states** everywhere. Test with the full 100 orders.
-7. Stretch: scale strip of stages, inbox reconciliation view, Cmd-K search.
+7. **"Call Bahn" in the driver app**: inbound calls to the in-call agent, which
+   asks what happened, where, and whether the driver is safe, then hands the
+   result to Lane B (`onInboundCall`). The queue shows it like any other case.
+8. Stretch: scale strip of stages, inbox reconciliation view, Cmd-K search.
 
 Works without Lane B by reading `starter/lib/contracts/fixtures/*.json` behind a
 tiny `lib/present/api.ts` client with one switch: `USE_FIXTURES=1`.
@@ -87,10 +90,22 @@ clear proposal or a handover.
 5. **Case builder** (`GET /api/orders/:id/case`): facts with `SourceRef`s and
    strength, mapped from dataset rows (quote vs reservation, reported vs
    verified).
-6. **CLI + scenarios** (`npm run agent -- CD-420299`): run without the UI.
+6. **Journey monitor** (`lib/agent/monitor.ts`): for every moving car, compare
+   the latest tracking (progress, ETA, how stale it is) with the delivery promise,
+   ferry check-in cutoffs and site hours, and **forecast trouble before it
+   happens** ("ETA 15:40, promise ends 14:00", "no position for 4 h", "will miss
+   the 20:00 check-in"). Cheap first: a forecast alone starts a run that asks
+   the driver (chat or `callDriver()`); only when the risk holds does it become a
+   `QueueItem` with `urgency: "watch"` or higher. The UI shows forecasts as
+   forecasts (strength `estimate`), never as facts.
+7. **Driver calls in** (with Lane A's voice code): the driver taps "Call Bahn"
+   in the driver app; the in-call agent takes the report and `lib/voice` hands
+   a `CallResult` with `direction: "inbound"` to `onInboundCall()`. Lane B turns
+   it into an agent run (look up the order, check facts, propose next step).
+8. **CLI + scenarios** (`npm run agent -- CD-420299`): run without the UI.
    Three scripted scenarios (ferry sold out, safety stop, tracking gap) saved as
    JSON traces in `traces/`. These double as tests and demo backup.
-7. Stretch: autonomy settings honoured by the loop, retry-later scheduling,
+9. Stretch: autonomy settings honoured by the loop, retry-later scheduling,
    phone-call mock for pickup readiness.
 
 ## Checkpoints (both of us, 15 min each)

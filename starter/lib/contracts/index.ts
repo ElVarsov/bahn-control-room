@@ -75,7 +75,8 @@ export type Proposal = {
   createdAt: Iso
   createdBy: string        // agent id
   decision?: Decision
-  whatHappensNext: string  // shown before and after approval: "Agent books the sailing and tells the driver."
+  whatHappensNext: string  // shown before the decision: "On approval the agent books the sailing and tells the driver."
+  whatHappensAfter?: string // shown once approved, in the past/present tense; falls back to whatHappensNext
 }
 
 export type Decision = {
@@ -92,14 +93,25 @@ export type Decision = {
 
 export type Urgency = "now" | "today" | "soon" | "watch"
 
+/** Why the item is on someone's screen. */
+export type QueueReason =
+  | "decision"       // the agent proposes a change and needs a yes
+  | "handover"       // the agent cannot do it (a call to a customer, a judgement)
+  | "forecast"       // the journey monitor predicts trouble; it is an estimate, not a fact
+  | "driver_report"  // the driver called or wrote in
+
 export type QueueItem = {
   id: string
   orderId: string
   orderReference: string   // "CD-420299"
   car: string              // "BMW M4"
   route: string            // "Leipzig → Helsinki"
+  customer?: string        // "Kavellora Car House"
+  stage?: string           // "Driver booked", "Moving", "Delivered"
+  reason?: QueueReason
   headline: string         // "Ferry sold out. Approve a later sailing?"
   why: string              // one line: what happened
+  agentDid?: string        // one line: the cheap work already done ("Asked the driver, checked 3 sailings")
   urgency: Urgency
   decideBy?: Iso           // when waiting stops being free
   proposalId?: string
@@ -110,6 +122,8 @@ export type QueueItem = {
 export type QueueResponse = {
   snapshotAt: Iso
   needsPerson: QueueItem[]
+  /** Work agents are doing right now without a person: visible, but out of the way. */
+  agentsWorking?: QueueItem[]
   quiet: { count: number; sample: { orderId: string; orderReference: string; car: string; stage: string }[] }
 }
 
@@ -146,7 +160,8 @@ export type AgentRun = {
 export type CallStatus = "ringing" | "in_call" | "completed" | "no_answer" | "declined" | "failed"
 
 export type CallRequest = {
-  orderId: string
+  direction?: "outbound" | "inbound" // inbound: the driver tapped "Call Bahn"; default outbound
+  orderId: string                    // inbound calls may start with "" until the agent links an order
   driverId: string
   driverName: string
   purpose: string          // "Check the driver is safe after a warning light"
@@ -159,6 +174,9 @@ export type CallTurn = { speaker: "agent" | "driver"; text: string; at: Iso }
 
 export type CallResult = {
   callId: string
+  direction?: "outbound" | "inbound"
+  driverId?: string
+  orderId?: string
   status: CallStatus
   startedAt: Iso
   endedAt?: Iso
