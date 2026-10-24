@@ -126,6 +126,7 @@ export type TraceStep =
   | { kind: "message_out"; at: Iso; to: SourceKind; toName: string; channel: string; body: string }
   | { kind: "message_in"; at: Iso; from: SourceKind; fromName: string; channel: string; body: string; simulated: boolean }
   | { kind: "proposal"; at: Iso; proposalId: string }
+  | { kind: "call"; at: Iso; callId: string; status: CallStatus; summary?: string }
   | { kind: "stop"; at: Iso; reason: "facts_line_up" | "waiting_reply" | "needs_person" | "error"; summary: string; nextCheckAt?: Iso }
 
 export type AgentRun = {
@@ -137,6 +138,40 @@ export type AgentRun = {
   startedAt: Iso
   steps: TraceStep[]
 }
+
+// ---------------------------------------------------------------------------
+// Voice calls to drivers (lib/voice, see docs/VOICE.md)
+// ---------------------------------------------------------------------------
+
+export type CallStatus = "ringing" | "in_call" | "completed" | "no_answer" | "declined" | "failed"
+
+export type CallRequest = {
+  orderId: string
+  driverId: string
+  driverName: string
+  purpose: string          // "Check the driver is safe after a warning light"
+  questions: string[]      // what the in-call agent must find out
+  context?: string         // short facts the in-call agent may use: car, route, promise
+  runId?: string
+}
+
+export type CallTurn = { speaker: "agent" | "driver"; text: string; at: Iso }
+
+export type CallResult = {
+  callId: string
+  status: CallStatus
+  startedAt: Iso
+  endedAt?: Iso
+  transcript: CallTurn[]
+  summary: string          // one sentence for the trace and the case page
+  facts: Fact[]            // strength "reported", source kind "driver", label "Phone call"
+}
+
+// GET  /api/voice/stream?driverId=…            -> text/event-stream of { type: "incoming" | "update", call }
+// POST /api/voice/calls  CallRequest           -> { callId }   (dev/demo trigger; the agent uses callDriver())
+// GET  /api/voice/calls/:id                    -> CallResult
+// POST /api/voice/calls/:id/answer | /decline | /hangup
+// POST /api/voice/calls/:id/turn { text }      -> { say: string; end: boolean }
 
 // ---------------------------------------------------------------------------
 // HTTP API (implemented by the agent lane, consumed by the UI lane)

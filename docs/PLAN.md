@@ -23,6 +23,7 @@ builds against a CLI and fixtures. We plug them together at fixed checkpoints.
 |---|---|---|
 | Person | Ignacio (@ElVarsov) | Antoni (@AntoniKajrys) |
 | Owns | `starter/app/(pages and components)`, `starter/app/globals.css`, `starter/lib/present/` | `starter/lib/agent/`, `starter/lib/world/` (mocks), `starter/app/api/queue`, `starter/app/api/agent/`, `starter/app/api/proposals/`, `starter/app/api/settings/`, `starter/app/api/orders/[id]/case`, new DB tables, `traces/`, `scripts/agent-*` |
+| Also owns | **Voice calls to the driver** (crucial for the demo): `starter/lib/voice/`, `starter/app/driver/`, `starter/app/api/voice/`. See `docs/VOICE.md`. | Calls `callDriver()` from `lib/voice` as a free tool inside the agent loop |
 | Shared (PR + review) | `starter/lib/contracts/`, `starter/package.json`, `README.md`, `CLAUDE.md` | same |
 | Branch prefix | `ui/...` | `agent/...` |
 
@@ -34,7 +35,12 @@ tables with foreign keys to starter data).
 
 Goal: a non-engineer opens it and in 5 seconds knows what needs them and what to do.
 
-1. **Design pass** (first 2 h): calm visual system on top of the starter's
+0. **Voice spike first** (first 2–3 h, it is the riskiest piece): the phone
+   rings with an incoming call from the agent, the person playing the driver
+   talks, the in-call agent asks its questions, hangs up, and returns a
+   `CallResult`. Free path: driver-app page on the phone + Web Speech API +
+   Cloudflare quick tunnel (`docs/VOICE.md`). Then hand `callDriver()` to Lane B.
+1. **Design pass** (2 h): calm visual system on top of the starter's
    colours and fonts. Tokens, type scale, chips for fact strength
    (verified / reported / estimate / quote / unknown), source chip, urgency pill.
 2. **Queue page** (`/`): replaces the lane board. Reads `QueueResponse`.
@@ -63,8 +69,11 @@ clear proposal or a handover.
 1. **World mocks** (`lib/world/`): read-only accessors over the dataset (order,
    active plan, assignment, alerts, messages, tracking, reservations vs quotes),
    plus fakes: ferry search and prices, hotel search, terminal road times,
-   **simulated driver** (an LLM persona seeded from the driver's real messages,
-   replies through `message_in` with `simulated: true`).
+   **simulated driver** for chat (an LLM persona seeded from the driver's real
+   messages, replies through `message_in` with `simulated: true`). For the demo,
+   the agent **phones the driver** with `callDriver()` from `lib/voice` and a real
+   person answers on their phone (see `docs/VOICE.md`). Until Lane A's voice spike
+   lands, stub `callDriver()` with the simulated driver.
 2. **Agent loop** (`lib/agent/`): Claude API tool use (model `claude-sonnet-5-5`,
    or `claude-opus-5-5` for the demo). Tools tagged `free` or `needs_approval`.
    `needs_approval` tools never execute; they create a `Proposal`. Hard block on
@@ -89,6 +98,7 @@ clear proposal or a handover.
 | When | What |
 |---|---|
 | Sat 24 Oct, kickoff + 1 h | Contract frozen v1. Repo runs for both. Lanes start. |
+| Sat, voice spike done | Lane A shows the phone ringing and a finished `CallResult`; Lane B swaps its stub for the real `callDriver()`. |
 | Sat ~18:00 | **Plug-in 1**: UI switches `/api/queue` and `/case` from fixtures to real routes. Fix contract mismatches. |
 | Sat ~23:00 | **Plug-in 2**: approve/reject from the UI drives the real agent; live trace streams. |
 | Sun 10:00 | Feature freeze. Only polish, bugs, README, traces. |
@@ -98,7 +108,7 @@ clear proposal or a handover.
 ## Shared deliverables
 - `README.md`: run steps from a fresh clone (Lane B writes setup, Lane A writes product section).
 - `docs/ai-log/<name>.md`: each person logs prompts, rejected outputs, overrides. 30% of the score.
-- `docs/DEMO.md`: 2–3 min script: problem (20 s), queue (30 s), CD-420299 decision live (60 s), safety stop handover (20 s), how we built it with agents (40 s).
+- `docs/DEMO.md`: 2–3 min script: problem (20 s), queue (30 s), CD-420299 decision live (60 s), safety stop: the agent **phones the driver live on stage** and hands over (30 s), how we built it with agents (40 s).
 
 ## How to run your own agent in parallel
 - Each person: `git worktree add ../bcr-ui ui/queue` (or a plain clone) so your
