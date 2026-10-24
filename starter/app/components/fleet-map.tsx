@@ -447,7 +447,7 @@ export function FleetMap() {
     })
   }, [filter, search])
 
-  // Initialize Real Leaflet Map with OpenStreetMap / CartoDB tiles
+  // Initialize Real Leaflet Map with official OpenStreetMap tiles (100% free, no API key)
   useEffect(() => {
     if (!mapContainerRef.current) return
     let isMounted = true
@@ -503,10 +503,9 @@ export function FleetMap() {
         zoomControl: true,
       })
 
-      // Standard OpenStreetMap / CartoDB tiles (clean, authentic, 100% free with zero API key)
-      L.tileLayer("https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png", {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
-        subdomains: "abcd",
+      // Official OpenStreetMap tiles (100% free, authentic, zero API key required, zero watermarks)
+      L.tileLayer("https://tile.openstreetmap.org/{z}/{x}/{y}.png", {
+        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
         maxZoom: 19,
       }).addTo(map)
 
