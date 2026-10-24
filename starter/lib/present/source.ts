@@ -1,6 +1,7 @@
-// Where the control room gets its queue and cases. Until Lane B's routes exist
-// this reads the contract fixtures; set USE_FIXTURES=0 to read /api/queue and
-// /api/orders/:id/case instead. Pages never read fixtures directly.
+// Where the control room gets its queue and cases. By default the hand-checked contract
+// fixtures, whose every car, route and name matches the dataset. USE_FIXTURES=0 reads
+// Lane B's agent store in process instead (the data behind /api/queue and /case).
+// Pages never read either directly.
 
 import "server-only"
 import type { CaseView, Fact, QueueItem, QueueResponse, TimelineEntry } from "@/lib/contracts"
@@ -9,6 +10,7 @@ import { driverContext } from "@/lib/voice/driver-context"
 import queueFixture from "@/lib/contracts/fixtures/queue.json"
 import case299 from "@/lib/contracts/fixtures/case-ord-00299.json"
 import case322 from "@/lib/contracts/fixtures/case-ord-00322.json"
+import { worldStore } from "@/lib/world/store"
 
 const FIXTURE_CASES: Record<string, CaseView> = {
   "ord-00299": case299 as CaseView,
@@ -16,16 +18,9 @@ const FIXTURE_CASES: Record<string, CaseView> = {
 }
 
 const useFixtures = process.env.USE_FIXTURES !== "0"
-const appUrl = process.env.APP_URL ?? "http://localhost:3000"
 
 export async function getQueue(): Promise<QueueResponse> {
-  let queue: QueueResponse
-  if (useFixtures) queue = queueFixture as QueueResponse
-  else {
-    const response = await fetch(`${appUrl}/api/queue`, { cache: "no-store" })
-    if (!response.ok) throw new Error(`Queue failed: ${response.status}`)
-    queue = (await response.json()) as QueueResponse
-  }
+  const queue: QueueResponse = useFixtures ? (queueFixture as QueueResponse) : worldStore.getQueue()
   // Live phone calls run in this process, so they join the queue as they happen.
   const calls = callItems()
   return {
@@ -104,12 +99,7 @@ export async function getCase(orderId: string): Promise<{ view: CaseView; item: 
   const queue = await getQueue()
   const item = [...queue.needsPerson, ...(queue.agentsWorking ?? [])].find((entry) => entry.orderId === orderId) ?? null
 
-  let full: CaseView | null = null
-  if (useFixtures) full = FIXTURE_CASES[orderId] ?? null
-  else {
-    const response = await fetch(`${appUrl}/api/orders/${encodeURIComponent(orderId)}/case`, { cache: "no-store" })
-    if (response.ok) full = (await response.json()) as CaseView
-  }
+  const full: CaseView | null = useFixtures ? FIXTURE_CASES[orderId] ?? null : worldStore.getCase(orderId)
   const live = callFacts(orderId)
   if (full) return { view: { ...full, facts: [...live.facts, ...full.facts], timeline: [...full.timeline, ...live.timeline] }, item, full: true }
   if (!item) return null
