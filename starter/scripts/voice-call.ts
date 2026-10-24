@@ -22,6 +22,11 @@ const item = rows("order_items.jsonl").find((row) => row.order_id === orderId)
 const vehicle = item && rows("vehicles.jsonl").find((row) => row.id === item.vehicle_id)
 
 const car = vehicle ? `${vehicle.make} ${vehicle.model}` : "the car"
+const addresses = rows("addresses.jsonl")
+const cityOf = (id: unknown) => addresses.find((row) => row.id === id)?.city
+const route = order && cityOf(order.pickup_address_id) && cityOf(order.delivery_address_id)
+  ? `${cityOf(order.pickup_address_id)} to ${cityOf(order.delivery_address_id)}`
+  : null
 const request: CallRequest = {
   orderId,
   driverId,
@@ -33,7 +38,10 @@ const request: CallRequest = {
     "What warning light is on, and does the car still drive normally?",
     "Can the driver send a photo of the warning light in the app?",
   ],
-  context: `Car: ${car}. Order ${order?.reference ?? orderId}.`,
+  context: [
+    `Car: ${car}. Order ${order?.reference ?? orderId}.`,
+    route ? `Planned route: ${route}. The driver should be somewhere along this route.` : "",
+  ].filter(Boolean).join("\n"),
 }
 
 async function main() {
