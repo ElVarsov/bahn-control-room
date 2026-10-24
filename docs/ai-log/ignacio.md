@@ -50,3 +50,13 @@ tunnel). Real phone network stays a stretch goal.
 - Journey monitor that **forecasts** delays (Lane B), shown as estimates, never facts.
 - **Driver calls Bahn**: "Call Bahn" button; the agent answers, finds the order among
   the driver's jobs, and the report appears in the queue as "Driver called in".
+
+## Merging with Antoni, and enforcing lanes
+- Antoni's merge replaced Lane A pages and added voice routes that broke calls. I asked the agent
+  to check before merging: it typechecked their `main` in a separate worktree and found three
+  routes importing a missing `voiceManager` that shadowed the working route.
+- Their seeded cases invented routes, names and a flight number. We kept their backend but show
+  the hand-checked fixtures by default until the store derives facts from the dataset.
+- GitHub cannot say "only the other lane needs approval" (code-owner review also blocks your own
+  PRs). Instead: a `lane-guard` check that reads `.github/lanes.json` from the base branch, passes
+  at once for your own lane and waits for the other person otherwise. `main` only takes PRs.
