@@ -76,21 +76,53 @@ export async function GET(request: NextRequest) {
       const dAddr = addresses.get(o.delivery_address_id)
       const aList = orderAlerts.get(o.id) ?? []
 
+      const attentionItems = aList.map((a: any) => ({
+        kind: "alert" as const,
+        tone: (a.severity === "high" || a.severity === "critical" ? "danger" : "warn") as Tone,
+        title: a.summary || a.signal || "Alert",
+        short: a.signal || "Alert",
+        detail: a.summary || null,
+        owner: null,
+        at: a.triggered_at || null,
+        atLabel: null,
+        section: "alerts",
+        recordId: a.id,
+      }))
+
       return {
         id: o.id,
         reference: o.reference,
         displayLane: o.display_lane || "booked",
+        status: o.status || "WAITING_FOR_PICKUP",
+        statusLabel: o.status || "Booked",
+        routeKind: o.route_kind || "DOMESTIC",
+        routeKindLabel: o.route_kind || "Domestic",
         customer: c?.name || "Customer",
+        customerTier: c?.account_tier || null,
         vehicle: v ? `${v.make} ${v.model}` : "Vehicle",
+        vehicleMake: v?.make || null,
+        plate: v?.registration_plate || null,
         origin: pAddr?.city || "Germany",
         destination: dAddr?.city || "Finland",
-        plate: v?.registration_plate || null,
-        attention: aList.map((a) => a.summary || a.signal),
-        attentionTone: aList.length > 0 ? (aList.some((a) => a.severity === "high" || a.severity === "critical") ? "danger" : "warn") : "neutral",
-        decisive: { kind: "pickup", start: o.created_at, end: null, tz: "UTC" },
+        from: { city: pAddr?.city || "Germany", country: pAddr?.country || "DE" },
+        to: { city: dAddr?.city || "Finland", country: dAddr?.country || "FI" },
+        openAlerts: aList.filter((a: any) => a.status === "OPEN").map((a: any) => a.id),
+        acknowledgedAlerts: aList.filter((a: any) => a.status === "ACKNOWLEDGED").map((a: any) => a.id),
+        attention: attentionItems,
+        attentionTone: aList.length > 0 ? (aList.some((a: any) => a.severity === "high" || a.severity === "critical") ? "danger" : "warn") : "neutral",
+        decisive: {
+          key: "pickup_slot",
+          label: "Pickup",
+          start: o.created_at,
+          end: null,
+          zone: "Europe/Berlin",
+          source: null,
+          tone: "neutral",
+          note: null,
+        },
+        work: [],
         updatedAt: o.updated_at,
-        image: null,
-      } as unknown as BoardCard
+      } as BoardCard
     })
 
     const counts = Object.fromEntries(LANE_ORDER.map((lane) => [lane, allCards.filter((card) => card.displayLane === lane).length]))

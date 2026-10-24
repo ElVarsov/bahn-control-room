@@ -28,9 +28,9 @@ export function Card({ card, role }: { card: BoardCard; role?: string | null }) 
           <span className="card-customer" title={card.customer}>{card.customer}</span>
         </div>
         <div className="card-line card-route">
-          <span title={card.origin}>{card.from.city}{card.from.country ? `, ${card.from.country}` : ""}</span>
+          <span title={card.origin}>{card.from?.city ?? card.origin ?? "Unknown"}{card.from?.country ? `, ${card.from.country}` : ""}</span>
           <Icon name="arrow" size={13} />
-          <span title={card.destination}>{card.to.city}{card.to.country ? `, ${card.to.country}` : ""}</span>
+          <span title={card.destination}>{card.to?.city ?? card.destination ?? "Unknown"}{card.to?.country ? `, ${card.to.country}` : ""}</span>
         </div>
         {date && <div className={`card-line card-date tone-${date.tone}`}>
           <span className="card-date-label">{date.label}</span>
@@ -38,8 +38,8 @@ export function Card({ card, role }: { card: BoardCard; role?: string | null }) 
           {date.note && <span className="card-date-note" title={date.note}>· {date.note}</span>}
         </div>}
       </div>
-      {card.work.length > 0 && <div className="card-tray">
-        {card.work.map((line, index) => <div className={`tray-line tone-${line.tone}`} key={index}><Icon name={line.icon} size={14} /><span title={line.text}>{line.text}</span></div>)}
+      {(card.work ?? []).length > 0 && <div className="card-tray">
+        {(card.work ?? []).map((line, index) => <div className={`tray-line tone-${line.tone}`} key={index}><Icon name={line.icon} size={14} /><span title={line.text}>{line.text}</span></div>)}
       </div>}
     </Link>
   </div>
@@ -56,7 +56,8 @@ function dateText(start: string, end: string | null, zone: string | null): strin
 
 function uniqueMarks(card: BoardCard): [string, Tone][] {
   const seen = new Map<string, Tone>()
-  for (const item of card.attention) {
+  for (const item of card.attention ?? []) {
+    if (!item || typeof item !== "object") continue
     const key = MARK_ICON[item.kind] ?? "note"
     if (!seen.has(key)) seen.set(key, item.tone)
   }
