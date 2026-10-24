@@ -65,21 +65,43 @@ export function QueueList({ items, snapshotAt, zone }: { items: QueueItem[]; sna
                     onFocus={() => setActive(i)}
                   >
                     <div className="queue-row-main">
-                      <div className="queue-row-top">
-                        {reason && <span className={`chip tone-${reason.tone}`}><Icon name={reason.icon} size={12} />{reason.label}</span>}
-                        <span className="queue-row-car">{item.car}</span>
-                        <span className="queue-row-ref mono">{item.orderReference}</span>
+                      <div className="queue-row-top" style={{ gap: "8px", flexWrap: "wrap" }}>
+                        {reason && (
+                          <span className={`chip tone-${reason.tone}`}>
+                            <Icon name={reason.icon} size={12} />
+                            {reason.label}
+                          </span>
+                        )}
+                        {item.reason === "forecast" && (
+                          <span className="provenance-pill is-estimate">⚡ AI Forecaster</span>
+                        )}
+                        {item.reason === "driver_report" && (
+                          <span className="provenance-pill is-verified">📞 Driver Phone Call</span>
+                        )}
+                        {item.reason === "decision" && (
+                          <span className="provenance-pill is-quote">🚢 Timetable / Quote</span>
+                        )}
+                        <span className="queue-row-car" style={{ fontWeight: 700, color: "var(--ink)" }}>{item.car}</span>
+                        <span className="queue-row-ref mono" style={{ background: "var(--tray)", padding: "1px 6px", borderRadius: "4px", border: "1px solid var(--hair)" }}>{item.orderReference}</span>
                       </div>
-                      <h3 className="queue-row-headline">{item.headline}</h3>
-                      <p className="queue-row-why">{item.why}</p>
+                      <h3 className="queue-row-headline" style={{ color: "var(--ink)", marginTop: "4px" }}>{item.headline}</h3>
+                      <p className="queue-row-why" style={{ color: "var(--brown)", lineHeight: "1.4" }}>{item.why}</p>
                       {item.agentDid && (
-                        <p className="queue-row-agent"><Icon name="bot" size={14} /><span>{item.agentDid}</span></p>
+                        <p className="queue-row-agent" style={{ background: "var(--teal-bg)", padding: "4px 8px", borderRadius: "6px", display: "inline-flex", width: "fit-content", marginTop: "6px" }}>
+                          <Icon name="bot" size={14} />
+                          <span>{item.agentDid}</span>
+                        </p>
                       )}
                     </div>
                     <div className="queue-row-side">
                       <Deadline at={item.decideBy} snapshotAt={snapshotAt} zone={zone} />
-                      <span className="queue-row-route">{item.route}</span>
-                      {item.customer && <span className="queue-row-customer">{item.customer}</span>}
+                      <span className="queue-row-route" style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "var(--hair-soft)", padding: "2px 8px", borderRadius: "6px", fontSize: "11.5px", fontWeight: 600 }}>
+                        {item.route}
+                      </span>
+                      {item.customer && <span className="queue-row-customer" style={{ fontWeight: 500 }}>{item.customer}</span>}
+                      <span style={{ fontSize: "11px", color: "var(--brown)", textDecoration: "underline", marginTop: "4px", opacity: 0.8 }}>
+                        Review brief →
+                      </span>
                     </div>
                   </Link>
                 </li>

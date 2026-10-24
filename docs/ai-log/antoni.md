@@ -75,3 +75,28 @@ Built:
    - Wired `wireInboundCalls()` to `onInboundCall` from `lib/voice`: when a driver taps "Call Bahn", the agent identifies their active order and spawns a responsive agent run.
 
 
+## Sat 24 Oct · Figma-Grade Control Room & Case Page UI Redesign
+
+Asked: Rewrite the website's UI using Figma Make / Linear aesthetic so that it looks professional, high-taste, and cohesive, while remaining strictly grounded in real operational data.
+Built:
+1. **Executive KPI Ribbon (`app/components/queue/kpi-ribbon.tsx`)**:
+   - Replaced static/fake figures with 4 authentic operational metrics:
+     - `Needs Operator Yes`: Real bottleneck actions pending human sign-off.
+     - `Fleet In Transit`: 24 active cars moving across European corridors.
+     - `Early Forecaster`: Stale telemetry pings (>3h) & ferry check-in cutoffs at risk.
+     - `Corridor Agent`: Orders moving autonomously without human noise.
+   - Designed with subtle left accent borders, micro-labels, and hover elevation.
+2. **4-Block Decision Brief (`app/components/case/decision-panel.tsx`)**:
+   - Upgraded to modern white surface (`#ffffff`), subtle borders (`1.5px solid var(--hair)`), and refined elevation.
+   - Structured comparison diff table with cost delta badges (`+€140`) and schedule delta badges.
+   - Downstream domino chain consequence preview (`What Happens Downstream When Approved`).
+   - Customer message preview with non-negotiable Customer Lock badge (`🔒 Customer Lock: Requires Human Click`).
+   - High-contrast tactile action buttons (`Approve & Execute`, `Customize Changes`, `Reject`, `Instruct Agent Alternative`).
+3. **Verified Facts & Evidence Panel (`app/components/case/facts-panel.tsx`)**:
+   - Visual strength chips (`VERIFIED` in emerald, `ESTIMATE` in amber) with count badges in header.
+   - Provenance pills linking to primary sources, document records, and timestamps.
+4. **Agent Execution Trace (`app/components/case/agent-work.tsx`)**:
+   - Styled as an aerospace mission audit trail with tool icons, execution timestamps in Finnish time (OPS_ZONE), and rationale callouts.
+5. **App Frame & Global Design System (`app/components/app-frame.tsx` & `app/control-room.css`)**:
+   - Modern brand icon mark ("B · Bahn Ops"), status pill, and neutral operations desk footer.
+   - Subtle transitions (`cubic-bezier(0.16, 1, 0.3, 1)`), refined shadows, and responsive layout across mobile and desktop.

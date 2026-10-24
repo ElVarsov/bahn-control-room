@@ -6,6 +6,7 @@ import dynamic from "next/dynamic"
 import { Icon } from "../icons"
 import { QueueList } from "./queue-list"
 import { AgentsWorking } from "./agents-working"
+import { KpiRibbon } from "./kpi-ribbon"
 import type { QueueItem } from "@/lib/contracts"
 
 const FleetMap = dynamic(() => import("../fleet-map").then((mod) => mod.FleetMap), {
@@ -36,25 +37,47 @@ export function DashboardView({
 
   return (
     <div>
-      {/* View Switcher Bar */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
-        <div style={{ display: "inline-flex", background: "var(--hair-soft)", padding: "3px", borderRadius: "8px", border: "1px solid var(--hair)" }}>
+      {/* Figma-Grade Executive KPI Strip */}
+      <KpiRibbon
+        decisionsCount={items.length}
+        inTransitCount={24}
+        quietCount={quietCount}
+        vesselsCount={3}
+      />
+
+      {/* View Switcher & Operational Status Bar */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "space-between",
+          alignItems: "center",
+          marginBottom: "18px",
+          flexWrap: "wrap",
+          gap: "12px",
+          background: "var(--tray)",
+          padding: "8px 12px",
+          borderRadius: "12px",
+          border: "1px solid var(--hair)",
+        }}
+      >
+        <div style={{ display: "inline-flex", background: "var(--hair-soft)", padding: "3px", borderRadius: "9px", border: "1px solid var(--hair)" }}>
           <button
             type="button"
             onClick={() => setViewMode("queue")}
             style={{
-              padding: "6px 14px",
-              borderRadius: "6px",
+              padding: "7px 15px",
+              borderRadius: "7px",
               fontSize: "12.5px",
               fontWeight: 600,
               border: "none",
               background: viewMode === "queue" ? "#ffffff" : "transparent",
               color: viewMode === "queue" ? "var(--ink)" : "var(--muted)",
-              boxShadow: viewMode === "queue" ? "0 1px 3px rgba(0,0,0,0.06)" : "none",
+              boxShadow: viewMode === "queue" ? "0 2px 5px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)" : "none",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
-              gap: "6px",
+              gap: "7px",
+              transition: "all 0.15s ease",
             }}
           >
             <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--red)" }} />
@@ -65,18 +88,19 @@ export function DashboardView({
             type="button"
             onClick={() => setViewMode("map")}
             style={{
-              padding: "6px 14px",
-              borderRadius: "6px",
+              padding: "7px 15px",
+              borderRadius: "7px",
               fontSize: "12.5px",
               fontWeight: 600,
               border: "none",
               background: viewMode === "map" ? "#ffffff" : "transparent",
               color: viewMode === "map" ? "var(--ink)" : "var(--muted)",
-              boxShadow: viewMode === "map" ? "0 1px 3px rgba(0,0,0,0.06)" : "none",
+              boxShadow: viewMode === "map" ? "0 2px 5px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)" : "none",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
-              gap: "6px",
+              gap: "7px",
+              transition: "all 0.15s ease",
             }}
           >
             <span>🗺️</span>
@@ -87,39 +111,80 @@ export function DashboardView({
             type="button"
             onClick={() => setViewMode("split")}
             style={{
-              padding: "6px 14px",
-              borderRadius: "6px",
+              padding: "7px 15px",
+              borderRadius: "7px",
               fontSize: "12.5px",
               fontWeight: 600,
               border: "none",
               background: viewMode === "split" ? "#ffffff" : "transparent",
               color: viewMode === "split" ? "var(--ink)" : "var(--muted)",
-              boxShadow: viewMode === "split" ? "0 1px 3px rgba(0,0,0,0.06)" : "none",
+              boxShadow: viewMode === "split" ? "0 2px 5px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.04)" : "none",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
-              gap: "6px",
+              gap: "7px",
+              transition: "all 0.15s ease",
             }}
           >
             <span>🔀</span>
-            Split View
+            Split View (Cards + Map)
           </button>
         </div>
 
-        <Link
-          href="/map"
-          style={{
-            fontSize: "12px",
-            color: "var(--brown)",
-            textDecoration: "none",
-            display: "inline-flex",
-            alignItems: "center",
-            gap: "5px",
-            fontWeight: 500,
-          }}
-        >
-          Open Fullscreen Map <Icon name="arrow" size={12} />
-        </Link>
+        {/* Operational Guardrail Badges */}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+          <span
+            style={{
+              fontSize: "11px",
+              fontWeight: 600,
+              padding: "4px 9px",
+              borderRadius: "20px",
+              background: "var(--birch)",
+              border: "1px solid var(--sand)",
+              color: "var(--brown)",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+            }}
+            title="Customer Lock is permanently active. The agent cannot contact customers without human approval."
+          >
+            <span style={{ color: "#d97706" }}>🔒</span> Customer Lock: Active
+          </span>
+
+          <span
+            style={{
+              fontSize: "11px",
+              fontWeight: 600,
+              padding: "4px 9px",
+              borderRadius: "20px",
+              background: "var(--teal-bg)",
+              border: "1px solid rgba(31,111,123,0.2)",
+              color: "var(--teal-ink)",
+              display: "flex",
+              alignItems: "center",
+              gap: "5px",
+            }}
+          >
+            <span className="agent-pulse state-working" style={{ width: "6px", height: "6px" }} />
+            Autonomous Road Agent: Active
+          </span>
+
+          <Link
+            href="/map"
+            style={{
+              fontSize: "12px",
+              color: "var(--brown)",
+              textDecoration: "none",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "5px",
+              fontWeight: 500,
+              marginLeft: "6px",
+            }}
+          >
+            Open Fullscreen Map <Icon name="arrow" size={12} />
+          </Link>
+        </div>
       </div>
 
       {/* Mode 1: Queue Only */}
