@@ -171,7 +171,7 @@ export type CallRequest = {
   runId?: string
 }
 
-export type CallTurn = { speaker: "agent" | "driver"; text: string; at: Iso }
+export type CallTurn = { speaker: "agent" | "driver"; text: string; at: Iso; scripted?: boolean } // scripted: backup lines, no AI
 
 export type CallResult = {
   callId: string
@@ -184,6 +184,7 @@ export type CallResult = {
   transcript: CallTurn[]
   summary: string          // one sentence for the trace and the case page
   facts: Fact[]            // strength "reported", source kind "driver", label "Phone call"
+  scripted?: boolean       // true if any agent line came from the scripted backup instead of the AI
 }
 
 // GET  /api/voice/stream?driverId=…            -> text/event-stream of { type: "incoming" | "update", call }

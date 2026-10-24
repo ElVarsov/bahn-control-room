@@ -19,6 +19,8 @@ export type LiveCall = {
   queueHeadline?: string
   urgency?: "now" | "today" | "soon"
   orderReference?: string
+  /** Some agent lines came from the scripted backup because the AI was unavailable. */
+  scripted?: boolean
 }
 
 export type CallEvent = { type: "incoming" | "update"; call: LiveCall }
@@ -120,6 +122,7 @@ export function toResult(call: LiveCall): CallResult {
     transcript: call.transcript,
     summary: call.summary || defaultSummary(call),
     facts: call.facts,
+    scripted: call.scripted || undefined,
   }
 }
 

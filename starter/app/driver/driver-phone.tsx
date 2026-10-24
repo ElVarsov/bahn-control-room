@@ -44,6 +44,7 @@ export function DriverPhone({ driverId }: { driverId: string }) {
   const [seconds, setSeconds] = useState(0)
   const [speechSupported, setSpeechSupported] = useState(true)
   const [endedText, setEndedText] = useState("")
+  const [scripted, setScripted] = useState(false) // the AI is unavailable and backup lines are speaking
 
   const audio = useRef<AudioContext | null>(null)
   const ringTimer = useRef<ReturnType<typeof setInterval> | null>(null)
@@ -104,6 +105,7 @@ export function DriverPhone({ driverId }: { driverId: string }) {
           setCall(latest)
           setTurns([])
           setEndedText("")
+          setScripted(false)
           setPhase("ringing")
           startRinging()
         } else if (!isNew) {
@@ -180,8 +182,9 @@ export function DriverPhone({ driverId }: { driverId: string }) {
     setPhase("ended")
   }, [])
 
-  const agentTurn = useCallback(async (reply: { say: string; end: boolean } | null) => {
+  const agentTurn = useCallback(async (reply: { say: string; end: boolean; scripted?: boolean } | null) => {
     if (!reply) return endLocally("Call ended")
+    if (reply.scripted) setScripted(true)
     setPhase("agent")
     await speak(reply.say)
     if (phaseRef.current === "ended") return
@@ -324,6 +327,7 @@ export function DriverPhone({ driverId }: { driverId: string }) {
     setSeconds(0)
     setTurns([])
     setEndedText("")
+    setScripted(false)
     setMicError("")
     setPhase("connecting")
     try {
@@ -331,7 +335,7 @@ export function DriverPhone({ driverId }: { driverId: string }) {
         method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ driverId }),
       })
       if (!response.ok) throw new Error(String(response.status))
-      const reply = (await response.json()) as { callId: string; say: string; end: boolean }
+      const reply = (await response.json()) as { callId: string; say: string; end: boolean; scripted?: boolean }
       const started: IncomingCall = { id: reply.callId, status: "in_call", request: { driverName: "", purpose: "", orderId: "" }, transcript: [] }
       callRef.current = started
       setCall(started)
@@ -420,6 +424,7 @@ export function DriverPhone({ driverId }: { driverId: string }) {
         <div className={styles.callerName}>Bahn Operations</div>
         <div className={styles.callerSub}>{mmss} · {label}</div>
       </div>
+      {scripted && <p className={styles.scriptedBanner}>Scripted backup: the AI assistant is unavailable. These are fixed lines; your answers are still recorded for a person to read.</p>}
       <Transcript turns={turns} live={heard} dark />
       {micError && <p className={styles.micError}>{micError}</p>}
       {phase === "listening" && heard && (
@@ -449,7 +454,7 @@ function Transcript({ turns, live, dark }: { turns: CallTurn[]; live?: string; d
   return (
     <div className={`${styles.transcript} ${dark ? styles.transcriptDark : ""}`}>
       {turns.map((turn, i) => (
-        <p key={i} className={turn.speaker === "agent" ? styles.agentLine : styles.driverLine}>{turn.text}</p>
+        <p key={i} className={turn.speaker === "agent" ? styles.agentLine : styles.driverLine}>{turn.scripted && <span className={styles.scriptedTag}>Scripted</span>}{turn.text}</p>
       ))}
       {live && <p className={`${styles.driverLine} ${styles.live}`}>{live}</p>}
       <div ref={end} />

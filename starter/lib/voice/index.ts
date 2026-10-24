@@ -79,7 +79,7 @@ export async function callDriverRemote(appUrl: string, request: CallRequest): Pr
  * The driver tapped "Call Bahn". The call is answered at once by the in-call
  * agent, which already knows the driver's current jobs.
  */
-export async function startInboundCall(driverId: string): Promise<{ callId: string; say: string; end: boolean }> {
+export async function startInboundCall(driverId: string): Promise<{ callId: string; say: string; end: boolean; scripted?: boolean }> {
   const context = driverContext(driverId)
   const jobs = context.jobs.map((job) => `- ${job.reference}: ${job.car}, ${job.route}, ${job.status}`).join("\n")
   const call = createCall({
@@ -122,13 +122,13 @@ export function onInboundCall(handler: InboundHandler): () => void {
 
 // --- actions from the phone -------------------------------------------------
 
-export async function answer(callId: string): Promise<{ say: string; end: boolean }> {
+export async function answer(callId: string): Promise<{ say: string; end: boolean; scripted?: boolean }> {
   const call = updateCall(callId, { status: "in_call", answeredAt: new Date().toISOString() })
   if (!call || call.status !== "in_call") return { say: "", end: true }
   return agentSpeaks(call)
 }
 
-export async function driverSaid(callId: string, text: string): Promise<{ say: string; end: boolean }> {
+export async function driverSaid(callId: string, text: string): Promise<{ say: string; end: boolean; scripted?: boolean }> {
   const call = getCall(callId)
   if (!call || call.status !== "in_call") return { say: "", end: true }
   addTurn(callId, { speaker: "driver", text, at: new Date().toISOString() })
@@ -145,12 +145,13 @@ export function hangUp(callId: string) {
   updateCall(callId, { status: call.status === "ringing" ? "declined" : "completed" })
 }
 
-async function agentSpeaks(call: LiveCall): Promise<{ say: string; end: boolean }> {
+async function agentSpeaks(call: LiveCall): Promise<{ say: string; end: boolean; scripted?: boolean }> {
   try {
     const turn = await nextAgentTurn(call)
-    addTurn(call.id, { speaker: "agent", text: turn.say, at: new Date().toISOString() })
-    call.summary = turn.summary
-    call.facts = factsFromCall(call, turn.facts)
+    if (turn.scripted) call.scripted = true
+    addTurn(call.id, { speaker: "agent", text: turn.say, at: new Date().toISOString(), scripted: turn.scripted || undefined })
+    call.summary = turn.scripted ? `Scripted backup call (AI unavailable): ${turn.summary}` : turn.summary
+    call.facts = factsFromCall(call, turn.facts, !!call.scripted)
     call.queueHeadline = turn.queue_headline || undefined
     call.urgency = turn.urgency
     if (turn.order_reference) {
@@ -159,7 +160,7 @@ async function agentSpeaks(call: LiveCall): Promise<{ say: string; end: boolean 
       if (job && !call.request.orderId) call.request.orderId = job.orderId
     }
     // The phone hangs up after it finishes speaking the goodbye.
-    return { say: turn.say, end: turn.end_call }
+    return { say: turn.say, end: turn.end_call, scripted: !!turn.scripted }
   } catch (error) {
     console.error("[voice] agent turn failed", error)
     updateCall(call.id, { status: "failed", summary: "The assistant had a technical problem and dropped the call." })

@@ -152,7 +152,9 @@ function callItems(): { needsPerson: QueueItem[]; working: QueueItem[] } {
         stage: job?.status === "driving it now" ? "Moving" : job ? "Driver booked" : undefined,
         headline: call.queueHeadline,
         why: call.summary,
-        agentDid: `Took ${call.request.driverName}'s call${minutes ? ` (${minutes} min)` : ""} and wrote down what they said.`,
+        agentDid: call.scripted
+          ? `The AI was unavailable, so a scripted backup took ${call.request.driverName}'s call${minutes ? ` (${minutes} min)` : ""}. Read the transcript before acting.`
+          : `Took ${call.request.driverName}'s call${minutes ? ` (${minutes} min)` : ""} and wrote down what they said.`,
         urgency: call.urgency ?? "today",
         decideBy: snapshotPlus(URGENCY_MINUTES[call.urgency ?? "today"]),
         agentState: "needs_person",
@@ -172,7 +174,7 @@ function callFacts(orderId: string): { facts: Fact[]; timeline: TimelineEntry[] 
       actor: { kind: "agent" as const, name: "Road agent" },
       channel: "phone",
       visibility: "public" as const,
-      text: `${call.request.direction === "inbound" ? `${call.request.driverName} called Bahn.` : `Phoned ${call.request.driverName}.`} ${call.summary}`,
+      text: `${call.request.direction === "inbound" ? `${call.request.driverName} called Bahn.` : `Phoned ${call.request.driverName}.`}${call.scripted ? " Scripted backup answered, not the AI." : ""} ${call.summary}`,
     }] : []),
   }
 }

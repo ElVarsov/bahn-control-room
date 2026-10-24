@@ -75,6 +75,8 @@ export type AgentTurn = {
   order_reference: string
   queue_headline: string
   urgency: "now" | "today" | "soon"
+  /** True when the line came from the scripted backup, not the AI. Always shown to people. */
+  scripted?: boolean
 }
 
 /**
@@ -95,8 +97,8 @@ function simulateDispatcherTurn(call: LiveCall): AgentTurn {
   if (turnIndex === 0) {
     const greeting =
       call.request.direction === "inbound"
-        ? "Bahn operations, this is the AI assistant. What's happening?"
-        : `Hello ${call.request.driverName}, this is Bahn operations assistant calling about your delivery. Are you in a safe place right now?`
+        ? "Bahn operations, automated backup line. The assistant is unavailable right now, so I'll take down your report for a person. What's happening?"
+        : `Hello ${call.request.driverName}, this is Bahn's automated backup line calling about your delivery. The assistant is unavailable, so a person will read your answers. Are you in a safe place right now?`
     return {
       say: greeting,
       end_call: false,
@@ -159,7 +161,7 @@ export async function nextAgentTurn(call: LiveCall): Promise<AgentTurn> {
   const client = getAnthropicClient()
 
   if (!client) {
-    return simulateDispatcherTurn(call)
+    return { ...simulateDispatcherTurn(call), scripted: true }
   }
 
   try {
@@ -205,16 +207,16 @@ export async function nextAgentTurn(call: LiveCall): Promise<AgentTurn> {
     return JSON.parse(json) as AgentTurn
   } catch (error) {
     console.warn("[voice] Claude LLM request failed, activating resilient dispatcher dialogue:", error)
-    return simulateDispatcherTurn(call)
+    return { ...simulateDispatcherTurn(call), scripted: true }
   }
 }
 
-export function factsFromCall(call: LiveCall, statements: string[]): Fact[] {
+export function factsFromCall(call: LiveCall, statements: string[], scripted = false): Fact[] {
   const at = new Date().toISOString()
   return statements.map((text, index) => ({
     id: `${call.id}-f${index + 1}`,
     text,
     strength: "reported",
-    sources: [{ kind: "driver", label: "Phone call", actorName: call.request.driverName, at, table: "voice_calls", recordId: call.id }],
+    sources: [{ kind: "driver", label: scripted ? "Phone call (scripted backup, AI unavailable)" : "Phone call", actorName: call.request.driverName, at, table: "voice_calls", recordId: call.id }],
   }))
 }

@@ -189,12 +189,12 @@ async function runTool(record: RunRecord, order: Row, name: string, input: Recor
       addStep(record, {
         kind: "call", at: now(), callId: call.callId, status: call.status,
         summary: call.status === "completed"
-          ? `${call.simulated ? "Simulated call" : "Phoned"} ${call.driverName}. ${heard.slice(0, 260)}`
+          ? `${call.simulated ? "Simulated call" : "Phoned"} ${call.driverName}${call.scripted ? " (scripted backup answered, AI unavailable)" : ""}. ${heard.slice(0, 260)}`
           : `${call.simulated ? "Simulated call to" : "Phoned"} ${call.driverName}: ${call.status.replace("_", " ")}.`,
       })
       // Facts heard on a real call are reported by the driver; keep them with the run.
       for (const fact of call.facts) record.facts.push(fact)
-      return { content: json({ status: call.status, simulated: call.simulated, driver: call.driverName, transcript: call.transcript, call_id: call.callId }) }
+      return { content: json({ status: call.status, simulated: call.simulated, scripted_backup: !!call.scripted, driver: call.driverName, transcript: call.transcript, call_id: call.callId }) }
     }
     case "note_fact": {
       const fact: Fact = {
