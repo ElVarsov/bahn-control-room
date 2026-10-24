@@ -245,3 +245,10 @@ kbd {
 .report-agent .icon { margin-top: 2px; flex: none; }
 .case-main > .decision + .decision { margin-top: -16px; }
 @media (max-width: 1180px) { .case-grid > .case-main > .decision.is-report { order: -3; } }
+
+/* Starting the agent from a case, and watching it work */
+.agent-bar { display: flex; align-items: center; flex-wrap: wrap; gap: 8px 14px; margin-top: 18px; }
+.agent-bar-note { font-size: 12.5px; color: var(--subtle); max-width: 56ch; }
+.agent-bar-error { font-size: 12.5px; color: var(--red-ink); }
+.agent-bar.is-running { padding: 10px 14px; border-radius: 10px; background: var(--teal-bg); color: var(--teal-ink); font-size: 13.5px; }
+.agent-bar.is-running .agent-pulse { flex: none; }

@@ -1,0 +1,353 @@
+{
+  "run": {
+    "id": "run-mvmmb8xb0yn",
+    "orderId": "ord-00322",
+    "agentId": "road-agent",
+    "trigger": "Driver reported a red warning light",
+    "state": "done",
+    "startedAt": "2026-10-24T16:33:14.735Z",
+    "steps": [
+      {
+        "kind": "thought",
+        "at": "2026-10-24T16:33:18.532Z",
+        "text": "Let me start with the cheap reads."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:33:18.532Z",
+        "tool": "read_order",
+        "input": {
+          "order": "CD-420322"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-24T16:33:18.534Z",
+        "tool": "read_order",
+        "summary": "Bentley Continental GT for Marvellin Motorhandel, Munich → Hamburg. Driver Kasper Kovelund (in progress)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:33:18.534Z",
+        "tool": "read_conversation",
+        "input": {
+          "order": "CD-420322"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-24T16:33:18.535Z",
+        "tool": "read_conversation",
+        "summary": "8 recent messages. Latest from Kasper Kovelund: “I will wait here. Please tell me who is collecting the car before anyone moves it.”"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:33:18.535Z",
+        "tool": "read_open_issues",
+        "input": {
+          "order": "CD-420322"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-24T16:33:18.536Z",
+        "tool": "read_open_issues",
+        "summary": "2 open alert(s) (No recent driver-app position; check before changing a promise.), 1 incident(s), 1 open work item(s)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:33:18.536Z",
+        "tool": "read_tracking",
+        "input": {
+          "order": "CD-420322"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-24T16:33:18.536Z",
+        "tool": "read_tracking",
+        "summary": "Last driver-app position 4 h ago (stale), 233 km to go."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:33:18.536Z",
+        "tool": "read_travel",
+        "input": {
+          "order": "CD-420322"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-24T16:33:18.537Z",
+        "tool": "read_travel",
+        "summary": "0 booked, 0 quote(s) or capacity check(s) that are not bookings."
+      },
+      {
+        "kind": "thought",
+        "at": "2026-10-24T16:33:25.759Z",
+        "text": "The driver says they're safe and the engine is off, but we still don't know where they are or have the photo. The records can't tell me either, so I'll phone the driver."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:33:25.759Z",
+        "tool": "call_driver",
+        "input": {
+          "order": "CD-420322",
+          "purpose": "Bahn operations here about the Bentley on CD-420322: we need your exact stop location and the dashboard photo so the owner can decide on recovery. Please keep the car stopped.",
+          "questions": [
+            "Are you still safe, and is the car still parked with the engine off?",
+            "What is the name of the service area, the motorway and the direction you were travelling?",
+            "Can you send the dashboard warning photo in the driver chat now?",
+            "Has anyone other than Bahn told you to move the car or said they will collect it?"
+          ]
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "call",
+        "at": "2026-10-24T16:33:31.606Z",
+        "callId": "sim-mvmmblxy",
+        "status": "completed",
+        "summary": "Simulated call Kasper Kovelund. Yes, I am still safe, and the Bentley is still parked at the service-area car park with the engine off. I have not noted the exact service-area name yet, so I will check the sign and send it with a live location pin in the driver chat; I was heading north towa"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:33:41.671Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The driver says they are safe and the Bentley is parked at a motorway service-area car park, heading north to Hamburg, engine off. They will not hand it over until Bahn says who is collecting. They have not given the service-area name yet and will send it with a live pin.",
+          "strength": "reported",
+          "source_kind": "driver",
+          "source_actor": "Kasper Kovelund",
+          "source_label": "Driver phone call",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_record_id": "sim-mvmmblxy"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:33:41.671Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "We don't know exactly where the car is. The last app position is 4 hours old (07:00 Berlin time, about 233 km from Hamburg), from before the stop. The driver hasn't sent a location pin yet.",
+          "strength": "unknown",
+          "source_kind": "system",
+          "source_label": "Driver-app tracking",
+          "source_at": "2026-10-21T05:00:00Z",
+          "source_record_id": "track-x4ec652df41547497",
+          "source_table": "tracking"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:33:41.671Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The promised delivery window is today 12:00–16:00 Hamburg time. With the car stopped and no recovery plan, it will very likely be missed. The customer was told at 10:49 Berlin time that we will update the estimate once the recovery plan is confirmed.",
+          "strength": "estimate",
+          "source_kind": "customer",
+          "source_label": "Delivery promise",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_record_id": "win-x7c8722a53360a2ad"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:33:41.671Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The customer, Marvellin Motorhandel, asked us to keep the car stopped. They are checking with their service contact whether it needs roadside help or collection. No decision from them yet.",
+          "strength": "reported",
+          "source_kind": "customer",
+          "source_actor": "Marvellin Motorhandel",
+          "source_label": "Customer email",
+          "source_at": "2026-10-21T08:40:00Z",
+          "source_record_id": "msg-x61cd4aae96d91cff"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:33:50.984Z",
+        "tool": "propose",
+        "input": {
+          "action": "handover_to_person",
+          "title": "Call Marvellin Motorhandel for their service decision on the stopped Bentley",
+          "rationale": "The car is stopped safely after a red warning. Only the owner's service contact can choose between roadside help, collection or safe storage, and the shift lead asked for a customer call. The recovery decision is due at 11:15 Berlin time.",
+          "changes": [
+            {
+              "label": "Recovery decision",
+              "before": "Waiting for the customer",
+              "after": "Customer's service instruction recorded (roadside help, collection or storage) with who is collecting and when"
+            },
+            {
+              "label": "Delivery promise (today 12:00–16:00 Hamburg time)",
+              "before": "Unchanged",
+              "after": "Unchanged for now; replan separately once the recovery plan is known"
+            }
+          ],
+          "draft_message": {
+            "to": "Marvellin Motorhandel (service contact)",
+            "channel": "phone",
+            "body": "Call brief: The Bentley Continental GT on CD-420322 (Munich to Hamburg) showed a red dashboard warning and lost some acceleration. The driver stopped at about 10:04 Berlin time and is safe at a motorway service-area car park heading north, with the engine off. The exact service area is not confirmed yet; the driver is sending a location pin and a dashboard photo in the driver chat. Nobody has cleared onward driving. Ask: 1) Roadside help, collection by tow truck, or storage? 2) Who will come (company, name, phone) and roughly when? 3) Can the driver hand over the keys to that person, and what proof of identity should the driver check? 4) Do they want to see the dashboard photo first? Don't promise a new delivery time on this call; the delivery window today (12:00–16:00 Hamburg time) will be replanned after this."
+          },
+          "what_happens_next": "A coordinator calls the customer's service contact with this brief, using the driver's location pin and photo if they have arrived.",
+          "what_happens_after": "The coordinator has recorded the service decision. The driver is told who is coming and keeps the car until that named person arrives. Then the driver's onward plan and the delivery promise are replanned in a separate step."
+        },
+        "cost": "needs_approval"
+      },
+      {
+        "kind": "proposal",
+        "at": "2026-10-24T16:33:50.984Z",
+        "proposalId": "run-mvmmb8xb0yn-p1"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:33:55.805Z",
+        "tool": "finish",
+        "input": {
+          "outcome": "needs_person",
+          "headline": "The Bentley is stopped safely after a red warning. Call the customer for their roadside-help or collection decision before 11:15 Berlin time.",
+          "summary": "The driver is safe and the car is parked at a northbound service area with the engine off, but we don't have the exact location yet. A pin and dashboard photo are on their way in the driver chat. The customer's service decision is still open, and today's 12:00–16:00 Hamburg delivery window will very likely be missed. Replan it after recovery is agreed.",
+          "agent_did": "Read the order, messages, issues, tracking and travel, phoned the driver, noted 4 facts and proposed a customer call.",
+          "urgency": "now",
+          "decide_within_minutes": 15
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "stop",
+        "at": "2026-10-24T16:33:55.805Z",
+        "reason": "needs_person",
+        "summary": "The driver is safe and the car is parked at a northbound service area with the engine off, but we don't have the exact location yet. A pin and dashboard photo are on their way in the driver chat. The customer's service decision is still open, and today's 12:00–16:00 Hamburg delivery window will very likely be missed. Replan it after recovery is agreed."
+      },
+      {
+        "kind": "message_out",
+        "at": "2026-10-24T16:34:20.846Z",
+        "to": "driver",
+        "toName": "the driver",
+        "channel": "driver_chat",
+        "body": "Update from Bahn: Their own roadside service (Marvellin Service) comes within 2 hours; the car goes to their Munich workshop."
+      }
+    ]
+  },
+  "orderId": "ord-00322",
+  "orderReference": "CD-420322",
+  "car": "Bentley Continental GT",
+  "route": "Munich → Hamburg",
+  "customer": "Marvellin Motorhandel",
+  "proposals": [
+    {
+      "id": "run-mvmmb8xb0yn-p1",
+      "orderId": "ord-00322",
+      "action": "handover_to_person",
+      "title": "Call Marvellin Motorhandel for their service decision on the stopped Bentley",
+      "rationale": "The car is stopped safely after a red warning. Only the owner's service contact can choose between roadside help, collection or safe storage, and the shift lead asked for a customer call. The recovery decision is due at 11:15 Berlin time.",
+      "changes": [
+        {
+          "label": "Recovery decision",
+          "before": "Waiting for the customer",
+          "after": "Customer's service instruction recorded (roadside help, collection or storage) with who is collecting and when"
+        },
+        {
+          "label": "Delivery promise (today 12:00–16:00 Hamburg time)",
+          "before": "Unchanged",
+          "after": "Unchanged for now; replan separately once the recovery plan is known"
+        }
+      ],
+      "draftMessage": {
+        "to": "Marvellin Motorhandel (service contact)",
+        "channel": "phone",
+        "body": "Call brief: The Bentley Continental GT on CD-420322 (Munich to Hamburg) showed a red dashboard warning and lost some acceleration. The driver stopped at about 10:04 Berlin time and is safe at a motorway service-area car park heading north, with the engine off. The exact service area is not confirmed yet; the driver is sending a location pin and a dashboard photo in the driver chat. Nobody has cleared onward driving. Ask: 1) Roadside help, collection by tow truck, or storage? 2) Who will come (company, name, phone) and roughly when? 3) Can the driver hand over the keys to that person, and what proof of identity should the driver check? 4) Do they want to see the dashboard photo first? Don't promise a new delivery time on this call; the delivery window today (12:00–16:00 Hamburg time) will be replanned after this."
+      },
+      "evidence": [],
+      "status": "executed",
+      "createdAt": "2026-10-24T16:33:50.984Z",
+      "createdBy": "road-agent",
+      "whatHappensNext": "A coordinator calls the customer's service contact with this brief, using the driver's location pin and photo if they have arrived.",
+      "whatHappensAfter": "The coordinator has recorded the service decision. The driver is told who is coming and keeps the car until that named person arrives. Then the driver's onward plan and the delivery promise are replanned in a separate step.",
+      "decision": {
+        "verdict": "approve",
+        "decidedBy": "You",
+        "decidedAt": "2026-10-24T16:34:19.754Z",
+        "note": "Their own roadside service (Marvellin Service) comes within 2 hours; the car goes to their Munich workshop."
+      }
+    }
+  ],
+  "facts": [
+    {
+      "id": "run-mvmmb8xb0yn-f1",
+      "text": "The driver says they are safe and the Bentley is parked at a motorway service-area car park, heading north to Hamburg, engine off. They will not hand it over until Bahn says who is collecting. They have not given the service-area name yet and will send it with a live pin.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "driver",
+          "label": "Driver phone call",
+          "actorName": "Kasper Kovelund",
+          "at": "2026-10-21T09:00:00Z",
+          "recordId": "sim-mvmmblxy"
+        }
+      ]
+    },
+    {
+      "id": "run-mvmmb8xb0yn-f2",
+      "text": "We don't know exactly where the car is. The last app position is 4 hours old (07:00 Berlin time, about 233 km from Hamburg), from before the stop. The driver hasn't sent a location pin yet.",
+      "strength": "unknown",
+      "sources": [
+        {
+          "kind": "system",
+          "label": "Driver-app tracking",
+          "at": "2026-10-21T05:00:00Z",
+          "table": "tracking",
+          "recordId": "track-x4ec652df41547497"
+        }
+      ]
+    },
+    {
+      "id": "run-mvmmb8xb0yn-f3",
+      "text": "The promised delivery window is today 12:00–16:00 Hamburg time. With the car stopped and no recovery plan, it will very likely be missed. The customer was told at 10:49 Berlin time that we will update the estimate once the recovery plan is confirmed.",
+      "strength": "estimate",
+      "sources": [
+        {
+          "kind": "customer",
+          "label": "Delivery promise",
+          "at": "2026-10-21T09:00:00Z",
+          "recordId": "win-x7c8722a53360a2ad"
+        }
+      ]
+    },
+    {
+      "id": "run-mvmmb8xb0yn-f4",
+      "text": "The customer, Marvellin Motorhandel, asked us to keep the car stopped. They are checking with their service contact whether it needs roadside help or collection. No decision from them yet.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "customer",
+          "label": "Customer email",
+          "actorName": "Marvellin Motorhandel",
+          "at": "2026-10-21T08:40:00Z",
+          "recordId": "msg-x61cd4aae96d91cff"
+        }
+      ]
+    }
+  ],
+  "model": "anthropic/claude-opus-5.5",
+  "usage": {
+    "inputTokens": 39292,
+    "outputTokens": 3143
+  },
+  "outcome": "facts_line_up",
+  "headline": "The Bentley is stopped safely after a red warning. Call the customer for their roadside-help or collection decision before 11:15 Berlin time.",
+  "summary": "The driver is safe and the car is parked at a northbound service area with the engine off, but we don't have the exact location yet. A pin and dashboard photo are on their way in the driver chat. The customer's service decision is still open, and today's 12:00–16:00 Hamburg delivery window will very likely be missed. Replan it after recovery is agreed.",
+  "agentDid": "Read the order, messages, issues, tracking and travel, phoned the driver, noted 4 facts and proposed a customer call.",
+  "urgency": "now",
+  "decideBy": "2026-10-21T09:15:00.000Z"
+}

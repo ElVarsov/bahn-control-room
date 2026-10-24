@@ -11,6 +11,12 @@ const TOOL_WORDS: Record<string, string> = {
   search_hotels: "Searched hotels",
   search_trains: "Searched trains",
   search_drivers: "Looked for nearby drivers",
+  read_open_issues: "Checked alerts, incidents and open work",
+  read_travel: "Checked booked travel and quotes",
+  book_travel: "Booked, after your approval",
+  change_date: "Changed the date, after your approval",
+  approve_cost: "Recorded the approved cost",
+  resolve_alert: "Resolved the alert, after your approval",
 }
 
 function toolWords(tool: string): string {

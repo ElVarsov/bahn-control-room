@@ -1,8 +1,10 @@
 import type { Metadata } from "next"
 import Link from "next/link"
 import { redirect } from "next/navigation"
+import { latestRunFor } from "@/lib/agent/runs"
 import { getCase, OPS_ZONE, SNAPSHOT_AT } from "@/lib/present/source"
 import { AppFrame } from "../../components/app-frame"
+import { AgentControl } from "../../components/case/agent-control"
 import { AgentWork } from "../../components/case/agent-work"
 import { DecisionPanel } from "../../components/case/decision-panel"
 import { DriverReportCard } from "../../components/case/driver-report-card"
@@ -27,6 +29,8 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
   const found = await getCase(id)
   if (!found) redirect(`/orders/${encodeURIComponent(id)}/record`)
   const { view, item, full } = found
+  const run = latestRunFor(id)
+  const running = run?.run.state === "working"
   const reason = item?.reason ? REASON[item.reason] : null
   const tone = item ? URGENCY_TONE[item.urgency] : "neutral"
 
@@ -52,6 +56,7 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
           </div>
           <p className={`story-headline tone-${tone} case-headline`}>{view.headline}</p>
           {item?.why && item.why !== view.headline && item.reason !== "driver_report" && <p className="case-why">{item.why}</p>}
+          <AgentControl orderId={id} running={running} hasRun={!!run} primary={!full && view.proposals.length === 0} />
         </header>
 
         <div className="case-grid">
@@ -64,8 +69,8 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
                   <p className="decision-eyebrow">{reason?.label ?? "Needs a person"}</p>
                   <h2 className="decision-title">{item.headline}</h2>
                   {item.agentDid && <p className="decision-rationale"><Icon name="bot" size={14} /> {item.agentDid}</p>}
-                  <p className="decision-note">The agent has not written up a full proposal for this order yet. Open the full record to work on it by hand.</p>
-                  <Link className="btn btn-primary" href={`/orders/${encodeURIComponent(id)}/record`}>Open the full record</Link>
+                  <p className="decision-note">The agent has not written up a proposal for this order yet. Ask it to work on it above, or open the full record to work by hand.</p>
+                  <Link className="btn btn-secondary" href={`/orders/${encodeURIComponent(id)}/record`}>Open the full record</Link>
                 </section>
               )}
 

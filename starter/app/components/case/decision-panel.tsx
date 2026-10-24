@@ -1,10 +1,18 @@
 "use client"
 
+import { useRouter } from "next/navigation"
 import { useState } from "react"
 import type { Change, Decision, Proposal } from "@/lib/contracts"
 import { Icon } from "../icons"
 
 type Mode = "idle" | "editing" | "instructing" | "logging"
+
+const CLOSED_STATUS: Record<string, string> = {
+  superseded: "replaced by a newer agent run",
+  executed: "approved and carried out",
+  rejected: "rejected",
+  failed: "failed",
+}
 
 const WHO = "You" // until there is sign-in, the person at the screen
 
@@ -23,14 +31,17 @@ async function sendDecision(proposalId: string, decision: Decision): Promise<"se
 
 export function DecisionPanel({ proposals }: { proposals: Proposal[] }) {
   const open = proposals.filter((proposal) => proposal.status === "pending")
-  const closed = proposals.filter((proposal) => proposal.status !== "pending")
+  // The most recent decision stays visible as a confirmation; older ones go to the history.
+  const lastDecided = [...proposals].reverse().find((proposal) => proposal.status !== "pending" && proposal.decision)
+  const closed = proposals.filter((proposal) => proposal.status !== "pending" && proposal !== lastDecided)
   return (
     <>
       {open.map((proposal) => <ProposalCard key={proposal.id} proposal={proposal} />)}
+      {lastDecided?.decision && <DecidedCard proposal={lastDecided} decision={lastDecided.decision} delivery="sent" />}
       {closed.length > 0 && (
         <details className="decision-history">
           <summary><Icon name="chevron" size={12} /> Earlier proposals on this order ({closed.length})</summary>
-          {closed.map((proposal) => <p key={proposal.id}>{proposal.title} · {proposal.status.replace(/_/g, " ")}</p>)}
+          {closed.map((proposal) => <p key={proposal.id}>{proposal.title} · {CLOSED_STATUS[proposal.status] ?? proposal.status.replace(/_/g, " ")}</p>)}
         </details>
       )}
     </>
@@ -45,6 +56,7 @@ function ProposalCard({ proposal }: { proposal: Proposal }) {
   const [note, setNote] = useState("")
   const [decided, setDecided] = useState<{ decision: Decision; delivery: "sent" | "local" } | null>(null)
   const [busy, setBusy] = useState(false)
+  const router = useRouter()
 
   const decide = async (verdict: Decision["verdict"], extra: Partial<Decision> = {}) => {
     setBusy(true)
@@ -52,6 +64,8 @@ function ProposalCard({ proposal }: { proposal: Proposal }) {
     const delivery = await sendDecision(proposal.id, decision)
     setDecided({ decision, delivery })
     setBusy(false)
+    // The agent carried it out (and may have started a follow-up run): show the new state.
+    if (delivery === "sent") router.refresh()
   }
 
   if (decided) return <DecidedCard proposal={proposal} decision={decided.decision} delivery={decided.delivery} onUndo={() => { setDecided(null); setMode("idle") }} />
@@ -155,7 +169,7 @@ const VERDICT: Record<Decision["verdict"], { title: string; tone: string }> = {
   reject: { title: "Rejected", tone: "neutral" },
 }
 
-function DecidedCard({ proposal, decision, delivery, onUndo }: { proposal: Proposal; decision: Decision; delivery: "sent" | "local"; onUndo: () => void }) {
+function DecidedCard({ proposal, decision, delivery, onUndo }: { proposal: Proposal; decision: Decision; delivery: "sent" | "local"; onUndo?: () => void }) {
   const handover = proposal.action === "handover_to_person"
   const verdict = decision.verdict === "approve" && handover ? { title: "Answer logged", tone: "ok" } : VERDICT[decision.verdict]
   const next = decision.verdict === "reject"
@@ -165,14 +179,16 @@ function DecidedCard({ proposal, decision, delivery, onUndo }: { proposal: Propo
       : proposal.whatHappensAfter ?? proposal.whatHappensNext
   return (
     <section className={`decision decided tone-${verdict.tone}`} aria-live="polite">
-      <p className="decision-eyebrow"><Icon name="check" size={13} /> {verdict.title} by {decision.decidedBy}, just now</p>
+      <p className="decision-eyebrow"><Icon name="check" size={13} /> {verdict.title} by {decision.decidedBy}</p>
       <h2 className="decision-title">{proposal.title}</h2>
       {decision.note && <p className="decided-note">“{decision.note}”</p>}
       <p className="next-step"><b>What happens next.</b> {next}</p>
-      {delivery === "local" && <p className="decided-local">Demo mode: the agent service is not connected yet, so this decision is only kept on this page.</p>}
-      <div className="decision-actions">
-        <button type="button" className="btn btn-ghost" onClick={onUndo}>Undo</button>
-      </div>
+      {delivery === "local" && <p className="decided-local">Demo mode: this proposal is sample data, so the decision is only kept on this page.</p>}
+      {delivery === "local" && onUndo && (
+        <div className="decision-actions">
+          <button type="button" className="btn btn-ghost" onClick={onUndo}>Undo</button>
+        </div>
+      )}
     </section>
   )
 }

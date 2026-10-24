@@ -4,7 +4,9 @@
 // Pages never read either directly.
 
 import "server-only"
-import type { CaseView, Fact, QueueItem, QueueResponse, TimelineEntry } from "@/lib/contracts"
+import type { CaseView, Fact, QueueItem, QueueResponse, SourceKind, TimelineEntry } from "@/lib/contracts"
+import { actorName, forOrder } from "@/lib/agent/dataset"
+import { allRuns, latestRunFor, type RunRecord } from "@/lib/agent/runs"
 import { allCalls } from "@/lib/voice"
 import { driverContext } from "@/lib/voice/driver-context"
 import queueFixture from "@/lib/contracts/fixtures/queue.json"
@@ -21,12 +23,93 @@ const useFixtures = process.env.USE_FIXTURES !== "0"
 
 export async function getQueue(): Promise<QueueResponse> {
   const queue: QueueResponse = useFixtures ? (queueFixture as QueueResponse) : worldStore.getQueue()
-  // Live phone calls run in this process, so they join the queue as they happen.
+  // Live phone calls and agent runs happen in this process, so they join the queue as
+  // they happen. An order the agent has worked replaces its sample entry.
   const calls = callItems()
+  const agent = agentItems()
+  const keep = (item: QueueItem) => !agent.orders.has(item.orderId)
   return {
     ...queue,
-    needsPerson: [...calls.needsPerson, ...queue.needsPerson],
-    agentsWorking: [...calls.working, ...(queue.agentsWorking ?? [])],
+    needsPerson: [...calls.needsPerson, ...agent.needsPerson, ...queue.needsPerson.filter(keep)],
+    agentsWorking: [...calls.working, ...agent.working, ...(queue.agentsWorking ?? []).filter(keep)],
+    quiet: { ...queue.quiet, count: queue.quiet.count + agent.settled },
+  }
+}
+
+// --- agent runs ------------------------------------------------------------------
+
+function agentItems(): { needsPerson: QueueItem[]; working: QueueItem[]; orders: Set<string>; settled: number } {
+  const needsPerson: QueueItem[] = []
+  const working: QueueItem[] = []
+  const orders = new Set<string>()
+  let settled = 0
+  const latest = new Map<string, RunRecord>()
+  for (const record of allRuns()) latest.set(record.orderId, record)
+  for (const record of latest.values()) {
+    orders.add(record.orderId)
+    const base = {
+      id: record.run.id, orderId: record.orderId, orderReference: record.orderReference,
+      car: record.car, route: record.route, customer: record.customer, updatedAt: SNAPSHOT_AT,
+    }
+    const state = record.run.state
+    if (state === "working") {
+      const last = [...record.run.steps].reverse().find((step) => step.kind === "tool_result" || step.kind === "call")
+      working.push({ ...base, headline: "The agent is working on this order", why: (last && "summary" in last ? last.summary : undefined) ?? "Reading the records.", urgency: "watch", agentState: "working" })
+    } else if (state === "needs_person") {
+      const pending = record.proposals.filter((p) => p.status === "pending")
+      needsPerson.push({
+        ...base,
+        reason: pending.some((p) => p.action !== "handover_to_person") ? "decision" : "handover",
+        headline: record.headline ?? pending[0]?.title ?? "The agent needs a person",
+        why: record.summary ?? "",
+        agentDid: record.agentDid,
+        urgency: record.urgency && record.urgency !== "watch" ? record.urgency : "today",
+        decideBy: record.decideBy,
+        proposalId: pending[0]?.id,
+        agentState: "needs_person",
+      })
+    } else if (state === "waiting_reply") {
+      working.push({ ...base, headline: record.headline ?? "Waiting for a reply", why: record.summary ?? "", urgency: "watch", agentState: "waiting_reply" })
+    } else {
+      settled += 1
+    }
+  }
+  return { needsPerson, working, orders, settled }
+}
+
+const AUTHOR_KIND: Record<string, SourceKind> = { driver: "driver", customer: "customer", operator: "operator", agent: "agent", site_contact: "site", site: "site" }
+
+/** The order's real conversation from the dataset, for the case timeline. */
+function datasetTimeline(orderId: string): TimelineEntry[] {
+  return forOrder("messages", orderId).map((m) => ({
+    id: String(m.id),
+    at: String(m.authored_at),
+    actor: { kind: AUTHOR_KIND[String(m.author_type)] ?? "system", name: actorName(m.author_type, m.author_id) },
+    channel: String(m.channel),
+    visibility: m.visibility === "INTERNAL" ? "internal" : "public",
+    text: String(m.body),
+    recordId: String(m.id),
+  }))
+}
+
+function agentCase(orderId: string, record: RunRecord): CaseView {
+  const runs = allRuns().filter((r) => r.orderId === orderId)
+  const outgoing: TimelineEntry[] = runs.flatMap((r) => r.run.steps.flatMap((step, index) => step.kind === "message_out" ? [{
+    id: `${r.run.id}-m${index}`,
+    at: SNAPSHOT_AT,
+    actor: { kind: "agent" as const, name: "Road agent" },
+    channel: step.channel,
+    visibility: "public" as const,
+    text: `To ${step.toName}: ${step.body}`,
+  }] : []))
+  return {
+    orderId,
+    orderReference: record.orderReference,
+    headline: record.headline ?? record.summary ?? "The agent is working on this order.",
+    facts: [...runs].reverse().flatMap((r) => r.facts),
+    proposals: runs.flatMap((r) => r.proposals),
+    runs: runs.map((r) => r.run),
+    timeline: [...datasetTimeline(orderId), ...outgoing],
   }
 }
 
@@ -99,7 +182,8 @@ export async function getCase(orderId: string): Promise<{ view: CaseView; item: 
   const queue = await getQueue()
   const item = [...queue.needsPerson, ...(queue.agentsWorking ?? [])].find((entry) => entry.orderId === orderId) ?? null
 
-  const full: CaseView | null = useFixtures ? FIXTURE_CASES[orderId] ?? null : worldStore.getCase(orderId)
+  const run = latestRunFor(orderId)
+  const full: CaseView | null = run ? agentCase(orderId, run) : useFixtures ? FIXTURE_CASES[orderId] ?? null : worldStore.getCase(orderId)
   const live = callFacts(orderId)
   if (full) return { view: { ...full, facts: [...live.facts, ...full.facts], timeline: [...full.timeline, ...live.timeline] }, item, full: true }
   if (!item) return null
