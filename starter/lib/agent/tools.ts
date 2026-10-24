@@ -3,7 +3,10 @@
 // Every result carries record ids so facts can point back to their source.
 
 import type Anthropic from "@anthropic-ai/sdk"
+import { readFileSync, existsSync } from "node:fs"
+import path from "node:path"
 import { SNAPSHOT_AT, actorName, byId, findOrder, forOrder, minutesBeforeSnapshot, rows, type Row } from "./dataset"
+import { evaluateCascadeRisk } from "../cascade-risk"
 
 type Tool = Anthropic.Beta.BetaTool
 
@@ -13,6 +16,45 @@ export const TOOLS: Tool[] = [
   {
     name: "read_order",
     description: "Free. The order: customer, car, route, stage, pickup slot, delivery promise (with time zone and who set it), assigned driver, endpoint contacts and access status.",
+    input_schema: { type: "object", properties: orderParam, required: ["order"], additionalProperties: false },
+  },
+  {
+    name: "inspect_attachments",
+    description: "Free. Inspect uploaded photos, signed CMRs, receipts, and release paperwork in the attachments manifest for this order.",
+    input_schema: { type: "object", properties: orderParam, required: ["order"], additionalProperties: false },
+  },
+  {
+    name: "evaluate_and_rank_options",
+    description: "Free. Calculate Risk-Adjusted Expected Total Cost (Upfront Delta + [Cascade Risk % × Downstream Cost at Risk]) for candidate routing and delay actions. Recommends lowest total cost option.",
+    input_schema: {
+      type: "object",
+      properties: {
+        order: orderParam.order,
+        candidates: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              id: { type: "string" },
+              title: { type: "string" },
+              action_summary: { type: "string" },
+              upfront_delta_eur: { type: "number" },
+              cascade_risk_percent: { type: "number", description: "0-100" },
+              buffer_added_minutes: { type: "number" },
+              what_happens_next: { type: "string" },
+            },
+            required: ["id", "title", "action_summary", "upfront_delta_eur", "cascade_risk_percent", "what_happens_next"],
+            additionalProperties: false,
+          },
+        },
+      },
+      required: ["order", "candidates"],
+      additionalProperties: false,
+    },
+  },
+  {
+    name: "get_order_full_context",
+    description: "Free. Computes the complete Explainable Cascade Risk assessment: critical slack buffer, handoff chain, itemized cost at risk, and provenance citations.",
     input_schema: { type: "object", properties: orderParam, required: ["order"], additionalProperties: false },
   },
   {
@@ -293,4 +335,91 @@ export function resolveOrder(ref: string): Row {
   const order = findOrder(ref)
   if (!order) throw new Error(`No order matches "${ref}".`)
   return order
+}
+
+export function inspectAttachments(order: Row) {
+  const manifestPath = path.resolve(process.cwd(), "../attachments/manifest.json")
+  let list: Array<{ id: string; order_id: string; kind: string; file_name: string; status: string; evidence_note?: string }> = []
+  if (existsSync(manifestPath)) {
+    try {
+      const all = JSON.parse(readFileSync(manifestPath, "utf8"))
+      list = all.filter((a: any) => a.order_id === order.id)
+    } catch {}
+  }
+  const docs = forOrder("documents", order.id)
+  return {
+    order_id: order.id,
+    reference: order.reference,
+    attachments_count: list.length,
+    attachments: list.map((a) => ({
+      id: a.id,
+      kind: a.kind,
+      file_name: a.file_name,
+      status: a.status,
+      evidence_note: a.evidence_note,
+    })),
+    documents: docs.map((d) => ({
+      id: d.id,
+      kind: d.kind,
+      status: d.status,
+      file_name: d.file_name,
+    })),
+  }
+}
+
+export function evaluateAndRankOptions(
+  order: Row,
+  candidates: Array<{
+    id: string
+    title: string
+    action_summary: string
+    upfront_delta_eur: number
+    cascade_risk_percent: number
+    buffer_added_minutes: number
+    what_happens_next: string
+  }>
+) {
+  const assessment = evaluateCascadeRisk(order.id)
+  const costAtRisk = assessment?.cascadeCostAtRiskEur ?? 350
+
+  const evaluated = candidates.map((opt) => {
+    const overrun = (opt.cascade_risk_percent / 100) * costAtRisk
+    const total = opt.upfront_delta_eur + overrun
+    return {
+      id: opt.id,
+      title: opt.title,
+      action_summary: opt.action_summary,
+      upfront_delta_eur: opt.upfront_delta_eur,
+      cascade_risk_percent: opt.cascade_risk_percent,
+      cascade_cost_at_risk_eur: costAtRisk,
+      expected_domino_overrun_eur: Math.round(overrun * 100) / 100,
+      expected_total_cost_eur: Math.round(total * 100) / 100,
+      buffer_added_minutes: opt.buffer_added_minutes,
+      what_happens_next: opt.what_happens_next,
+    }
+  })
+
+  // Sort lowest expected total cost first
+  evaluated.sort((a, b) => a.expected_total_cost_eur - b.expected_total_cost_eur)
+  const recommended = evaluated[0]
+
+  return {
+    order_id: order.id,
+    order_reference: order.reference,
+    cascade_cost_at_risk_eur: costAtRisk,
+    recommended_option_id: recommended?.id,
+    ranked_options: evaluated.map((opt, i) => ({
+      ...opt,
+      is_recommended: i === 0,
+      rejection_reason:
+        i > 0
+          ? `Higher risk-adjusted expected total cost (€${opt.expected_total_cost_eur} vs €${recommended?.expected_total_cost_eur}) due to ${opt.cascade_risk_percent}% cascade risk.`
+          : undefined,
+    })),
+    recommendation_rationale: `Recommends '${recommended?.title}' with lowest Expected Total Cost of €${recommended?.expected_total_cost_eur}. Avoids ${costAtRisk}€ cascade domino overrun.`,
+  }
+}
+
+export function getOrderFullContext(order: Row) {
+  return evaluateCascadeRisk(order.id)
 }

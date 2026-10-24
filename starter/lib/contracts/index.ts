@@ -2,6 +2,8 @@
 // Both lanes code against these types and the fixtures next to this file.
 // Change this file only through a PR that both of us approve.
 
+import type { OrderCascadeAssessment } from "../cascade-risk"
+
 export type Iso = string // ISO 8601 UTC
 
 // ---------------------------------------------------------------------------
@@ -126,6 +128,11 @@ export type QueueResponse = {
   /** Work agents are doing right now without a person: visible, but out of the way. */
   agentsWorking?: QueueItem[]
   quiet: { count: number; sample: { orderId: string; orderReference: string; car: string; stage: string }[] }
+  cascadeRisks?: {
+    needsDecisionNow: OrderCascadeAssessment[]
+    willBreakToday: OrderCascadeAssessment[]
+    onTrackCount: number
+  }
 }
 
 // ---------------------------------------------------------------------------
@@ -217,6 +224,7 @@ export type CaseView = {
   proposals: Proposal[]
   runs: AgentRun[]
   timeline: TimelineEntry[]
+  cascadeAssessment?: OrderCascadeAssessment | null
 }
 
 export type TimelineEntry = {

@@ -6,6 +6,7 @@ import { getCase, OPS_ZONE, SNAPSHOT_AT } from "@/lib/present/source"
 import { AppFrame } from "../../components/app-frame"
 import { AgentControl } from "../../components/case/agent-control"
 import { AgentWork } from "../../components/case/agent-work"
+import { CascadeWorkspace } from "../../components/case/cascade-workspace"
 import { DecisionPanel } from "../../components/case/decision-panel"
 import { DriverReportCard } from "../../components/case/driver-report-card"
 import { FactsPanel } from "../../components/case/facts-panel"
@@ -99,6 +100,10 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
 
         <div className="case-grid">
           <div className="case-main">
+            {view.cascadeAssessment && view.cascadeAssessment.triageState !== "ON_TRACK" && (
+              <CascadeWorkspace assessment={view.cascadeAssessment} orderId={id} />
+            )}
+
             {item?.reason === "driver_report" && <DriverReportCard item={item} />}
             {view.proposals.length > 0
               ? <DecisionPanel proposals={view.proposals} />

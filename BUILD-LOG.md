@@ -96,3 +96,34 @@ This violated the primary rule of the hackathon:
 - **Antigravity Agentic Assistant / Gemini 3.8 Flash**: Core reasoning, full-stack implementation, contract generation, and evaluation scripting.
 - **Claude Sonnet / Opus 5.5**: Contract schema design and voice call prompt loop design.
 - **Node.js 24 + TypeScript + Next.js App Router**: Zero-dependency runtime execution with in-memory dataset provider.
+
+
+---
+
+## Moment 4: The Explainable Cascade Risk Engine & Risk-Adjusted Proposals
+
+### The Breakthrough Differentiation
+Most hackathon solutions are purely reactive: an alert turns red when a ferry is already missed or a driver is already locked out of a seller's gate. 
+
+We built the **Explainable Cascade Risk Engine** (`starter/lib/cascade-risk.ts`) and **Risk-Avoiding Proposal Tooling** (`starter/lib/agent/tools.ts`) that anticipate chain reactions before they occur:
+
+1. **Four Deterministic Predictive Signals**:
+   - **Critical Slack Erosion**: Measures buffer minutes between driver arrival and seller closing hours / ferry check-in cutoffs. Flags any buffer under 60 minutes or negative slack.
+   - **Pickup Readiness & Paperwork Friction**: Cross-checks pickup deadlines within 24h against missing or unverified documents (`Vollmacht`, release codes, seller commercial holds) and unverified driver medical readiness.
+   - **Entity Contradictions**: Detects contradictions between database address fields, notes, and signed contract attachments (e.g. `CD-420384` Seinäjoki vs Tampere Hub).
+   - **Single-Point-of-Failure Chokepoints**: Differentiates low-frequency Baltic RoRo ferries (where missing a ship causes a 24–36h delay + hotel) from high-frequency shuttle corridors.
+
+2. **Risk-Adjusted Expected Total Cost Formula**:
+   $$\text{Expected Total Cost} = \text{Upfront Cost Delta} + (\text{Cascade Risk \%} \times \text{Downstream Cost at Risk})$$
+   Instead of recommending a fragile zero-euro option (e.g., standard regional bus with 35m buffer before Friday seller closing, carrying a 68% risk of a €440 weekend lockout cascade), the agent recommends spending **+€45 upfront on an express taxi**, reducing cascade risk to 4% and achieving an Expected Total Cost of only **€62.60** (saving €236.60 in risk-adjusted expected loss).
+
+3. **Dashboard & Case Page Integration**:
+   - **Calm Summary Pill**: Hides 86 on-track orders (`86 orders on track — handled quietly by autonomous corridor agents`).
+   - **Two Prioritized Triage Queues**:
+     - `Needs Decision Now (N)`: Active exceptions requiring human approval.
+     - `Will Break Today (N)`: Predictive cascade warnings ranked strictly by `timeToPointOfNoReturnMinutes`.
+   - **The 4-Block Decision Workspace**:
+     - **Block 1: Handoff Chain & Slack Buffer Bar**: Horizontal step chain showing exact slack minutes, glowing amber/red on tight links, with clickable Provenance Pills opening source citations.
+     - **Block 2: What the Agent Already Checked**: Timestamped checklist of free lookups and cross-checks completed before human interruption.
+     - **Block 3: Cascade-Safe Decision Cards**: Selectable candidate cards comparing Upfront Cost vs. Cascade Risk Avoided with operator plain-English override.
+     - **Block 4: Execution Preview**: Downstream action preview with green `Auto-Executes` badges and amber `🔒 Customer Guardrail: Draft Queued for Sign-Off` badges.

@@ -37,6 +37,7 @@ export default async function NeedsYou() {
           snapshotAt={queue.snapshotAt}
           zone={OPS_ZONE}
           quietCount={queue.quiet.count}
+          cascadeRisks={queue.cascadeRisks}
         />
       </main>
     </AppFrame>
