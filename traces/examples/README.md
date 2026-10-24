@@ -1,9 +1,11 @@
-# Agent traces
+# Agent traces (examples)
 
-Every run of the road agent writes `run-<id>.json` here: the trigger, every tool call
+Every run of the road agent writes `traces/run-<id>.json`: the trigger, every tool call
 and result, the driver call, the facts it noted (with strength and source record), its
 proposals, the person's decision, what was carried out after approval, the model used
-and token counts.
+and token counts. Those live files are reloaded when the app restarts and are not
+committed, so a fresh clone starts with a clean queue. The four below are kept as
+examples and are never loaded into the app.
 
 Kept from the first build session (24 Oct, Opus 5.5 via OpenRouter, about $0.25 a run):
 

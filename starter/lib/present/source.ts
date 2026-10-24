@@ -31,7 +31,11 @@ export async function getQueue(): Promise<QueueResponse> {
   const keep = (item: QueueItem) => !agent.orders.has(item.orderId)
 
   // Journey Monitor forecasts for moving fleet
-  const accounted = new Set([...calls.needsPerson, ...calls.working, ...agent.needsPerson, ...agent.working].map((x) => x.orderId))
+  // One entry per order: a forecast never duplicates something already in the queue.
+  const accounted = new Set([
+    ...calls.needsPerson, ...calls.working, ...agent.needsPerson, ...agent.working,
+    ...queue.needsPerson.filter(keep), ...(queue.agentsWorking ?? []).filter(keep),
+  ].map((x) => x.orderId))
   const forecasts = journeyForecastItems(accounted)
 
   return {
@@ -61,6 +65,7 @@ function journeyForecastItems(existingOrders: Set<string>): { needsPerson: Queue
       urgency: f.urgency,
       updatedAt: SNAPSHOT_AT,
       reason: "forecast",
+      agentDid: "The journey monitor compared the latest driver-app data with the delivery promise and any booked ferry.",
       agentState: "working",
     }
     if (f.needsIntervention) {

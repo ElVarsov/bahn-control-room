@@ -1,114 +1,163 @@
 # Bahn Car Delivery Control Room
 
-> **Prompt Operations Hackathon (24–25 October 2026)**  
-> **Repository**: [ElVarsov/bahn-control-room](https://github.com/ElVarsov/bahn-control-room)  
-> **Team**: Ignacio (@ElVarsov) & Antoni (@AntoniKajrys)  
-> **Process & AI Story**: [`BUILD-LOG.md`](./BUILD-LOG.md) · [`starter/scripts/eval_agent.py`](./starter/scripts/eval_agent.py)
+Our entry for Bahn's challenge at the Prompt Operations Hackathon, 24–25 October 2026.
+Team: Ignacio ([@ElVarsov](https://github.com/ElVarsov)) and Antoni ([@AntoniKajrys](https://github.com/AntoniKajrys)).
+
+A control room where people and agents work together to get every car delivered.
+It opens on **only the orders that need a person**, each written as the decision to
+make. Behind it, a **road agent** (Claude, in a tool-use loop) reads the order, phones
+the driver when the records cannot answer, writes down what it found with the source
+of every fact, and brings a person one clear proposal. Nothing that changes a booking,
+a date, a cost or what a customer hears happens without a person's yes.
+
+Everything in the data is fictional (Bahn's packet: 100 orders, `dataset/`). The brief
+is in [`PARTICIPANT-BRIEF.md`](./PARTICIPANT-BRIEF.md).
 
 ---
 
-## 1. The Core Problem & Baseline Unit Economics
+## What is in it
 
-Bahn delivers **25,000 used cars per year** across Finland, Denmark, and Germany using a network of **1,500 freelance drivers** and an operations staff of **50 people** (~500 cars per ops specialist per year).
+### The control room (`starter/app`)
+- **Needs you (`/`)**: decisions grouped as *Right now / Today / Soon*, each with a
+  deadline ("in 15 min", "2 min overdue"), why it is here and what the agent already
+  did. Work the agents are doing alone sits in a calm *Agents are on it* list; the rest
+  is one line, *N orders running quietly*. Keys: `J`/`K` to move, `Enter` to open.
+- **Case page (`/orders/[id]`)**: the decision first (what changes, *now → after*, the
+  exact message a customer would get, *what happens next*), then *what the agent
+  already did* as a short story, *what we know* with every fact marked **Verified /
+  Reported / Estimate / Quote / Not known** and its source record, and *who said what*
+  with Bahn-only notes kept visibly apart. Approve, change, reject, or tell the agent
+  something else. **Ask the agent to work on this** starts the road agent on any order
+  and the page updates live while it works.
+- **All orders (`/board`)**, **Inbox**, **Customers / Drivers / Places**: the starter's
+  views, kept for depth.
+- **Autonomy dial (`/settings`)**: per action, *ask first / do and tell / do quietly*.
+  Bookings, dates, costs and customer messages default to *ask first*; customer
+  messages are locked there.
+- **Map (`/map`)**: an illustrative overview. The packet has no coordinates, so it does
+  not show tracked positions.
 
-When an unexpected variable breaks (a missed train, a sold-out Baltic ferry, or a seller requesting an unmentioned power of attorney), an ops specialist spends **45 minutes cross-referencing PDFs, emails, ferry timetables, and driver chats before making a €200 decision**.
+### The road agent (`starter/lib/agent`)
+A Claude tool-use loop for one order at a time:
+1. **Reads first**: order, conversation, open issues, tracking (with how old it is),
+   travel (bookings kept apart from quotes).
+2. **Asks only when needed**: `call_driver` rings the real driver phone if that driver's
+   app is open, otherwise a simulated driver answers from their own messages in the data.
+3. **Writes facts** with strength and source record.
+4. **Proposes, never acts**: bookings, date changes, costs, customer messages and calls
+   to customers become proposals for a person.
+5. **Stops** with a queue headline, urgency and deadline.
 
-### Baseline Unit Economics Model (Pitch Metrics)
-- **Ops Labor Payroll**: 50 staff × ~€55,000 fully loaded = **€2.75M/year** (~€110 in ops labor per delivered car).
-- **The "Dry Run" Cost (Failed Pickup)**: When a freelance driver flies to Germany, takes a regional train to a rural seller, and gets turned away because the car has a finance hold or missing power of attorney, Bahn absorbs **€350 to €500 per incident**.
-- **Ferry & Routing Domino Cost**: Missing a Baltic ferry (e.g. Travemünde–Helsinki or Puttgarden–Rødby) forces emergency spot-bookings, hotel accommodation, and extra driver day-rates: **€220 to €380 per delay**.
-- **Dealer Holding Cost (Customer Churn Risk)**: A €25,000 used car loses **€20 to €35/day** for the dealer in floorplan financing and depreciation. Protecting the 2-day delivery promise is why dealers pay Bahn a premium over 3-week truck carriers.
-- **Stipulated Annual Savings**: Our agentic control room prevents 80% of dry runs and automates rerouting legwork, saving **€345,000 to €510,000 annually** and freeing 2,000+ ops hours.
+After a decision: approve carries it out against a mock world (fictional booking
+references, a provider check first if an earlier attempt failed); reject changes
+nothing; instructions start a new run; a logged call answer starts a follow-up run.
+A newer run supersedes older open proposals. Every run is saved as a trace
+(`traces/run-<id>.json`, local only); four examples with notes are in
+[`traces/examples/`](./traces/examples/README.md).
 
----
+A **journey monitor** (`lib/agent/monitor.ts`) checks moving cars against their
+delivery promise and booked ferries and adds *forecasts* to the queue, always marked as
+estimates. **Driver call-ins** start an agent run too.
 
-## 2. Four Differentiated Agent Architectures
-
-| Concept | Core Agent Loop | Main Cost Driver Solved | Stipulated Annual Savings |
-|---|---|---|---|
-| **1. "Zero Dry Run" Pre-Flight Verifier** | Cross-examines order packets against seller site rules 24h before departure; halts non-refundable driver travel if papers/finance clearance are missing. | Wasted outbound flights, train tickets, and driver waiting day-rates on failed pickups. | **€437,500 / yr** |
-| **2. "Domino Rerouter" (On-the-Road)** | Detects transit delay signals, checks downstream ferry cutoffs, queries alternative routes and rest hotels, and computes priced recovery options. | Last-minute Baltic ferry rebookings, stranded drivers, and delayed customer handovers. | **€345,000 / yr** |
-| **3. "Silent Contradiction Hunter"** | Systematically cross-checks order delivery addresses, PDF attachments, and notes for hidden discrepancies (e.g. Seinäjoki vs Tampere custody). | Wrong-city deliveries and compound release stalls. | **€290,000 / yr** |
-| **4. "Door-to-Door Arbitrage" Travel Planner** | Constructs multi-modal positioning itineraries (flight + DB train + taxi + return ferry) with driver rest buffer scoring. | Overpriced ad-hoc travel bookings and missed connection chains. | **€510,000 / yr** |
-
----
-
-## 3. Control Room UI & Taste (Rubric Alignment)
-
-### Non-Negotiable 1: The "Needs You" Queue (Hide the Quiet 86%)
-Never open onto a table of 100 orders. The Control Room opens onto a calm status pill:
-```
-86 orders moving on schedule (handled by agents) · 14 orders need your call
-```
-Exceptions are strictly sorted by **Time-to-Point-of-No-Return** (e.g. *"Flight boards in 1h 45m — €380 at risk"* at the top).
-
-### Non-Negotiable 2: The "4-Block Decision Card" Layout
-Opening an exception presents a single, scannable briefing card with zero transcript clutter:
-1. **Block 1 · What Happened & Chain Impact**: Two plain sentences plus a visual **Downstream Domino Path** (`Flight Delayed → Misses 16:15 DB Train → Misses Seller 18:00 Closing → Travemünde Ferry at Risk`).
-2. **Block 2 · What the Agent Already Did (The Cheap Work)**: A checklist of free actions executed with timestamps (`Checked Vela Coast ferry timetable at 07:00 (sold out)`, `Verified driver hours: 9h rest required`, `Interviewed driver Camille Emberwick at 08:05`).
-3. **Block 3 · The Decision (Priced Options)**: Selectable comparison cards with **Cost Delta** and **Time Delta** (e.g. Option 1: 24 Oct 12:00 Sailing + Lübeck Hotel `+€412`, `+24h delay` vs Option 2: Reroute via Denmark bridges `+€560`, `+6h delay`), plus an inline text box to tweak with natural language.
-4. **Block 4 · What Happens Next When You Click Approve**: A dry-run action preview displaying the exact actions that will fire:
-   ```
-   1. Rebook sailing on Vela Coast 24 Oct 12:00 (€240)
-   2. Reserve Baltic Harbor Hotel Lübeck (€172)
-   3. Transmit ticket and hotel voucher to driver Camille Emberwick via app
-   4. Stage dealer delay notification for your sign-off
-   ```
-
-### Non-Negotiable 3: Inline Source Provenance Pills
-Every fact displayed on screen has an interactive provenance badge (`[Vela Coast Lines quote]`, `[Driver chat]`, `[Seller Phone]`). Clicking any badge opens the **Evidence Inspector** drawer showing the exact source record, author, and timestamp.
-
-### Non-Negotiable 4: Strict Guardrail Visibility ("Customer Lock")
-Under hackathon rules: **The agent never contacts a customer on its own.**
-- Actions touching drivers and pickup yards carry a green badge: `● Auto-Executable: Driver & Yard`.
-- Actions touching dealers carry an amber lock badge: `🔒 Customer Lock: Human Send Required`. Customer emails are held in draft mode until an operator clicks Send.
+### Phone calls (`starter/lib/voice`, `/driver`)
+- **The agent phones the driver**: the driver page on a phone rings full-screen; the
+  in-call agent asks its questions by voice (browser speech, free) and hands back a
+  transcript and facts marked *reported by the driver*.
+- **The driver calls Bahn**: a *Call Bahn* button; the agent answers, works out which of
+  the driver's jobs it is about, and the report lands in *Needs you* within seconds.
+- If the AI is unavailable, a **scripted backup** takes the call and is labelled as
+  scripted everywhere (phone, transcript, queue, trace). Details: [`docs/VOICE.md`](./docs/VOICE.md).
 
 ---
 
-## 4. Driver Companion & Live Voice Calling
+## Run it from a fresh clone
 
-For field communication and demo realism:
-- **Driver Mobile Companion (`/driver?d=drv-140`)**: A mobile web interface for freelance drivers supporting safe stop reporting and dashboard photo uploads.
-- **In-Browser Voice Calling**: Triggered on safety stops (e.g. CD-420322 Bentley). Features ringtone audio synthesis, speech-to-text (Web Speech API), and text-to-speech agent responses.
+You need **Node.js 24+**. No database is needed for the control room, the agent or calls.
 
----
-
-## 5. Quickstart: Running from Fresh Clone
-
-The project requires **Node.js 24+** and runs completely out-of-the-box with zero database setup required (features an automatic in-memory dataset provider that indexes `dataset/data/*.jsonl` in 5ms).
-
-```bash
-# 1. Clone the repository
+```sh
 git clone https://github.com/ElVarsov/bahn-control-room.git
-cd bahn-control-room
-
-# 2. Enter starter and install dependencies
-cd starter
+cd bahn-control-room/starter
 npm ci
+cp .env.example .env
+```
 
-# 3. Start the Control Room
+Put a Claude key in `starter/.env`. Either an Anthropic key:
+
+```
+ANTHROPIC_API_KEY=sk-ant-...
+```
+
+or OpenRouter (what we used):
+
+```
+ANTHROPIC_API_KEY=
+ANTHROPIC_BASE_URL=https://openrouter.ai/api
+ANTHROPIC_AUTH_TOKEN=sk-or-...
+AGENT_MODEL=anthropic/claude-opus-5.5
+VOICE_MODEL=anthropic/claude-haiku-5.5
+```
+
+Then start it and open http://localhost:3000:
+
+```sh
 npm run dev
 ```
 
-Open **`http://localhost:3000`** in your browser.
+Without a key the pages work, the agent cannot run, and calls use the labelled
+scripted backup. A road-agent run costs about $0.25 on Opus 5.5.
 
-### Key Routes
-- **`/`**: The Operations Control Room ("Needs You" Decision Queue)
-- **`/orders/ord-00299`**: CD-420299 Case Page (Domino Rerouting on sold out Travemünde ferry)
-- **`/orders/ord-00322`**: CD-420322 Case Page (Bentley Safety Stop & Live Voice Call)
-- **`/orders/ord-00458`**: CD-420458 Case Page (Pre-Flight Verifier preventing €380 dry run)
-- **`/settings`**: Autonomy Dial (Agent trust configuration & customer lock)
-- **`/driver?d=drv-140`**: Freelance Driver Mobile Companion
-- **`/board`**: Scale View (100 orders across 7 operational lanes)
+> **Antivirus HTTPS scanning** (we hit this with Norton): if calls to Claude fail with a
+> certificate error, start the server with `NODE_USE_SYSTEM_CA=1`
+> (PowerShell: `$env:NODE_USE_SYSTEM_CA = '1'; npm run dev`).
 
-### Automated Test Harnesses & Archaeology
-```bash
-# Run the 10-order agent guardrail harness
-python starter/scripts/eval_agent.py
+### Try the agent
+- Open **`/orders/ord-00322`** (Bentley stopped with a red warning light) or
+  **`/orders/ord-00299`** (ferry sold out) and press **Ask the agent to work on this**.
+- Or from a terminal while the app runs: `npm run agent -- CD-420322`
+  (`--phone` always rings the phone, `--simulated` never does).
 
-# Run the dataset anomaly & contradiction detector
-python starter/scripts/archaeology.py
+### Take a call on your phone
+The microphone needs HTTPS, so open the app on the phone through a free tunnel:
 
-# Verify packet integrity (100 orders, 4366 records, 58 attachments)
-python check_packet.py
+```sh
+cloudflared tunnel --url http://localhost:3000
 ```
+
+On the phone open `https://<tunnel>/driver?d=drv-319` (the Bentley's driver) and tap
+**Go on shift**, then run the agent on CD-420322: the phone rings. Or tap **Call Bahn**
+on the phone to report something. Android Chrome works best; allow the microphone.
+
+### Optional: the starter's database views
+The *full order record* (`/orders/[id]/record`) and its attachments read the starter's
+Postgres and attachment store; everything else works without them. To use them, start Docker and follow [`starter/README.md`](./starter/README.md)
+(`docker compose up -d --wait`, `npm run db:push`, `npm run db:seed`, `npm run attachments:seed`).
+
+### Settings in `starter/.env`
+| Setting | Meaning |
+|---|---|
+| `USE_FIXTURES` | `1` (default): the queue starts from hand-checked sample cases, all matching the dataset. `0`: read the agent store. Agent runs and calls always join live. |
+| `AGENT_MODEL`, `VOICE_MODEL` | Models for the road agent and the in-call agent. |
+| `NTFY_TOPIC`, `PUBLIC_URL` | Optional lock-screen push for incoming calls ([ntfy](https://ntfy.sh)). |
+
+---
+
+## How we built it
+
+Two people, each with a coding agent (Claude Code), working in parallel lanes against a
+shared typed contract (`starter/lib/contracts/index.ts`) with fixtures, so neither had to
+wait for the other. What we asked for, what we checked, what we threw away and where we
+did not take the first answer:
+
+- [`docs/ai-log/ignacio.md`](./docs/ai-log/ignacio.md), [`docs/ai-log/antoni.md`](./docs/ai-log/antoni.md), [`BUILD-LOG.md`](./BUILD-LOG.md)
+- [`traces/examples/`](./traces/examples/README.md): real agent runs, including the first one we rejected
+- [`docs/IDEAS.md`](./docs/IDEAS.md), [`docs/PLAN.md`](./docs/PLAN.md), [`docs/VOICE.md`](./docs/VOICE.md)
+
+## Repository map
+| Path | What |
+|---|---|
+| `starter/app` | Pages: queue, case, driver phone, settings, map, starter views |
+| `starter/lib/agent` | Road agent loop, tools, decisions, monitor, run store |
+| `starter/lib/voice` | Calls: call store, in-call agent, driver presence |
+| `starter/lib/present` | Read layer for the pages (`source.ts` decides where data comes from) |
+| `starter/lib/contracts` | Shared types and sample fixtures |
+| `dataset/`, `attachments/` | Bahn's fictional packet |

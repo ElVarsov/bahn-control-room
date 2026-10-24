@@ -77,3 +77,17 @@ tunnel). Real phone network stays a stretch goal.
   failed earlier attempt. The approval step now checks with the provider first.
 - A second run left the first run's proposal open, so two plans could be approved. Older
   proposals are now "superseded" when a new run starts.
+
+## Completeness review after Antoni's monitor (Sat 21:00)
+- **Monitor false alarms:** it compared the final-delivery ETA with the ferry check-in cutoff,
+  so every import with a ferry was "at risk" (5 near-identical queue items, in UTC). The dataset
+  itself says its road times "cannot be applied to the latest driver-app progress" as a terminal
+  ETA. Now it only counts booked ferries ahead of us, and only raises "we can't confirm it makes
+  check-in" when the position is stale and the cutoff is within 12 h. Local times, plain words.
+- **Demo case vanished on fresh start:** saved runs now reload at startup, and the four committed
+  example traces ended "done", so CD-420299 left the queue. Examples moved to `traces/examples/`
+  (never loaded), live runs are local only.
+- **README rewritten** to describe what exists. The old one described priced option cards, an
+  evidence drawer and lock badges we do not have, invented savings figures, and skipped the API key.
+- Flagged, not changed: `eval_agent.py` prints PASS without testing anything; the map's hubs,
+  car counts and positions are made up and name real ferry companies.

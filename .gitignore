@@ -6,3 +6,6 @@ out/
 .env.*
 !.env.example
 .DS_Store
+
+# Live agent runs are kept locally only; examples live in traces/examples/
+traces/run-*.json

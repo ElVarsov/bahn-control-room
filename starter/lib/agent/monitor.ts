@@ -4,6 +4,7 @@
 // domino delays strike. Forecasts carry strength "estimate", never treated as facts.
 
 import type { Change, Fact, QueueItem, Urgency } from "@/lib/contracts"
+import { fmtClock, fmtDateTime } from "@/lib/present/time"
 import { actorName, byId, forOrder, minutesBeforeSnapshot, rows, SNAPSHOT_AT, type Row } from "./dataset"
 import { carOf, resolveOrder, routeOf } from "./tools"
 import { startRun } from "./loop"
@@ -77,11 +78,11 @@ export function evaluateJourney(orderRef: Row | string): JourneyForecast | null 
   )
   const promiseEnd = promiseWindow ? String(promiseWindow.end_at) : undefined
 
-  // Booked / quoted travel (ferries)
-  const ferries = forOrder("travel_reservations", order.id)
-    .concat(forOrder("travel_options", order.id) as any[])
-    .filter((t) => t.kind === "FERRY" && t.status !== "CANCELLED")
-  const upcomingFerry = ferries.sort((a, b) => String(a.departure_at).localeCompare(String(b.departure_at)))[0]
+  // Only booked ferries count (a quote is not a booking), and only ones still ahead of us.
+  const upcomingFerry = forOrder("travel_reservations", order.id)
+    .filter((t) => t.kind === "FERRY" && t.status !== "CANCELLED" && Date.parse(String(t.departure_at)) > Date.parse(SNAPSHOT_AT))
+    .sort((a, b) => String(a.departure_at).localeCompare(String(b.departure_at)))[0]
+  const promiseZone = promiseWindow?.timezone ? String(promiseWindow.timezone) : null
 
   const reasons: string[] = []
   const facts: Fact[] = []
@@ -92,14 +93,14 @@ export function evaluateJourney(orderRef: Row | string): JourneyForecast | null 
   const ageMinutes = latestObs ? minutesBeforeSnapshot(latestObs.observed_at) : null
   if (ageMinutes != null && ageMinutes > 180) {
     const hours = Math.round(ageMinutes / 60)
-    reasons.push(`Tracking gap: no position update for ${hours} hours`)
+    reasons.push(`No position from the driver app for ${hours} h`)
     facts.push({
       id: `${order.id}-forecast-telemetry`,
-      text: `Driver-app telemetry is ${hours}h stale (last update ${ageMinutes}m before snapshot). Movement unverified.`,
+      text: `No driver-app position for ${hours} h. Whether the car is moving is not known.`,
       strength: "estimate",
       sources: [{
         kind: "system",
-        label: "Tracking Telemetry Watcher",
+        label: "Driver-app tracking",
         at: SNAPSHOT_AT,
         table: "tracking_observations",
         recordId: latestObs?.id,
@@ -116,14 +117,14 @@ export function evaluateJourney(orderRef: Row | string): JourneyForecast | null 
     const promiseMs = Date.parse(promiseEnd)
     if (etaMs > promiseMs) {
       hoursDelayed = Math.max(1, Math.round((etaMs - promiseMs) / 3600000))
-      reasons.push(`Delivery SLA breach: ETA is ${hoursDelayed}h past customer promise (${promiseEnd.slice(11, 16)} UTC)`)
+      reasons.push(`Likely about ${hoursDelayed} h late: the last ETA is ${fmtDateTime(eta, promiseZone, false)}, the promise ends ${fmtDateTime(promiseEnd, promiseZone)}`)
       facts.push({
         id: `${order.id}-forecast-promise`,
-        text: `Calculated ETA (${eta.replace("T", " ").slice(0, 16)}) breaches promised customer delivery window (${promiseEnd.replace("T", " ").slice(0, 16)}) by ~${hoursDelayed} hours.`,
+        text: `The last driver-app ETA (${fmtDateTime(eta, promiseZone)}) is about ${hoursDelayed} h after the promised window ends (${fmtDateTime(promiseEnd, promiseZone)}). This is an estimate from the app, not a confirmed delay.`,
         strength: "estimate",
         sources: [{
           kind: "system",
-          label: "SLA ETA Forecaster",
+          label: "Driver-app ETA",
           at: SNAPSHOT_AT,
           table: "time_windows",
           recordId: promiseWindow?.id,
@@ -133,27 +134,31 @@ export function evaluateJourney(orderRef: Row | string): JourneyForecast | null 
     }
   }
 
-  // 3. Check Ferry Check-In Cutoff Breach
-  if (upcomingFerry && eta) {
-    const cutoffStr = (upcomingFerry.check_in_cutoff_at as string) ?? upcomingFerry.departure_at
-    const cutoffMs = Date.parse(cutoffStr)
-    const departureStr = String(upcomingFerry.departure_at)
-    // If estimated arrival at port is after check-in cutoff
-    if (Date.parse(eta) > cutoffMs - 30 * 60000) {
-      reasons.push(`Ferry check-in cutoff at risk for ${departureStr.slice(11, 16)} departure`)
+  // 3. Booked ferry ahead, check-in not confirmed, and we cannot see the car.
+  // The dataset's road times are planning ranges and must not be turned into a live
+  // terminal ETA, so we only raise this when the position is stale and the cutoff is near.
+  if (upcomingFerry && upcomingFerry.check_in_confirmation !== "CONFIRMED") {
+    const cutoff = String(upcomingFerry.check_in_cutoff_at ?? upcomingFerry.departure_at)
+    const minutesToCutoff = -(minutesBeforeSnapshot(cutoff) ?? 0)
+    const stale = ageMinutes == null || ageMinutes > 120
+    if (stale && minutesToCutoff > 0 && minutesToCutoff <= 12 * 60) {
+      const terminal = byId("ferry_terminals", upcomingFerry.origin_terminal_id)
+      const zone = terminal?.timezone ? String(terminal.timezone) : "Europe/Berlin"
+      const where = String(terminal?.name ?? upcomingFerry.origin_terminal ?? "the terminal")
+      reasons.push(`Ferry check-in at ${where} closes ${fmtClock(cutoff, zone)} and the car's position is ${ageMinutes == null ? "unknown" : `${Math.round(ageMinutes / 60)} h old`}`)
       facts.push({
         id: `${order.id}-forecast-ferry`,
-        text: `Projected transit arrival breaches Baltic ferry check-in cutoff for ${departureStr}. Missed sailing triggers overnight delay.`,
-        strength: "estimate",
+        text: `Booked ferry ${upcomingFerry.booking_reference ?? ""} departs ${fmtDateTime(String(upcomingFerry.departure_at), zone)}; check-in closes ${fmtDateTime(cutoff, zone)} and is not confirmed. With no recent position we cannot tell whether the car will make it.`,
+        strength: "unknown",
         sources: [{
           kind: "provider",
-          label: "Vela Coast / Scandlines Timetable",
-          at: SNAPSHOT_AT,
+          label: "Ferry booking (Vela Coast Lines, fictional)",
+          at: String(upcomingFerry.booked_at ?? SNAPSHOT_AT),
           table: "travel_reservations",
-          recordId: upcomingFerry?.id,
+          recordId: upcomingFerry.id,
         }],
       })
-      urgency = "now"
+      urgency = minutesToCutoff <= 4 * 60 ? "now" : urgency === "now" ? "now" : "today"
     }
   }
 
@@ -163,7 +168,7 @@ export function evaluateJourney(orderRef: Row | string): JourneyForecast | null 
   }
 
   const headline = reasons[0]
-  const summary = `Journey Monitor Alert: ${reasons.join(". ")}. Action required to protect delivery SLA.`
+  const summary = `${reasons.join(". ")}. Forecast from the journey monitor, not a confirmed problem.`
 
   return {
     orderId: order.id,
