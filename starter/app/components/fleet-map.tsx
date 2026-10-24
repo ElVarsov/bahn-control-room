@@ -544,6 +544,12 @@ export function FleetMap() {
       markersLayerRef.current = markersGroup
       mapInstanceRef.current = map
 
+      // Map canvas click: unselect active vessel or vehicle when clicking empty map space
+      map.on("click", () => {
+        setSelectedVessel(null)
+        setSelectedVehicle(null)
+      })
+
       // Invalidate size once DOM layout is settled to ensure tiles fill the viewport
       setTimeout(() => {
         if (isMounted && map) {
@@ -581,7 +587,7 @@ export function FleetMap() {
         const vesselIcon = L.divIcon({
           className: "custom-vessel-icon",
           html: `
-            <div style="background:${isSelected ? "#1a5a8a" : "#2472a4"};color:#fff;padding:3px 7px;border-radius:12px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px;box-shadow:0 2px 6px rgba(0,0,0,0.3);border:2px solid #fff;white-space:nowrap;cursor:pointer;">
+            <div style="background:${isSelected ? "#12110e" : "#2472a4"};color:#fff;padding:3px 7px;border-radius:12px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px;box-shadow:${isSelected ? "0 0 0 3px #3b82f6, 0 3px 8px rgba(0,0,0,0.4)" : "0 2px 6px rgba(0,0,0,0.3)"};border:2px solid #fff;white-space:nowrap;cursor:pointer;transition:transform 0.15s ease;transform:${isSelected ? "scale(1.08)" : "scale(1)"};">
               <span>🚢</span> ${vessel.name.split(" ")[1]} (${vessel.carsOnboard})
             </div>
           `,
@@ -590,13 +596,15 @@ export function FleetMap() {
         })
 
         const marker = L.marker([vessel.lat, vessel.lng], { icon: vesselIcon }).addTo(markersGroup)
-        marker.on("click", () => {
-          setSelectedVessel(vessel)
+        marker.on("click", (e: any) => {
+          if (e?.originalEvent) L.DomEvent?.stopPropagation?.(e.originalEvent)
+          // Toggle selection: if already selected, unselect it cleanly
+          setSelectedVessel((prev) => (prev?.id === vessel.id ? null : vessel))
           setSelectedVehicle(null)
         })
       })
 
-      // Render Vehicles
+      // Render Vehicles with Small Car Icons (Replaces simple dots)
       filteredVehicles.forEach((v) => {
         const isSelected = selectedVehicle?.id === v.id
         const isException = v.status === "EXCEPTION"
@@ -604,32 +612,43 @@ export function FleetMap() {
 
         const bg = isException ? "#c23b22" : isOnFerry ? "#1a5a8a" : "#1a6f67"
         const pulseAnim = isException
-          ? `<div style="position:absolute;top:-6px;left:-6px;width:24px;height:24px;border-radius:50%;border:2px solid #c23b22;animation:leafletPulse 2s infinite;"></div>`
+          ? `<div style="position:absolute;top:-7px;left:-7px;width:36px;height:36px;border-radius:50%;border:2px solid #c23b22;animation:leafletPulse 2s infinite;pointer-events:none;"></div>`
           : ""
+
+        // Crisp vector car icon for vehicle marker
+        const carSvg = `
+          <svg viewBox="0 0 24 24" width="13" height="13" fill="#ffffff" style="display:block;">
+            <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.04 3H5.81l1.04-3zM19 17H5v-4.66l.12-.34h13.77l.11.34V17z"/>
+            <circle cx="7.5" cy="14.5" r="1.5"/>
+            <circle cx="16.5" cy="14.5" r="1.5"/>
+          </svg>
+        `
 
         const vehicleIcon = L.divIcon({
           className: "custom-vehicle-icon",
           html: `
             <div style="position:relative;cursor:pointer;">
               ${pulseAnim}
-              <div style="background:${isSelected ? "#1e1e1e" : bg};width:14px;height:14px;border-radius:50%;border:2px solid #ffffff;box-shadow:0 2px 5px rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;">
-                ${isSelected ? `<div style="background:#fff;width:4px;height:4px;border-radius:50%;"></div>` : ""}
+              <div style="background:${isSelected ? "#12110e" : bg};width:22px;height:22px;border-radius:50%;border:2px solid #ffffff;box-shadow:${isSelected ? "0 0 0 3px #1a6f67, 0 3px 8px rgba(0,0,0,0.4)" : "0 2px 6px rgba(0,0,0,0.35)"};display:flex;align-items:center;justify-content:center;transition:transform 0.15s ease;transform:${isSelected ? "scale(1.18)" : "scale(1)"};">
+                ${carSvg}
               </div>
             </div>
           `,
-          iconSize: [16, 16],
-          iconAnchor: [8, 8],
+          iconSize: [24, 24],
+          iconAnchor: [12, 12],
         })
 
         const marker = L.marker([v.lat, v.lng], { icon: vehicleIcon }).addTo(markersGroup)
 
         marker.bindTooltip(
           `<b>${v.reference} · ${v.make} ${v.model}</b><br/>${v.driver} · ${v.currentLocationName}`,
-          { direction: "top", offset: [0, -8] }
+          { direction: "top", offset: [0, -10] }
         )
 
-        marker.on("click", () => {
-          setSelectedVehicle(v)
+        marker.on("click", (e: any) => {
+          if (e?.originalEvent) L.DomEvent?.stopPropagation?.(e.originalEvent)
+          // Toggle selection: if already selected, unselect it cleanly
+          setSelectedVehicle((prev) => (prev?.id === v.id ? null : v))
           setSelectedVessel(null)
         })
       })
@@ -702,7 +721,7 @@ export function FleetMap() {
 
           <button
             type="button"
-            onClick={() => setFilter("EXCEPTIONS")}
+            onClick={() => setFilter((prev) => (prev === "EXCEPTIONS" ? "ALL" : "EXCEPTIONS"))}
             style={{
               padding: "5px 12px",
               borderRadius: "7px",
@@ -716,6 +735,7 @@ export function FleetMap() {
               alignItems: "center",
               gap: "6px",
             }}
+            title={filter === "EXCEPTIONS" ? "Click to unselect / show all" : "Filter exceptions"}
           >
             <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--red)" }} />
             Exceptions ({counts.exceptions})
@@ -723,7 +743,7 @@ export function FleetMap() {
 
           <button
             type="button"
-            onClick={() => setFilter("FERRIES")}
+            onClick={() => setFilter((prev) => (prev === "FERRIES" ? "ALL" : "FERRIES"))}
             style={{
               padding: "5px 12px",
               borderRadius: "7px",
@@ -734,13 +754,14 @@ export function FleetMap() {
               color: "var(--blue-ink)",
               cursor: "pointer",
             }}
+            title={filter === "FERRIES" ? "Click to unselect / show all" : "Filter Baltic sea travel"}
           >
             🚢 Baltic Ferries & Ships (3)
           </button>
 
           <button
             type="button"
-            onClick={() => setFilter("IN_TRANSIT")}
+            onClick={() => setFilter((prev) => (prev === "IN_TRANSIT" ? "ALL" : "IN_TRANSIT"))}
             style={{
               padding: "5px 12px",
               borderRadius: "7px",
@@ -751,6 +772,7 @@ export function FleetMap() {
               color: "var(--teal-ink)",
               cursor: "pointer",
             }}
+            title={filter === "IN_TRANSIT" ? "Click to unselect / show all" : "Filter highway transit"}
           >
             🚗 Highway Transit ({counts.transit})
           </button>
@@ -800,18 +822,30 @@ export function FleetMap() {
             </div>
           </div>
 
-          {/* Map Attribution/Legend Overlay */}
-          <div style={{ position: "absolute", bottom: "14px", left: "14px", zIndex: 1000, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(6px)", border: "1px solid var(--hair)", borderRadius: "8px", padding: "6px 10px", fontSize: "11px", color: "var(--ink)", display: "flex", gap: "12px" }}>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
-              <span style={{ width: "9px", height: "9px", borderRadius: "50%", background: "#c23b22" }} />
+          {/* Map Attribution/Legend Overlay with Matching Car Icons */}
+          <div style={{ position: "absolute", bottom: "14px", left: "14px", zIndex: 1000, background: "rgba(255,255,255,0.94)", backdropFilter: "blur(6px)", border: "1px solid var(--hair)", borderRadius: "8px", padding: "6px 12px", fontSize: "11px", color: "var(--ink)", display: "flex", gap: "12px", alignItems: "center", boxShadow: "0 2px 6px rgba(0,0,0,0.12)" }}>
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ width: "18px", height: "18px", borderRadius: "50%", background: "#c23b22", border: "1.5px solid #fff", boxShadow: "0 1px 3px rgba(0,0,0,0.25)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                <svg viewBox="0 0 24 24" width="10" height="10" fill="#ffffff" style={{ display: "block" }}>
+                  <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.04 3H5.81l1.04-3zM19 17H5v-4.66l.12-.34h13.77l.11.34V17z" />
+                  <circle cx="7.5" cy="14.5" r="1.5" />
+                  <circle cx="16.5" cy="14.5" r="1.5" />
+                </svg>
+              </span>
               Exception Safe-Stop
             </span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
-              <span style={{ width: "9px", height: "9px", borderRadius: "50%", background: "#1a5a8a" }} />
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ fontSize: "12px" }}>🚢</span>
               Baltic Ferries
             </span>
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "5px" }}>
-              <span style={{ width: "9px", height: "9px", borderRadius: "50%", background: "#1a6f67" }} />
+            <span style={{ display: "inline-flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ width: "18px", height: "18px", borderRadius: "50%", background: "#1a6f67", border: "1.5px solid #fff", boxShadow: "0 1px 3px rgba(0,0,0,0.25)", display: "inline-flex", alignItems: "center", justifyContent: "center" }}>
+                <svg viewBox="0 0 24 24" width="10" height="10" fill="#ffffff" style={{ display: "block" }}>
+                  <path d="M18.92 6.01C18.72 5.42 18.16 5 17.5 5h-11c-.66 0-1.21.42-1.42 1.01L3 12v8c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-1h12v1c0 .55.45 1 1 1h1c.55 0 1-.45 1-1v-8l-2.08-5.99zM6.85 7h10.29l1.04 3H5.81l1.04-3zM19 17H5v-4.66l.12-.34h13.77l.11.34V17z" />
+                  <circle cx="7.5" cy="14.5" r="1.5" />
+                  <circle cx="16.5" cy="14.5" r="1.5" />
+                </svg>
+              </span>
               Highway Transit
             </span>
           </div>
@@ -863,14 +897,40 @@ export function FleetMap() {
                   </div>
                 </div>
 
-                {selectedVehicle.costAtRisk && (
-                  <div style={{ textAlign: "right" }}>
-                    <div style={{ fontSize: "10.5px", color: "var(--muted)", textTransform: "uppercase" }}>At Risk</div>
-                    <div style={{ fontSize: "16px", fontWeight: 700, color: "var(--red-ink)" }}>
-                      €{selectedVehicle.costAtRisk}
+                <div style={{ display: "flex", alignItems: "flex-start", gap: "8px" }}>
+                  {selectedVehicle.costAtRisk && (
+                    <div style={{ textAlign: "right" }}>
+                      <div style={{ fontSize: "10.5px", color: "var(--muted)", textTransform: "uppercase" }}>At Risk</div>
+                      <div style={{ fontSize: "16px", fontWeight: 700, color: "var(--red-ink)" }}>
+                        €{selectedVehicle.costAtRisk}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
+                  <button
+                    type="button"
+                    onClick={() => setSelectedVehicle(null)}
+                    style={{
+                      background: "var(--hair-soft)",
+                      border: "1px solid var(--hair)",
+                      borderRadius: "6px",
+                      width: "28px",
+                      height: "28px",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      cursor: "pointer",
+                      color: "var(--muted)",
+                      fontSize: "14px",
+                      lineHeight: 1,
+                      marginLeft: "4px",
+                      transition: "all 0.15s ease",
+                    }}
+                    title="Unselect vehicle"
+                    aria-label="Unselect vehicle"
+                  >
+                    ✕
+                  </button>
+                </div>
               </div>
 
               {/* Exception Alert Card if applicable */}
@@ -981,14 +1041,40 @@ export function FleetMap() {
           ) : selectedVessel ? (
             <>
               {/* Vessel Inspector */}
-              <div>
-                <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 7px", borderRadius: "6px", background: "var(--blue-bg)", color: "var(--blue-ink)", textTransform: "uppercase" }}>
-                  Baltic Car Carrier
-                </span>
-                <h3 style={{ fontSize: "17px", fontWeight: 700, margin: "6px 0 2px 0", color: "var(--ink)" }}>
-                  {selectedVessel.name}
-                </h3>
-                <div style={{ fontSize: "12px", color: "var(--muted)" }}>{selectedVessel.operator}</div>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                <div>
+                  <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 7px", borderRadius: "6px", background: "var(--blue-bg)", color: "var(--blue-ink)", textTransform: "uppercase" }}>
+                    Baltic Car Carrier
+                  </span>
+                  <h3 style={{ fontSize: "17px", fontWeight: 700, margin: "6px 0 2px 0", color: "var(--ink)" }}>
+                    {selectedVessel.name}
+                  </h3>
+                  <div style={{ fontSize: "12px", color: "var(--muted)" }}>{selectedVessel.operator}</div>
+                </div>
+
+                <button
+                  type="button"
+                  onClick={() => setSelectedVessel(null)}
+                  style={{
+                    background: "var(--hair-soft)",
+                    border: "1px solid var(--hair)",
+                    borderRadius: "6px",
+                    width: "28px",
+                    height: "28px",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    cursor: "pointer",
+                    color: "var(--muted)",
+                    fontSize: "14px",
+                    lineHeight: 1,
+                    transition: "all 0.15s ease",
+                  }}
+                  title="Unselect sea travel"
+                  aria-label="Unselect sea travel"
+                >
+                  ✕
+                </button>
               </div>
 
               <div style={{ background: "var(--birch)", borderRadius: "8px", padding: "12px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", fontSize: "12px" }}>
@@ -1028,26 +1114,50 @@ export function FleetMap() {
                 <div style={{ fontWeight: 600, color: "var(--ink)" }}>{selectedVessel.route}</div>
               </div>
 
-              <button
-                type="button"
-                onClick={() => flyToCoords(selectedVessel.lat, selectedVessel.lng)}
-                style={{
-                  background: "var(--blue-bg)",
-                  color: "var(--blue-ink)",
-                  border: "1px solid rgba(26,90,138,0.25)",
-                  padding: "8px 12px",
-                  borderRadius: "7px",
-                  fontWeight: 600,
-                  fontSize: "12px",
-                  cursor: "pointer",
-                }}
-              >
-                Track vessel on map ({selectedVessel.lat}°N, {selectedVessel.lng}°E)
-              </button>
+              <div style={{ display: "flex", gap: "8px", marginTop: "auto" }}>
+                <button
+                  type="button"
+                  onClick={() => flyToCoords(selectedVessel.lat, selectedVessel.lng)}
+                  style={{
+                    flex: 1,
+                    background: "var(--blue-bg)",
+                    color: "var(--blue-ink)",
+                    border: "1px solid rgba(26,90,138,0.25)",
+                    padding: "8px 12px",
+                    borderRadius: "7px",
+                    fontWeight: 600,
+                    fontSize: "12px",
+                    cursor: "pointer",
+                  }}
+                >
+                  Track vessel on map ({selectedVessel.lat}°N, {selectedVessel.lng}°E)
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setSelectedVessel(null)}
+                  style={{
+                    background: "var(--canvas)",
+                    color: "var(--brown)",
+                    border: "1px solid var(--hair)",
+                    padding: "8px 14px",
+                    borderRadius: "7px",
+                    fontWeight: 600,
+                    fontSize: "12px",
+                    cursor: "pointer",
+                  }}
+                  title="Unselect sea travel"
+                >
+                  Unselect
+                </button>
+              </div>
             </>
           ) : (
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "100%", color: "var(--muted)", fontSize: "13px", textAlign: "center" }}>
-              Click any vehicle, ferry, or hub on the OpenStreetMap canvas to inspect live telemetry.
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", color: "var(--muted)", fontSize: "13px", textAlign: "center", gap: "10px", padding: "20px" }}>
+              <div style={{ fontSize: "28px" }}>🗺️</div>
+              <p style={{ margin: 0, fontWeight: 600, color: "var(--ink)" }}>No asset selected</p>
+              <p style={{ margin: 0, fontSize: "12px", color: "var(--muted)", lineHeight: 1.4 }}>
+                Click any car icon, Baltic ferry, or terminal hub on the map to inspect live telemetry.
+              </p>
             </div>
           )}
         </div>
