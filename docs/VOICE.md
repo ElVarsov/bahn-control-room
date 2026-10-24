@@ -26,6 +26,7 @@ road agent ──call_driver(tool)──► lib/voice (call store + in-call agen
            call ends ──► CallResult {transcript, facts} ──► back to the road agent
 ```
 
+- **No streams through the tunnel**: Cloudflare quick tunnels buffer server-sent events, so the phone polls `/api/voice/poll` every second instead.
 - **Phone page** `/driver?d=<driverId>`: the "Bahn Driver" app. Open it once and
   leave it open. When the agent calls, it rings like a phone call (ringtone,
   vibration, Accept / Decline).
@@ -80,3 +81,15 @@ cloudflared tunnel --url http://localhost:3000   # second terminal
 # open https://<tunnel>/driver?d=drv-140 on the phone, tap "Go on shift"
 npm run voice:call -- drv-140 ord-00299          # third terminal: the agent calls you
 ```
+
+## Troubleshooting (found in the first real test, 24 Oct)
+
+- **Phone says speech is unavailable or "not-allowed"**: the mic is blocked. In Chrome
+  tap the icon left of the address bar, then Permissions, then Microphone: Allow. If it
+  is not listed: Android Settings, Apps, Chrome, Permissions, Microphone: Allow. Then use
+  **Test microphone** on the driver page before the call. The text box always works as a fallback.
+- **Agent hangs up at once with "technical problem"**: check the dev server log. On a
+  laptop with antivirus HTTPS scanning (Norton) Node rejects the certificate; start the
+  server with `NODE_USE_SYSTEM_CA=1` (PowerShell: `$env:NODE_USE_SYSTEM_CA = '1'; npm run dev`).
+- **Phone never rings**: make sure the phone page shows "On shift" and the driver id in
+  the link matches the one you call.
