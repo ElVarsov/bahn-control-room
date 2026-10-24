@@ -15,14 +15,9 @@ with their own coding agent.
 - **Lane B (agent)**: `starter/lib/agent/`, `starter/lib/world/`, API routes for queue, case, agent, proposals, settings, `traces/`.
 - Stay inside your lane. `starter/lib/contracts/` changes only through a `contract:` PR.
 
-## How changes reach main (enforced by GitHub)
-- **Never push to `main`.** It only accepts pull requests that pass the `lane-guard` check.
-- Work on a branch (`ui/...` for Lane A, `agent/...` for Lane B), then:
-  `git push -u origin HEAD` → `gh pr create --fill` → `gh pr merge --auto --squash`.
-  A PR that stays in your own lane passes at once and merges itself.
-- A PR that touches the other lane's folders, `starter/lib/contracts/` or `.github/` waits for the
-  other person's approval. Ownership: `.github/lanes.json` (mirrored in `.github/CODEOWNERS`).
-- Before starting work: `git pull`. Keep PRs small and merge often.
+## Working on main
+- Push straight to `main`. Always `git pull` before you start and before you push.
+- Stay in your lane's folders (`.github/lanes.json` lists them) so you don't overwrite each other.
 
 ## Rules of the world (do not break)
 - The agent **never contacts a customer on its own**. Customer messages are proposals.
