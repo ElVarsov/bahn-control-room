@@ -4,13 +4,14 @@ import { useEffect, useState, useMemo } from "react"
 import Link from "next/link"
 import { AppFrame } from "./components/app-frame"
 import { Icon } from "./components/icons"
+import { FleetMap } from "./components/fleet-map"
 import type { QueueItem, QueueResponse, Urgency } from "@/lib/contracts"
 
 export default function QueuePage() {
   const [data, setData] = useState<QueueResponse | null>(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState<string | null>(null)
-  const [activeTab, setActiveTab] = useState<"needs" | "quiet">("needs")
+  const [activeTab, setActiveTab] = useState<"needs" | "map" | "quiet">("needs")
   const [search, setSearch] = useState("")
   const [selectedIndex, setSelectedIndex] = useState(0)
   const [showRoi, setShowRoi] = useState(false)
@@ -250,6 +251,26 @@ export default function QueuePage() {
             </button>
 
             <button
+              onClick={() => setActiveTab("map")}
+              style={{
+                padding: "6px 14px",
+                borderRadius: "7px",
+                fontSize: "13px",
+                fontWeight: 600,
+                border: "none",
+                background: activeTab === "map" ? "var(--birch)" : "transparent",
+                color: activeTab === "map" ? "var(--ink)" : "var(--muted)",
+                boxShadow: activeTab === "map" ? "0 1px 3px rgba(0,0,0,0.06)" : "none",
+                display: "flex",
+                alignItems: "center",
+                gap: "7px",
+              }}
+            >
+              <span>🗺️</span>
+              Live Fleet & Ferry Radar
+            </button>
+
+            <button
               onClick={() => setActiveTab("quiet")}
               style={{
                 padding: "6px 14px",
@@ -296,6 +317,44 @@ export default function QueuePage() {
         {/* Tab 1: Needs You Queue */}
         {activeTab === "needs" && (
           <div>
+            {/* Quick Map Access Banner */}
+            <div
+              style={{
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+                background: "linear-gradient(90deg, var(--birch) 0%, #f0ede4 100%)",
+                border: "1px solid var(--hair)",
+                borderRadius: "9px",
+                padding: "10px 16px",
+                marginBottom: "14px",
+                fontSize: "12.5px",
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span>🗺️</span>
+                <span>
+                  <strong>Live Corridor Radar:</strong> 14 vehicles currently flagged with safe-stops, overbooked Baltic ferries, or missing lot paperwork across Central Europe.
+                </span>
+              </div>
+              <button
+                type="button"
+                onClick={() => setActiveTab("map")}
+                style={{
+                  background: "var(--ink)",
+                  color: "#ffffff",
+                  border: "none",
+                  padding: "5px 12px",
+                  borderRadius: "6px",
+                  fontSize: "12px",
+                  fontWeight: 600,
+                  cursor: "pointer",
+                }}
+              >
+                View on Radar Map →
+              </button>
+            </div>
+
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "12px", fontSize: "12px", color: "var(--subtle)" }}>
               <span>Sorted by Time-to-Point-of-No-Return · Top items have imminent financial or schedule deadlines</span>
               <span className="mono">Tip: Use J / K to navigate · Enter to open</span>
@@ -408,6 +467,13 @@ export default function QueuePage() {
                 })}
               </div>
             )}
+          </div>
+        )}
+
+        {/* Tab: Live Fleet & Transporter Map */}
+        {activeTab === "map" && (
+          <div style={{ marginBottom: "30px" }}>
+            <FleetMap />
           </div>
         )}
 

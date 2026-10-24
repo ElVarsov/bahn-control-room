@@ -9,6 +9,6 @@ export async function POST(
 ) {
   const params = await props.params
   const body = await request.json()
-  const result = voiceManager.processDriverTurn(params.id, body.text || "")
+  const result = await voiceManager.processDriverTurn(params.id, body.text || "")
   return NextResponse.json(result)
 }

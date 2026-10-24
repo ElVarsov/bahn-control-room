@@ -10,6 +10,20 @@ import { TERMINAL, addTurn, createCall, getCall, subscribe, toResult, updateCall
 export { allCalls, getCall, latestCallFor, ringingCallFor, subscribe, toResult } from "./store"
 export type { LiveCall } from "./store"
 
+export const voiceManager = {
+  answerCall: async (id: string) => {
+    const res = await answer(id)
+    return { id, ...res }
+  },
+  hangupCall: (id: string) => {
+    hangUp(id)
+    return { id, status: "completed" }
+  },
+  processDriverTurn: async (id: string, text: string) => {
+    return driverSaid(id, text)
+  },
+}
+
 const RING_SECONDS = Number(process.env.VOICE_RING_SECONDS ?? 45)
 const MAX_CALL_SECONDS = Number(process.env.VOICE_MAX_CALL_SECONDS ?? 300)
 

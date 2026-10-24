@@ -71,7 +71,7 @@ export function EntityIndex({ kind }: { kind: EntityKind }) {
     <div className="index-tools"><label className="search"><span className="sr-only">Filter</span><Icon name="search" /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder={`Filter ${index.label.toLowerCase()}`} /></label></div>
     {error && <p className="board-error" role="alert">{error}.</p>}
     {!list && !error && <p className="empty">Loading…</p>}
-    {list && items.length === 0 && <p className="empty">Nothing matches “{query}”.</p>}
+    {list && items.length === 0 && <p className="empty">{query ? `Nothing matches “${query}”.` : `No ${index.label.toLowerCase()} in this snapshot.`}</p>}
     <div className="index">{items.map((item) => <div className="index-row" key={item.id}>
       <div><Link href={item.href}>{item.title}</Link>{item.subtitle && <small>{item.subtitle}</small>}</div>
       <span className="index-count num">{item.count ? `${item.count} ${item.count === 1 ? "order" : "orders"}` : "no orders"}</span>

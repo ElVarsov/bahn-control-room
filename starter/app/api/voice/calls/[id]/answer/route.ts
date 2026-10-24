@@ -8,7 +8,7 @@ export async function POST(
   props: { params: Promise<{ id: string }> }
 ) {
   const params = await props.params
-  const call = voiceManager.answerCall(params.id)
+  const call = await voiceManager.answerCall(params.id)
   if (!call) return NextResponse.json({ error: "Call not found" }, { status: 404 })
   return NextResponse.json(call)
 }
