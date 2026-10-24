@@ -49,6 +49,7 @@ export function DriverPhone({ driverId }: { driverId: string }) {
   const ringTimer = useRef<ReturnType<typeof setInterval> | null>(null)
   const recognition = useRef<Recognition | null>(null)
   const speaking = useRef<SpeechSynthesisUtterance | null>(null)
+  const stopListening = useRef<() => void>(() => {})
   const [micError, setMicError] = useState("")
   const [micTest, setMicTest] = useState("")
   const callRef = useRef<IncomingCall | null>(null)
@@ -173,7 +174,7 @@ export function DriverPhone({ driverId }: { driverId: string }) {
   }, [])
 
   const endLocally = useCallback((text: string) => {
-    recognition.current?.abort()
+    stopListening.current()
     speechSynthesis.cancel()
     setEndedText(text)
     setPhase("ended")
@@ -209,15 +210,40 @@ export function DriverPhone({ driverId }: { driverId: string }) {
     rec.lang = "en-US"
     rec.interimResults = true
     rec.continuous = false
-    let finalText = ""
+    // The browser ends a recognition session at every short pause. We keep what was
+    // said across sessions and only send once the driver has been quiet for a moment,
+    // so the agent hears whole sentences, not fragments.
+    const QUIET_MS = 1500
+    let kept = ""        // final text from earlier sessions of this turn
+    let session = ""     // final text from the current session
+    let finished = false
+    let quietTimer: ReturnType<typeof setTimeout> | null = null
+    stopListening.current = () => {
+      finished = true
+      if (quietTimer) clearTimeout(quietTimer)
+      rec.onend = null
+      rec.abort()
+    }
+    const finish = () => {
+      if (finished || phaseRef.current !== "listening") return
+      const text = `${kept} ${session}`.trim()
+      if (!text) return
+      finished = true
+      rec.onend = null
+      rec.abort()
+      sendDriverText(text)
+    }
     rec.onresult = (event) => {
       let interim = ""
+      session = ""
       for (let i = 0; i < event.results.length; i++) {
         const result = event.results[i]
-        if (result.isFinal) finalText += result[0].transcript
+        if (result.isFinal) session += result[0].transcript
         else interim += result[0].transcript
       }
-      setHeard((finalText + " " + interim).trim())
+      setHeard(`${kept} ${session} ${interim}`.replace(/\s+/g, " ").trim())
+      if (quietTimer) clearTimeout(quietTimer)
+      quietTimer = setTimeout(finish, interim ? QUIET_MS * 2 : QUIET_MS)
     }
     rec.onerror = (event) => {
       if (event.error === "no-speech" || event.error === "aborted") return
@@ -227,12 +253,14 @@ export function DriverPhone({ driverId }: { driverId: string }) {
       if (event.error === "not-allowed" || event.error === "service-not-allowed") setSpeechSupported(false)
     }
     rec.onend = () => {
-      if (phaseRef.current !== "listening") return
-      if (finalText.trim()) sendDriverText(finalText.trim())
-      else setTimeout(() => { // silence: keep listening
-        if (phaseRef.current !== "listening") return
+      if (finished || phaseRef.current !== "listening") return
+      // A pause ended the session: keep its words and listen on. The quiet timer decides when the turn is over.
+      kept = `${kept} ${session}`.trim()
+      session = ""
+      setTimeout(() => {
+        if (finished || phaseRef.current !== "listening") return
         try { rec.start() } catch { /* already listening */ }
-      }, 150)
+      }, 100)
     }
     setMicError("")
     setPhase("listening")
@@ -243,7 +271,7 @@ export function DriverPhone({ driverId }: { driverId: string }) {
   const sendNow = (text: string) => {
     const clean = text.trim()
     if (!clean || phaseRef.current !== "listening") return
-    recognition.current?.abort()
+    stopListening.current()
     setTyped("")
     sendDriverText(clean)
   }
