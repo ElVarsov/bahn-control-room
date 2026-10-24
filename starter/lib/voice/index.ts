@@ -7,7 +7,7 @@ import { factsFromCall, nextAgentTurn } from "./call-agent"
 import { driverContext } from "./driver-context"
 import { TERMINAL, addTurn, createCall, getCall, subscribe, toResult, updateCall, type LiveCall } from "./store"
 
-export { allCalls, getCall, latestCallFor, ringingCallFor, subscribe, toResult } from "./store"
+export { allCalls, getCall, isDriverOnline, latestCallFor, markDriverSeen, ringingCallFor, subscribe, toResult } from "./store"
 export type { LiveCall } from "./store"
 
 export const voiceManager = {

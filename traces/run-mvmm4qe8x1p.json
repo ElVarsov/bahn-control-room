@@ -1,0 +1,378 @@
+{
+  "run": {
+    "id": "run-mvmm4qe8x1p",
+    "orderId": "ord-00299",
+    "agentId": "road-agent",
+    "trigger": "Ferry sold out alert",
+    "state": "needs_person",
+    "startedAt": "2026-10-24T16:28:10.784Z",
+    "steps": [
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:28:14.505Z",
+        "tool": "read_order",
+        "input": {
+          "order": "CD-420299"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-24T16:28:14.512Z",
+        "tool": "read_order",
+        "summary": "BMW M4 for Kavellora Car House, Leipzig → Helsinki. Driver Camille Emberwick (assigned)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:28:14.512Z",
+        "tool": "read_conversation",
+        "input": {
+          "order": "CD-420299"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-24T16:28:14.515Z",
+        "tool": "read_conversation",
+        "summary": "7 recent messages. Latest from Driver travel: “No ferry booking, hotel booking or changed customer promise exists yet. Prepare a reviewable plan with the cos”"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:28:14.515Z",
+        "tool": "read_open_issues",
+        "input": {
+          "order": "CD-420299"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-24T16:28:14.518Z",
+        "tool": "read_open_issues",
+        "summary": "1 open alert(s) (Current crossing is unavailable; alternative and customer promise need a decision.), 1 incident(s), 0 open work item(s)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:28:14.518Z",
+        "tool": "read_tracking",
+        "input": {
+          "order": "CD-420299"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-24T16:28:14.519Z",
+        "tool": "read_tracking",
+        "summary": "No tracking on record."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:28:14.519Z",
+        "tool": "read_travel",
+        "input": {
+          "order": "CD-420299"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-24T16:28:14.520Z",
+        "tool": "read_travel",
+        "summary": "0 booked, 2 quote(s) or capacity check(s) that are not bookings."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:28:20.869Z",
+        "tool": "search_ferries",
+        "input": {
+          "from_terminal": "West Baltic terminal",
+          "to_terminal": "South Finland terminal",
+          "earliest_departure": "2026-10-23T18:00:00Z"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-24T16:28:20.869Z",
+        "tool": "search_ferries",
+        "summary": "5 sailings checked, 5 with vehicle space (quotes, not booked)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:28:20.870Z",
+        "tool": "search_hotels",
+        "input": {
+          "near": "West Baltic terminal",
+          "night": "2026-10-23"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-24T16:28:20.870Z",
+        "tool": "search_hotels",
+        "summary": "3 hotels near West Baltic terminal, from € 103 (quotes)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:28:30.379Z",
+        "tool": "call_driver",
+        "input": {
+          "order": "CD-420299",
+          "purpose": "Bahn road agent about CD-420299: an earlier evening sailing on 23 Oct has opened up and I want to check it works for you before we propose it.",
+          "questions": [
+            "After pickup in Leipzig (slot 11:00-13:00 Berlin time on 23 Oct), can you reach the West Baltic terminal for a 20:00 Berlin check-in cutoff for the 22:00 Berlin sailing?",
+            "How long is the drive from the pickup to the terminal for you, and would you be within your driving and rest limits?",
+            "If not, is the 24 Oct 12:00 Berlin sailing with one hotel night near the terminal still fine?",
+            "Have you received any ferry booking confirmation or reference from anyone yet?"
+          ]
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "call",
+        "at": "2026-10-24T16:28:37.335Z",
+        "callId": "sim-mvmm5avr",
+        "status": "completed",
+        "summary": "Simulated call Camille Emberwick. I can't confirm that yet because I don't know exactly where the West Baltic terminal is. If it's within about five hours of Leipzig, a 13:00 pickup should leave enough margin for the 20:00 cutoff, but please send me the terminal address so I can check. I don't"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:28:50.691Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "Nothing is booked: no ferry, no hotel. The driver confirms she has no ferry reference. An earlier attempt to book the 24 Oct 12:00 UTC sailing shows as failed, and the check on what the provider actually did is still waiting for review.",
+          "strength": "verified",
+          "source_kind": "system",
+          "source_label": "Travel record and earlier agent proposals",
+          "source_record_id": "agent-x4ac988b20000595f",
+          "source_at": "2026-10-21T09:00:00Z"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:28:50.691Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "Fresh search: a 23 Oct sailing at 20:00 UTC (22:00 Berlin) has vehicle space for €300. It arrives 25 Oct 00:00 UTC and check-in closes 23 Oct 18:00 UTC (20:00 Berlin). The 24 Oct 12:00 UTC sailing quoted earlier for €387 is no longer listed. The closest daytime option is 24 Oct 10:00 UTC for €420. These are quotes only.",
+          "strength": "quote",
+          "source_kind": "provider",
+          "source_label": "Ferry quote",
+          "source_record_id": "quote-1du7",
+          "source_at": "2026-10-21T09:00:00Z"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:28:50.691Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "Every sailing up to 25 Oct 10:00 UTC still arrives before the delivery promise of 27 Oct 11:00–13:00 UTC (Helsinki window). No change to the delivery date is needed, and the customer has asked to approve any later date first.",
+          "strength": "estimate",
+          "source_kind": "agent",
+          "source_label": "Delivery promise vs ferry arrival",
+          "source_record_id": "win-xd989292fd4c1ccb9",
+          "source_at": "2026-10-21T09:00:00Z"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:28:50.692Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The driver says she can make the 23 Oct 20:00 Berlin check-in if the terminal is under about 5 hours from Leipzig, but she needs the terminal address to check the route. Her fallback is a later sailing plus one hotel night, with her return travel arranged. Her pickup time stays the same.",
+          "strength": "reported",
+          "source_kind": "driver",
+          "source_actor": "Camille Emberwick",
+          "source_label": "Driver call",
+          "source_record_id": "sim-mvmm5avr",
+          "source_at": "2026-10-21T09:00:00Z"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:28:59.351Z",
+        "tool": "propose",
+        "input": {
+          "action": "book_travel",
+          "title": "Book the 23 Oct 20:00 UTC sailing (€300), but first confirm the failed 24 Oct booking left nothing behind",
+          "rationale": "A same-evening sailing on 23 Oct has opened up. It is cheaper than the old quote, needs no hotel and lands well before the 27 Oct delivery promise. The earlier booking attempt has an unverified provider outcome, so a retry could double-book.",
+          "changes": [
+            {
+              "label": "Ferry",
+              "before": "None booked (23 Oct 22:00 UTC sold out; 24 Oct 12:00 UTC €387 attempt failed, outcome unverified)",
+              "after": "Vela Coast Lines, West Baltic → South Finland, departs 23 Oct 20:00 UTC (22:00 Berlin), arrives 25 Oct 00:00 UTC, check-in closes 23 Oct 18:00 UTC, €300 (quote-1du7)"
+            },
+            {
+              "label": "Driver hotel",
+              "before": "None",
+              "after": "None needed with this sailing"
+            },
+            {
+              "label": "Fallback if the driver's route check fails",
+              "before": "None",
+              "after": "24 Oct 10:00 UTC sailing €420 (quote-xn0) + Nordlicht Hotel night of 23 Oct €103, free cancellation, total €523"
+            },
+            {
+              "label": "Pickup slot",
+              "before": "23 Oct 09:00–11:00 UTC",
+              "after": "Unchanged"
+            },
+            {
+              "label": "Delivery promise",
+              "before": "27 Oct 11:00–13:00 UTC (Helsinki)",
+              "after": "Unchanged"
+            }
+          ],
+          "what_happens_next": "Before booking: check with Vela Coast Lines that the failed 24 Oct 12:00 attempt created no reservation or charge. Send Camille the terminal address and get her to confirm the drive from Leipzig is under about 5 hours. If both are fine, book quote-1du7. If the drive is too long, use the fallback.",
+          "what_happens_after": "The ferry is booked and Camille gets the reference and terminal address. Her return travel from Helsinki still has to be arranged. The delivery date stays the same, so no later date needs customer approval. The sold-out alert can be closed once the reference is on the order."
+        },
+        "cost": "needs_approval"
+      },
+      {
+        "kind": "proposal",
+        "at": "2026-10-24T16:28:59.351Z",
+        "proposalId": "run-mvmm4qe8x1p-p1"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-24T16:29:04.095Z",
+        "tool": "finish",
+        "input": {
+          "outcome": "needs_person",
+          "headline": "Book the newly open 23 Oct 20:00 UTC sailing (€300, no hotel)? First check the failed 24 Oct booking left nothing behind.",
+          "summary": "The delivery promise of 27 Oct holds with any sailing through 25 Oct, so no date change and no customer approval are needed. Nothing is booked yet. The earlier 24 Oct 12:00 booking attempt needs checking with the provider, and that sailing is no longer listed. Camille needs the terminal address to confirm she can make the 20:00 Berlin check-in. Her return travel is still not arranged.",
+          "agent_did": "Read the records, ran a fresh ferry and hotel search, phoned the driver, noted 4 facts and made one booking proposal with a fallback.",
+          "urgency": "today",
+          "decide_within_minutes": 480
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "stop",
+        "at": "2026-10-24T16:29:04.095Z",
+        "reason": "needs_person",
+        "summary": "The delivery promise of 27 Oct holds with any sailing through 25 Oct, so no date change and no customer approval are needed. Nothing is booked yet. The earlier 24 Oct 12:00 booking attempt needs checking with the provider, and that sailing is no longer listed. Camille needs the terminal address to confirm she can make the 20:00 Berlin check-in. Her return travel is still not arranged."
+      }
+    ]
+  },
+  "orderId": "ord-00299",
+  "orderReference": "CD-420299",
+  "car": "BMW M4",
+  "route": "Leipzig → Helsinki",
+  "customer": "Kavellora Car House",
+  "proposals": [
+    {
+      "id": "run-mvmm4qe8x1p-p1",
+      "orderId": "ord-00299",
+      "action": "book_travel",
+      "title": "Book the 23 Oct 20:00 UTC sailing (€300), but first confirm the failed 24 Oct booking left nothing behind",
+      "rationale": "A same-evening sailing on 23 Oct has opened up. It is cheaper than the old quote, needs no hotel and lands well before the 27 Oct delivery promise. The earlier booking attempt has an unverified provider outcome, so a retry could double-book.",
+      "changes": [
+        {
+          "label": "Ferry",
+          "before": "None booked (23 Oct 22:00 UTC sold out; 24 Oct 12:00 UTC €387 attempt failed, outcome unverified)",
+          "after": "Vela Coast Lines, West Baltic → South Finland, departs 23 Oct 20:00 UTC (22:00 Berlin), arrives 25 Oct 00:00 UTC, check-in closes 23 Oct 18:00 UTC, €300 (quote-1du7)"
+        },
+        {
+          "label": "Driver hotel",
+          "before": "None",
+          "after": "None needed with this sailing"
+        },
+        {
+          "label": "Fallback if the driver's route check fails",
+          "before": "None",
+          "after": "24 Oct 10:00 UTC sailing €420 (quote-xn0) + Nordlicht Hotel night of 23 Oct €103, free cancellation, total €523"
+        },
+        {
+          "label": "Pickup slot",
+          "before": "23 Oct 09:00–11:00 UTC",
+          "after": "Unchanged"
+        },
+        {
+          "label": "Delivery promise",
+          "before": "27 Oct 11:00–13:00 UTC (Helsinki)",
+          "after": "Unchanged"
+        }
+      ],
+      "evidence": [],
+      "status": "pending",
+      "createdAt": "2026-10-24T16:28:59.351Z",
+      "createdBy": "road-agent",
+      "whatHappensNext": "Before booking: check with Vela Coast Lines that the failed 24 Oct 12:00 attempt created no reservation or charge. Send Camille the terminal address and get her to confirm the drive from Leipzig is under about 5 hours. If both are fine, book quote-1du7. If the drive is too long, use the fallback.",
+      "whatHappensAfter": "The ferry is booked and Camille gets the reference and terminal address. Her return travel from Helsinki still has to be arranged. The delivery date stays the same, so no later date needs customer approval. The sold-out alert can be closed once the reference is on the order."
+    }
+  ],
+  "facts": [
+    {
+      "id": "run-mvmm4qe8x1p-f1",
+      "text": "Nothing is booked: no ferry, no hotel. The driver confirms she has no ferry reference. An earlier attempt to book the 24 Oct 12:00 UTC sailing shows as failed, and the check on what the provider actually did is still waiting for review.",
+      "strength": "verified",
+      "sources": [
+        {
+          "kind": "system",
+          "label": "Travel record and earlier agent proposals",
+          "at": "2026-10-21T09:00:00Z",
+          "recordId": "agent-x4ac988b20000595f"
+        }
+      ]
+    },
+    {
+      "id": "run-mvmm4qe8x1p-f2",
+      "text": "Fresh search: a 23 Oct sailing at 20:00 UTC (22:00 Berlin) has vehicle space for €300. It arrives 25 Oct 00:00 UTC and check-in closes 23 Oct 18:00 UTC (20:00 Berlin). The 24 Oct 12:00 UTC sailing quoted earlier for €387 is no longer listed. The closest daytime option is 24 Oct 10:00 UTC for €420. These are quotes only.",
+      "strength": "quote",
+      "sources": [
+        {
+          "kind": "provider",
+          "label": "Ferry quote",
+          "at": "2026-10-21T09:00:00Z",
+          "recordId": "quote-1du7"
+        }
+      ]
+    },
+    {
+      "id": "run-mvmm4qe8x1p-f3",
+      "text": "Every sailing up to 25 Oct 10:00 UTC still arrives before the delivery promise of 27 Oct 11:00–13:00 UTC (Helsinki window). No change to the delivery date is needed, and the customer has asked to approve any later date first.",
+      "strength": "estimate",
+      "sources": [
+        {
+          "kind": "agent",
+          "label": "Delivery promise vs ferry arrival",
+          "at": "2026-10-21T09:00:00Z",
+          "recordId": "win-xd989292fd4c1ccb9"
+        }
+      ]
+    },
+    {
+      "id": "run-mvmm4qe8x1p-f4",
+      "text": "The driver says she can make the 23 Oct 20:00 Berlin check-in if the terminal is under about 5 hours from Leipzig, but she needs the terminal address to check the route. Her fallback is a later sailing plus one hotel night, with her return travel arranged. Her pickup time stays the same.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "driver",
+          "label": "Driver call",
+          "actorName": "Camille Emberwick",
+          "at": "2026-10-21T09:00:00Z",
+          "recordId": "sim-mvmm5avr"
+        }
+      ]
+    }
+  ],
+  "model": "anthropic/claude-opus-5.5",
+  "usage": {
+    "inputTokens": 51038,
+    "outputTokens": 4307
+  },
+  "outcome": "needs_person",
+  "headline": "Book the newly open 23 Oct 20:00 UTC sailing (€300, no hotel)? First check the failed 24 Oct booking left nothing behind.",
+  "summary": "The delivery promise of 27 Oct holds with any sailing through 25 Oct, so no date change and no customer approval are needed. Nothing is booked yet. The earlier 24 Oct 12:00 booking attempt needs checking with the provider, and that sailing is no longer listed. Camille needs the terminal address to confirm she can make the 20:00 Berlin check-in. Her return travel is still not arranged.",
+  "agentDid": "Read the records, ran a fresh ferry and hotel search, phoned the driver, noted 4 facts and made one booking proposal with a fallback.",
+  "urgency": "today",
+  "decideBy": "2026-10-21T17:00:00.000Z"
+}

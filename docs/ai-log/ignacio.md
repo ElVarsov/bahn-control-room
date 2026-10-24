@@ -60,3 +60,20 @@ tunnel). Real phone network stays a stretch goal.
 - GitHub cannot say "only the other lane needs approval" (code-owner review also blocks your own
   PRs). Instead: a `lane-guard` check that reads `.github/lanes.json` from the base branch, passes
   at once for your own lane and waits for the other person otherwise. `main` only takes PRs.
+
+## The road agent loop (built in Lane B on a branch, PR for Antoni)
+- Asked for a real Claude tool-use loop: read tools over the dataset, mock ferry/hotel search,
+  `call_driver` (rings the real phone if the driver app is open, else a simulated driver who
+  answers from that driver's real messages), `note_fact` with strength and source record,
+  `propose` for anything that changes the world, `finish`. Every run is a trace in `traces/`.
+- **First run rejected:** the mock ferry search invented a sailing the dataset does not have,
+  so the agent proposed a ship that does not exist. Fixed by searching the dataset's shared
+  timetable instead of generating one. Also forbade UTC in operator text and guessing gender.
+- **The agent caught our mistake:** our hand-written CD-420299 case said delivery moves to
+  28 Oct. The agent worked out that the 24 Oct sailing still arrives before the 27 Oct promise.
+- It skipped the phone call on CD-420299 because the conversation already had the driver's
+  answer, and called on CD-420322 because the location was unknown. Cheap first, as asked.
+- Approving a booking first booked straight away, ignoring the agent's own warning about a
+  failed earlier attempt. The approval step now checks with the provider first.
+- A second run left the first run's proposal open, so two plans could be approved. Older
+  proposals are now "superseded" when a new run starts.

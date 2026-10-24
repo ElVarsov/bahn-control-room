@@ -87,6 +87,18 @@ function emit(type: CallEvent["type"], call: LiveCall) {
   store().events.emit("call", { type, call } satisfies CallEvent)
 }
 
+// Which drivers have the phone page open right now (it polls every second).
+const seen = (globalThis as typeof globalThis & { __voiceSeen?: Map<string, number> })
+const lastSeen = (seen.__voiceSeen ??= new Map<string, number>())
+
+export function markDriverSeen(driverId: string) {
+  lastSeen.set(driverId, Date.now())
+}
+
+export function isDriverOnline(driverId: string): boolean {
+  return Date.now() - (lastSeen.get(driverId) ?? 0) < 10_000
+}
+
 export function allCalls(): LiveCall[] {
   return [...store().calls.values()]
 }

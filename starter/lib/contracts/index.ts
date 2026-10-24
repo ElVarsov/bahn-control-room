@@ -61,6 +61,7 @@ export type Change = {
 
 export type ProposalStatus =
   | "pending" | "approved" | "edited_and_approved" | "rejected" | "executed" | "failed"
+  | "superseded" // a newer agent run replaced it before anyone decided
 
 export type Proposal = {
   id: string
