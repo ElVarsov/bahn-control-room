@@ -1,0 +1,24 @@
+{
+  "$comment": "Who owns which folders. Read by .github/workflows/lane-guard.yml. The first matching rule wins, so specific paths come first. A PR that touches someone else's paths needs their approval; your own paths and unowned paths need nobody. 'shared' paths need the other person whoever opens the PR.",
+  "people": {
+    "ElVarsov": "Lane A: control room UI and voice",
+    "AntoniKajrys": "Lane B: agent and backend"
+  },
+  "rules": [
+    { "path": ".github/", "owners": ["ElVarsov", "AntoniKajrys"], "shared": true },
+    { "path": "starter/lib/contracts/", "owners": ["ElVarsov", "AntoniKajrys"], "shared": true },
+    { "path": "starter/app/api/voice/", "owners": ["ElVarsov"] },
+    { "path": "starter/app/api/", "owners": ["AntoniKajrys"] },
+    { "path": "starter/app/settings/", "owners": ["AntoniKajrys"] },
+    { "path": "starter/app/", "owners": ["ElVarsov"] },
+    { "path": "starter/lib/present/", "owners": ["ElVarsov"] },
+    { "path": "starter/lib/voice/", "owners": ["ElVarsov"] },
+    { "path": "starter/scripts/voice-call.ts", "owners": ["ElVarsov"] },
+    { "path": "docs/VOICE.md", "owners": ["ElVarsov"] },
+    { "path": "starter/lib/agent/", "owners": ["AntoniKajrys"] },
+    { "path": "starter/lib/world/", "owners": ["AntoniKajrys"] },
+    { "path": "starter/scripts/eval_agent.py", "owners": ["AntoniKajrys"] },
+    { "path": "starter/scripts/archaeology.py", "owners": ["AntoniKajrys"] },
+    { "path": "traces/", "owners": ["AntoniKajrys"] }
+  ]
+}

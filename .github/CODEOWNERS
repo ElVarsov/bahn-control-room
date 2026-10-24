@@ -1,0 +1,26 @@
+# Asks the right person to review automatically. The actual rule (only the other
+# lane's folders need their approval) is enforced by .github/workflows/lane-guard.yml
+# from .github/lanes.json. Keep the two in step. Later lines win in CODEOWNERS.
+
+# Lane A: control room UI and voice
+/starter/app/                       @ElVarsov
+/starter/lib/present/               @ElVarsov
+/starter/lib/voice/                 @ElVarsov
+/starter/scripts/voice-call.ts      @ElVarsov
+/docs/VOICE.md                      @ElVarsov
+
+# Lane B: agent and backend
+/starter/app/api/                   @AntoniKajrys
+/starter/app/settings/              @AntoniKajrys
+/starter/lib/agent/                 @AntoniKajrys
+/starter/lib/world/                 @AntoniKajrys
+/starter/scripts/eval_agent.py      @AntoniKajrys
+/starter/scripts/archaeology.py     @AntoniKajrys
+/traces/                            @AntoniKajrys
+
+# Voice routes belong to Lane A even though they live under api/
+/starter/app/api/voice/             @ElVarsov
+
+# Shared: both of us
+/starter/lib/contracts/             @ElVarsov @AntoniKajrys
+/.github/                           @ElVarsov @AntoniKajrys
