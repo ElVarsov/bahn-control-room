@@ -16,13 +16,14 @@ function getAnthropicClient(): Anthropic | null {
 
   if (!apiKey && !authToken) return null
 
+  // The SDK accepts exactly one credential. OpenRouter uses the auth token; passing an
+  // empty apiKey next to it makes the SDK refuse, which silently sent every call to the script.
   try {
-    return new Anthropic({
-      apiKey: apiKey || "",
-      authToken: authToken || undefined,
-      baseURL: baseURL || undefined,
-    })
-  } catch {
+    return authToken
+      ? new Anthropic({ authToken, apiKey: null, baseURL: baseURL || undefined })
+      : new Anthropic({ apiKey, baseURL: baseURL || undefined })
+  } catch (error) {
+    console.warn("[voice] could not create the Claude client", error)
     return null
   }
 }
