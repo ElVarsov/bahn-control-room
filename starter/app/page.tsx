@@ -3,10 +3,8 @@ import Link from "next/link"
 import { getQueue, OPS_ZONE } from "@/lib/present/source"
 import { fmtWeekday, fmtClock } from "@/lib/present/time"
 import { AppFrame } from "./components/app-frame"
-import { Icon } from "./components/icons"
-import { AgentsWorking } from "./components/queue/agents-working"
 import { LiveRefresh } from "./components/queue/live-refresh"
-import { QueueList } from "./components/queue/queue-list"
+import { DashboardView } from "./components/queue/dashboard-view"
 
 export const metadata: Metadata = { title: "Needs you · Control Room" }
 export const dynamic = "force-dynamic"
@@ -21,7 +19,7 @@ export default async function NeedsYou() {
     <AppFrame section="queue" snapshotAt={queue.snapshotAt}>
       <main className="page queue-page">
         <LiveRefresh />
-        <header className="queue-head">
+        <header className="queue-head" style={{ marginBottom: "16px" }}>
           <div>
             <h1 className="queue-title">Needs you{decisions > 0 && <span className="queue-count num">{decisions}</span>}</h1>
             <p className="queue-sub">
@@ -33,25 +31,13 @@ export default async function NeedsYou() {
           <p className="queue-keys" aria-hidden="true"><kbd>J</kbd><kbd>K</kbd> move <kbd>Enter</kbd> open</p>
         </header>
 
-        {decisions === 0
-          ? (
-            <section className="queue-empty">
-              <Icon name="check" size={22} />
-              <h2>Nothing needs you right now.</h2>
-              <p>Agents are working on {working} {working === 1 ? "order" : "orders"} and {queue.quiet.count} are running quietly. New decisions appear here on their own.</p>
-            </section>
-          )
-          : <QueueList items={queue.needsPerson} snapshotAt={queue.snapshotAt} zone={OPS_ZONE} />}
-
-        {working > 0 && <AgentsWorking items={queue.agentsWorking ?? []} snapshotAt={queue.snapshotAt} />}
-
-        <section className="queue-quiet">
-          <Icon name="eye" />
-          <p>
-            <b>{queue.quiet.count} orders are running quietly.</b> Agents watch them and bring them here if something changes.
-          </p>
-          <Link href="/board" className="quiet-link">See all orders <Icon name="arrow" size={14} /></Link>
-        </section>
+        <DashboardView
+          items={queue.needsPerson}
+          workingItems={queue.agentsWorking ?? []}
+          snapshotAt={queue.snapshotAt}
+          zone={OPS_ZONE}
+          quietCount={queue.quiet.count}
+        />
       </main>
     </AppFrame>
   )
