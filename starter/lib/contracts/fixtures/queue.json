@@ -1,0 +1,25 @@
+{
+  "snapshotAt": "2026-10-21T09:00:00Z",
+  "needsPerson": [
+    {
+      "id": "q-299",
+      "orderId": "ord-00299",
+      "orderReference": "CD-420299",
+      "car": "BMW M4",
+      "route": "Leipzig → Helsinki",
+      "headline": "Ferry sold out. Approve the next-day sailing and a later delivery?",
+      "why": "The overnight crossing on 23 Oct is sold out and the earlier booking attempt timed out with no reference.",
+      "urgency": "today",
+      "decideBy": "2026-10-23T20:00:00Z",
+      "proposalId": "prop-299-rebook",
+      "agentState": "needs_person",
+      "updatedAt": "2026-10-21T08:52:00Z"
+    }
+  ],
+  "quiet": {
+    "count": 70,
+    "sample": [
+      { "orderId": "ord-00004", "orderReference": "CD-420004", "car": "Porsche Taycan", "stage": "Delivered" }
+    ]
+  }
+}

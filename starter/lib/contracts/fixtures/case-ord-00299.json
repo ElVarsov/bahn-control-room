@@ -1,0 +1,68 @@
+{
+  "orderId": "ord-00299",
+  "orderReference": "CD-420299",
+  "headline": "Ferry sold out. The car can still arrive one day late if the next sailing is booked today.",
+  "facts": [
+    {
+      "id": "f1",
+      "text": "The overnight vehicle crossing on 23 Oct 22:00 is sold out.",
+      "strength": "verified",
+      "sources": [{ "kind": "provider", "label": "Vela Coast Lines capacity check", "at": "2026-10-21T07:00:00Z", "table": "travel_options", "recordId": "travel-xc1d8163d5443a606" }]
+    },
+    {
+      "id": "f2",
+      "text": "The earlier booking attempt timed out. No reservation exists.",
+      "strength": "verified",
+      "sources": [{ "kind": "agent", "label": "Travel agent booking attempt", "at": "2026-10-21T07:10:00Z", "table": "agent_proposals", "recordId": "agent-x4ac988b20000595f" }]
+    },
+    {
+      "id": "f3",
+      "text": "The 24 Oct 12:00 sailing has a vehicle slot quoted, not booked.",
+      "strength": "quote",
+      "sources": [{ "kind": "provider", "label": "Vela Coast Lines quote", "at": "2026-10-21T07:00:00Z", "table": "travel_options" }]
+    },
+    {
+      "id": "f4",
+      "text": "The driver can take the later sailing if the overnight stop and return travel are arranged.",
+      "strength": "reported",
+      "sources": [{ "kind": "driver", "label": "Driver chat", "actorName": "Camille Emberwick", "at": "2026-10-21T08:05:00Z", "table": "messages" }]
+    },
+    {
+      "id": "f5",
+      "text": "The dealer wants to approve any later delivery date before it is promised.",
+      "strength": "reported",
+      "sources": [{ "kind": "customer", "label": "Customer email", "actorName": "Kavellora Car House", "at": "2026-10-21T07:56:00Z", "table": "messages", "recordId": "msg-x3bff36f16b754c46" }]
+    }
+  ],
+  "proposals": [
+    {
+      "id": "prop-299-rebook",
+      "orderId": "ord-00299",
+      "action": "book_travel",
+      "title": "Book the 24 Oct 12:00 sailing and one hotel night near the terminal",
+      "rationale": "It is the first sailing with a vehicle slot. The driver agreed if the overnight stop is arranged. Delivery moves one day, so the dealer must agree first.",
+      "changes": [
+        { "label": "Ferry", "before": "23 Oct 22:00 (sold out, not booked)", "after": "24 Oct 12:00, vehicle slot" },
+        { "label": "Hotel", "before": null, "after": "1 night, 23 Oct, near West Baltic terminal" },
+        { "label": "Delivery promise", "before": "27 Oct 13:00–15:00 EET", "after": "28 Oct 13:00–15:00 EET (needs dealer approval)" },
+        { "label": "Extra cost", "before": null, "after": "€ 412 (ferry difference + hotel), estimate" }
+      ],
+      "draftMessage": {
+        "to": "Kavellora Car House",
+        "channel": "customer_email",
+        "body": "The overnight ferry for CD-420299 is sold out. The next sailing with space arrives one day later, so delivery would be 28 Oct 13:00–15:00. Can you confirm this works for the receiving contact?"
+      },
+      "evidence": [],
+      "status": "pending",
+      "createdAt": "2026-10-21T08:50:00Z",
+      "createdBy": "road-agent",
+      "whatHappensNext": "On approval the agent sends the dealer this message. When the dealer agrees, it books the sailing and hotel and tells the driver. If the dealer says no, it comes back to you."
+    }
+  ],
+  "runs": [],
+  "timeline": [
+    { "id": "t1", "at": "2026-10-21T07:20:00Z", "actor": { "kind": "driver", "name": "Camille Emberwick" }, "channel": "driver_chat", "visibility": "public", "text": "I have the gig for CD-420299, but I do not have a ferry reference. Is the overnight vehicle crossing booked?" },
+    { "id": "t2", "at": "2026-10-21T07:38:00Z", "actor": { "kind": "operator", "name": "Ops travel" }, "channel": "internal_note", "visibility": "internal", "text": "The overnight sailing returned sold out. The later sailing has a quote only. Check driver rest and customer promise before purchase." },
+    { "id": "t3", "at": "2026-10-21T07:56:00Z", "actor": { "kind": "customer", "name": "Kavellora Car House" }, "channel": "customer_email", "visibility": "public", "text": "Please keep us informed. We need to approve a later delivery date before it is promised to the receiving contact." }
+  ]
+}
