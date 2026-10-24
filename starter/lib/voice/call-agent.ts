@@ -6,8 +6,11 @@ import Anthropic from "@anthropic-ai/sdk"
 import type { Fact } from "@/lib/contracts"
 import type { LiveCall } from "./store"
 
+// Works against Anthropic directly or through OpenRouter: the SDK reads
+// ANTHROPIC_BASE_URL and ANTHROPIC_AUTH_TOKEN from the environment.
 const client = new Anthropic()
-const MODEL = process.env.VOICE_MODEL ?? "claude-opus-5-5"
+const VIA_OPENROUTER = (process.env.ANTHROPIC_BASE_URL ?? "").includes("openrouter.ai")
+const MODEL = process.env.VOICE_MODEL || (VIA_OPENROUTER ? "anthropic/claude-opus-5.5" : "claude-opus-5-5")
 
 const SYSTEM = `You are the Bahn operations assistant, an AI agent, speaking on a phone call with one of Bahn's freelance car delivery drivers.
 Latency-sensitive; begin your visible answer immediately.
@@ -56,8 +59,8 @@ export async function nextAgentTurn(call: LiveCall): Promise<AgentTurn> {
   const response = await client.beta.messages.create({
     model: MODEL,
     max_tokens: 2000,
-    betas: ["server-side-fallback-2026-07-01"],
-    fallbacks: "default",
+    // Server-side refusal fallback is an Anthropic API feature; OpenRouter may not pass it through.
+    ...(VIA_OPENROUTER ? {} : { betas: ["server-side-fallback-2026-07-01"], fallbacks: "default" as const }),
     output_config: { effort: "low", format: { type: "json_schema", schema: OUTPUT_SCHEMA } },
     system: SYSTEM,
     messages: [{ role: "user", content: `${brief}\n\nCall so far:\n${transcript}` }],
@@ -67,7 +70,9 @@ export async function nextAgentTurn(call: LiveCall): Promise<AgentTurn> {
     return { say: "Sorry, I have to hand this over to a colleague. Someone from Bahn will call you back.", end_call: true, summary: "The assistant could not continue the call.", facts: [] }
   }
   const text = response.content.flatMap((block) => (block.type === "text" ? [block.text] : [])).join("")
-  return JSON.parse(text) as AgentTurn
+  // Structured output should give bare JSON; if a gateway drops the format, take the outermost object.
+  const json = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1)
+  return JSON.parse(json) as AgentTurn
 }
 
 export function factsFromCall(call: LiveCall, statements: string[]): Fact[] {

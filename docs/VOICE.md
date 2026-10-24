@@ -56,6 +56,21 @@ const result = await callDriver({ orderId, driverId, driverName, purpose, questi
 `callDriver` resolves when the call ends. It is a **free** tool: drivers may be
 contacted without approval. It must never be pointed at a customer.
 
+## Claude access
+
+We use the organisers' OpenRouter credits. In `starter/.env`:
+
+```
+ANTHROPIC_API_KEY=
+ANTHROPIC_BASE_URL=https://openrouter.ai/api
+ANTHROPIC_AUTH_TOKEN=<your OpenRouter key>
+VOICE_MODEL=anthropic/claude-haiku-5.5
+```
+
+A call is about 8 to 10 short turns: well under 1 cent on Haiku 5.5, roughly
+10 to 20 cents on Opus 5.5 (same prices as Anthropic's own API). Test with Haiku,
+decide on the demo model later.
+
 ## Try it
 
 ```sh
