@@ -509,12 +509,13 @@ export function FleetMap() {
         maxZoom: 19,
       }).addTo(map)
 
-      // Baltic Sea shipping lane polyline
+      // Baltic Sea shipping lane polyline (interactive: false so clicks pass through to map)
       L.polyline(BALTIC_FERRY_LINE, {
         color: "#1a5a8a",
         weight: 2.5,
         dashArray: "6, 6",
         opacity: 0.75,
+        interactive: false,
       }).addTo(map)
 
       // Scandlines Fehmarn crossing polyline
@@ -523,6 +524,7 @@ export function FleetMap() {
         weight: 3.5,
         dashArray: "4, 4",
         opacity: 0.85,
+        interactive: false,
       }).addTo(map)
 
       // Hubs Layer
@@ -544,10 +546,10 @@ export function FleetMap() {
       markersLayerRef.current = markersGroup
       mapInstanceRef.current = map
 
-      // Map canvas click: unselect active vessel or vehicle when clicking empty map space
+      // Map canvas click: unselect active vessel and restore default fleet vehicle
       map.on("click", () => {
         setSelectedVessel(null)
-        setSelectedVehicle(null)
+        setSelectedVehicle(VEHICLES[0])
       })
 
       // Invalidate size once DOM layout is settled to ensure tiles fill the viewport
@@ -581,28 +583,37 @@ export function FleetMap() {
       const markersGroup = markersLayerRef.current
       markersGroup.clearLayers()
 
-      // Render Baltic RoRo Transporters
-      VESSELS.forEach((vessel) => {
-        const isSelected = selectedVessel?.id === vessel.id
-        const vesselIcon = L.divIcon({
-          className: "custom-vessel-icon",
-          html: `
-            <div style="background:${isSelected ? "#12110e" : "#2472a4"};color:#fff;padding:3px 7px;border-radius:12px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px;box-shadow:${isSelected ? "0 0 0 3px #3b82f6, 0 3px 8px rgba(0,0,0,0.4)" : "0 2px 6px rgba(0,0,0,0.3)"};border:2px solid #fff;white-space:nowrap;cursor:pointer;transition:transform 0.15s ease;transform:${isSelected ? "scale(1.08)" : "scale(1)"};">
-              <span>🚢</span> ${vessel.name.split(" ")[1]} (${vessel.carsOnboard})
-            </div>
-          `,
-          iconSize: [100, 24],
-          iconAnchor: [50, 12],
-        })
+      // Render Baltic RoRo Transporters (Only in ALL or FERRIES filter mode)
+      const showVessels = filter === "ALL" || filter === "FERRIES"
+      if (showVessels) {
+        VESSELS.forEach((vessel) => {
+          const isSelected = selectedVessel?.id === vessel.id
+          const vesselIcon = L.divIcon({
+            className: "custom-vessel-icon",
+            html: `
+              <div style="background:${isSelected ? "#12110e" : "#1a5a8a"};color:#fff;padding:3px 7px;border-radius:12px;font-size:11px;font-weight:700;display:flex;align-items:center;gap:4px;box-shadow:${isSelected ? "0 0 0 3px #3b82f6, 0 3px 8px rgba(0,0,0,0.4)" : "0 2px 6px rgba(0,0,0,0.3)"};border:2px solid #fff;white-space:nowrap;cursor:pointer;transition:transform 0.15s ease;transform:${isSelected ? "scale(1.08)" : "scale(1)"};">
+                <span>🚢</span> ${vessel.name.split(" ")[1]} (${vessel.carsOnboard})
+              </div>
+            `,
+            iconSize: [100, 24],
+            iconAnchor: [50, 12],
+          })
 
-        const marker = L.marker([vessel.lat, vessel.lng], { icon: vesselIcon }).addTo(markersGroup)
-        marker.on("click", (e: any) => {
-          if (e?.originalEvent) L.DomEvent?.stopPropagation?.(e.originalEvent)
-          // Toggle selection: if already selected, unselect it cleanly
-          setSelectedVessel((prev) => (prev?.id === vessel.id ? null : vessel))
-          setSelectedVehicle(null)
+          const marker = L.marker([vessel.lat, vessel.lng], { icon: vesselIcon }).addTo(markersGroup)
+          marker.on("click", (e: any) => {
+            if (e?.originalEvent) L.DomEvent?.stopPropagation?.(e.originalEvent)
+            // Toggle selection: if already selected, unselect it cleanly and restore default vehicle
+            setSelectedVessel((prev) => {
+              if (prev?.id === vessel.id) {
+                setSelectedVehicle(VEHICLES[0])
+                return null
+              }
+              setSelectedVehicle(null)
+              return vessel
+            })
+          })
         })
-      })
+      }
 
       // Render Vehicles with Small Car Icons (Replaces simple dots)
       filteredVehicles.forEach((v) => {
@@ -655,7 +666,7 @@ export function FleetMap() {
     }).catch((err) => {
       console.error("[FleetMap] Failed to update markers:", err)
     })
-  }, [filteredVehicles, selectedVehicle, selectedVessel])
+  }, [filter, filteredVehicles, selectedVehicle, selectedVessel])
 
   const flyToCoords = (lat: number, lng: number) => {
     if (mapInstanceRef.current) {
@@ -702,80 +713,148 @@ export function FleetMap() {
 
         {/* Filter Pills */}
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flexWrap: "wrap" }}>
+          {/* All Corridors */}
           <button
             type="button"
             onClick={() => setFilter("ALL")}
             style={{
-              padding: "5px 12px",
-              borderRadius: "7px",
+              padding: "6px 13px",
+              borderRadius: "8px",
               fontSize: "12px",
               fontWeight: 600,
               border: filter === "ALL" ? "1px solid var(--ink)" : "1px solid var(--hair)",
               background: filter === "ALL" ? "var(--ink)" : "var(--canvas)",
-              color: filter === "ALL" ? "#fff" : "var(--ink)",
+              color: filter === "ALL" ? "#ffffff" : "var(--ink)",
               cursor: "pointer",
+              transition: "all 0.15s ease",
             }}
           >
             All Corridors (100)
           </button>
 
+          {/* Exceptions */}
           <button
             type="button"
-            onClick={() => setFilter((prev) => (prev === "EXCEPTIONS" ? "ALL" : "EXCEPTIONS"))}
+            onClick={() => setFilter(filter === "EXCEPTIONS" ? "ALL" : "EXCEPTIONS")}
             style={{
-              padding: "5px 12px",
-              borderRadius: "7px",
+              padding: "6px 13px",
+              borderRadius: "8px",
               fontSize: "12px",
               fontWeight: 600,
               border: filter === "EXCEPTIONS" ? "1px solid var(--red)" : "1px solid var(--hair)",
               background: filter === "EXCEPTIONS" ? "var(--red-bg)" : "var(--canvas)",
-              color: "var(--red-ink)",
+              color: filter === "EXCEPTIONS" ? "var(--red-ink)" : "var(--ink)",
               cursor: "pointer",
               display: "flex",
               alignItems: "center",
               gap: "6px",
+              transition: "all 0.15s ease",
             }}
             title={filter === "EXCEPTIONS" ? "Click to unselect / show all" : "Filter exceptions"}
           >
             <span style={{ width: "6px", height: "6px", borderRadius: "50%", background: "var(--red)" }} />
-            Exceptions ({counts.exceptions})
+            <span>Exceptions ({counts.exceptions})</span>
+            {filter === "EXCEPTIONS" && (
+              <span style={{ marginLeft: "2px", fontWeight: 700, fontSize: "11px", opacity: 0.8 }}>✕</span>
+            )}
           </button>
 
+          {/* Baltic Ferries & Ships */}
           <button
             type="button"
-            onClick={() => setFilter((prev) => (prev === "FERRIES" ? "ALL" : "FERRIES"))}
+            onClick={() => setFilter(filter === "FERRIES" ? "ALL" : "FERRIES")}
             style={{
-              padding: "5px 12px",
-              borderRadius: "7px",
+              padding: "6px 14px",
+              borderRadius: "8px",
               fontSize: "12px",
-              fontWeight: 600,
-              border: filter === "FERRIES" ? "1px solid var(--blue)" : "1px solid var(--hair)",
-              background: filter === "FERRIES" ? "var(--blue-bg)" : "var(--canvas)",
-              color: "var(--blue-ink)",
+              fontWeight: 700,
+              border: filter === "FERRIES" ? "1.5px solid #1a5a8a" : "1px solid var(--hair)",
+              background: filter === "FERRIES" ? "#1a5a8a" : "var(--canvas)",
+              color: filter === "FERRIES" ? "#ffffff" : "#1a5a8a",
+              boxShadow: filter === "FERRIES" ? "0 2px 8px rgba(26,90,138,0.3)" : "none",
               cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              transition: "all 0.15s ease",
             }}
-            title={filter === "FERRIES" ? "Click to unselect / show all" : "Filter Baltic sea travel"}
+            title={filter === "FERRIES" ? "Click to unselect / return to all corridors" : "Filter Baltic Ferries & Ships"}
           >
-            🚢 Baltic Ferries & Ships (3)
+            <span>🚢</span>
+            <span>Baltic Ferries &amp; Ships ({counts.ferries})</span>
+            {filter === "FERRIES" ? (
+              <span
+                style={{
+                  marginLeft: "4px",
+                  background: "rgba(255,255,255,0.25)",
+                  borderRadius: "50%",
+                  width: "16px",
+                  height: "16px",
+                  display: "inline-flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  fontSize: "10px",
+                  fontWeight: 800,
+                }}
+                title="Click to unselect"
+              >
+                ✕
+              </span>
+            ) : null}
           </button>
 
+          {/* Highway Transit */}
           <button
             type="button"
-            onClick={() => setFilter((prev) => (prev === "IN_TRANSIT" ? "ALL" : "IN_TRANSIT"))}
+            onClick={() => setFilter(filter === "IN_TRANSIT" ? "ALL" : "IN_TRANSIT")}
             style={{
-              padding: "5px 12px",
-              borderRadius: "7px",
+              padding: "6px 13px",
+              borderRadius: "8px",
               fontSize: "12px",
               fontWeight: 600,
               border: filter === "IN_TRANSIT" ? "1px solid var(--teal)" : "1px solid var(--hair)",
               background: filter === "IN_TRANSIT" ? "var(--teal-bg)" : "var(--canvas)",
-              color: "var(--teal-ink)",
+              color: filter === "IN_TRANSIT" ? "var(--teal-ink)" : "var(--ink)",
               cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              gap: "6px",
+              transition: "all 0.15s ease",
             }}
             title={filter === "IN_TRANSIT" ? "Click to unselect / show all" : "Filter highway transit"}
           >
-            🚗 Highway Transit ({counts.transit})
+            <span>🚗</span>
+            <span>Highway Transit ({counts.transit})</span>
+            {filter === "IN_TRANSIT" && (
+              <span style={{ marginLeft: "2px", fontWeight: 700, fontSize: "11px", opacity: 0.8 }}>✕</span>
+            )}
           </button>
+
+          {/* Dedicated Clear Filter / Unselect Pill when any filter is active */}
+          {filter !== "ALL" && (
+            <button
+              type="button"
+              onClick={() => setFilter("ALL")}
+              style={{
+                padding: "5px 11px",
+                borderRadius: "8px",
+                fontSize: "11.5px",
+                fontWeight: 600,
+                border: "1px dashed var(--sand)",
+                background: "var(--hair-soft)",
+                color: "var(--brown)",
+                cursor: "pointer",
+                display: "inline-flex",
+                alignItems: "center",
+                gap: "5px",
+                transition: "all 0.15s ease",
+              }}
+              title="Unselect filter and show all 100 corridors"
+            >
+              <span style={{ fontWeight: 800, fontSize: "12px" }}>✕</span>
+              <span>Unselect Filter</span>
+            </button>
+          )}
 
           <button
             type="button"
@@ -871,13 +950,13 @@ export function FleetMap() {
                         selectedVehicle.status === "EXCEPTION"
                           ? "var(--red-bg)"
                           : selectedVehicle.status === "ON_FERRY"
-                          ? "var(--blue-bg)"
+                          ? "#e8f2f9"
                           : "var(--teal-bg)",
                       color:
                         selectedVehicle.status === "EXCEPTION"
                           ? "var(--red-ink)"
                           : selectedVehicle.status === "ON_FERRY"
-                          ? "var(--blue-ink)"
+                          ? "#0d3d63"
                           : "var(--teal-ink)",
                       textTransform: "uppercase",
                       letterSpacing: "0.04em",
@@ -1041,12 +1120,12 @@ export function FleetMap() {
           ) : selectedVessel ? (
             <>
               {/* Vessel Inspector */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", background: "#e8f2f9", border: "1px solid rgba(26,90,138,0.25)", borderRadius: "8px", padding: "10px 12px" }}>
                 <div>
-                  <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 7px", borderRadius: "6px", background: "var(--blue-bg)", color: "var(--blue-ink)", textTransform: "uppercase" }}>
-                    Baltic Car Carrier
+                  <span style={{ fontSize: "11px", fontWeight: 700, padding: "2px 7px", borderRadius: "6px", background: "#1a5a8a", color: "#ffffff", textTransform: "uppercase" }}>
+                    Baltic RoRo Transporter
                   </span>
-                  <h3 style={{ fontSize: "17px", fontWeight: 700, margin: "6px 0 2px 0", color: "var(--ink)" }}>
+                  <h3 style={{ fontSize: "17px", fontWeight: 700, margin: "6px 0 2px 0", color: "#0d3d63" }}>
                     {selectedVessel.name}
                   </h3>
                   <div style={{ fontSize: "12px", color: "var(--muted)" }}>{selectedVessel.operator}</div>
@@ -1054,26 +1133,29 @@ export function FleetMap() {
 
                 <button
                   type="button"
-                  onClick={() => setSelectedVessel(null)}
+                  onClick={() => {
+                    setSelectedVessel(null)
+                    setSelectedVehicle(VEHICLES[0])
+                  }}
                   style={{
-                    background: "var(--hair-soft)",
-                    border: "1px solid var(--hair)",
+                    background: "#ffffff",
+                    border: "1px solid rgba(26,90,138,0.3)",
                     borderRadius: "6px",
-                    width: "28px",
-                    height: "28px",
+                    padding: "4px 8px",
                     display: "flex",
                     alignItems: "center",
-                    justifyContent: "center",
+                    gap: "4px",
                     cursor: "pointer",
-                    color: "var(--muted)",
-                    fontSize: "14px",
-                    lineHeight: 1,
+                    color: "#0d3d63",
+                    fontSize: "12px",
+                    fontWeight: 700,
+                    boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
                     transition: "all 0.15s ease",
                   }}
                   title="Unselect sea travel"
                   aria-label="Unselect sea travel"
                 >
-                  ✕
+                  ✕ Unselect
                 </button>
               </div>
 
@@ -1120,34 +1202,38 @@ export function FleetMap() {
                   onClick={() => flyToCoords(selectedVessel.lat, selectedVessel.lng)}
                   style={{
                     flex: 1,
-                    background: "var(--blue-bg)",
-                    color: "var(--blue-ink)",
+                    background: "#e8f2f9",
+                    color: "#0d3d63",
                     border: "1px solid rgba(26,90,138,0.25)",
-                    padding: "8px 12px",
-                    borderRadius: "7px",
-                    fontWeight: 600,
+                    padding: "9px 12px",
+                    borderRadius: "8px",
+                    fontWeight: 700,
                     fontSize: "12px",
                     cursor: "pointer",
                   }}
                 >
-                  Track vessel on map ({selectedVessel.lat}°N, {selectedVessel.lng}°E)
+                  Track vessel on map
                 </button>
                 <button
                   type="button"
-                  onClick={() => setSelectedVessel(null)}
+                  onClick={() => {
+                    setSelectedVessel(null)
+                    setSelectedVehicle(VEHICLES[0])
+                  }}
                   style={{
-                    background: "var(--canvas)",
-                    color: "var(--brown)",
-                    border: "1px solid var(--hair)",
-                    padding: "8px 14px",
-                    borderRadius: "7px",
-                    fontWeight: 600,
-                    fontSize: "12px",
+                    background: "var(--ink)",
+                    color: "#ffffff",
+                    border: "none",
+                    padding: "9px 16px",
+                    borderRadius: "8px",
+                    fontWeight: 700,
+                    fontSize: "12.5px",
                     cursor: "pointer",
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.15)",
                   }}
                   title="Unselect sea travel"
                 >
-                  Unselect
+                  ✕ Unselect
                 </button>
               </div>
             </>
