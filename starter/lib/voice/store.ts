@@ -57,6 +57,11 @@ export function ringingCallFor(driverId: string): LiveCall | undefined {
   return [...store().calls.values()].find((call) => call.request.driverId === driverId && call.status === "ringing")
 }
 
+/** The driver's most recent call, for phones that poll instead of holding a stream open. */
+export function latestCallFor(driverId: string): LiveCall | undefined {
+  return [...store().calls.values()].filter((call) => call.request.driverId === driverId).at(-1)
+}
+
 export function updateCall(id: string, patch: Partial<LiveCall>): LiveCall | undefined {
   const call = getCall(id)
   if (!call) return undefined

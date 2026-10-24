@@ -64,3 +64,16 @@
 .typeBox { display: flex; gap: 8px; width: 100%; max-width: 420px; }
 .typeBox input { flex: 1; font: inherit; padding: 12px; border-radius: 12px; border: 0; }
 .typeBox button { font: inherit; font-weight: 600; padding: 12px 16px; border-radius: 12px; border: 0; background: var(--birch); }
+.typeBox input:disabled, .typeBox button:disabled { opacity: 0.5; }
+.micError { margin: 0; font-size: 14px; color: var(--orange); max-width: 320px; }
+.sendHeard {
+  font: inherit; font-weight: 600; font-size: 16px;
+  border: 0; border-radius: 999px; padding: 12px 28px;
+  background: var(--teal); color: white; cursor: pointer;
+}
+.micErrorLight { margin: 0; font-size: 14px; color: var(--orange-ink); max-width: 320px; }
+.secondary {
+  font: inherit; font-weight: 500; font-size: 15px;
+  border: 1px solid var(--sand); border-radius: 999px; padding: 10px 24px;
+  background: transparent; color: var(--ink); cursor: pointer;
+}

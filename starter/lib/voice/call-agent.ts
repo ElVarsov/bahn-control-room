@@ -27,7 +27,8 @@ Output JSON only:
 - say: what you speak next.
 - end_call: true only on your final goodbye turn.
 - summary: one plain sentence for the operations team about what you learned so far.
-- facts: short statements the driver made that answer the questions, in third person ("Driver says the car is stopped at the A7 service area near Soltau."). Only things the driver actually said.`
+- facts: short statements the driver made that answer the questions, in third person ("Driver says the car is stopped at the A7 service area near Soltau."). Only things the driver actually said.
+In summary and facts, refer to the driver as "the driver" or by name, and use "they" if you need a pronoun. Never guess gender from a name.`
 
 const OUTPUT_SCHEMA = {
   type: "object",

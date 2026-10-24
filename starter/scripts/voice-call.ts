@@ -36,9 +36,13 @@ const request: CallRequest = {
   context: `Car: ${car}. Order ${order?.reference ?? orderId}.`,
 }
 
-console.log(`Calling ${request.driverName} (${driverId}) about ${order?.reference ?? orderId}…`)
-const result = await callDriverRemote(appUrl, request)
-console.log(`\nCall ${result.status}.`)
-for (const turn of result.transcript) console.log(`${turn.speaker === "agent" ? "Agent " : "Driver"}: ${turn.text}`)
-console.log(`\nSummary: ${result.summary}`)
-for (const fact of result.facts) console.log(`  · ${fact.text} (${fact.strength}, ${fact.sources[0]?.label})`)
+async function main() {
+  console.log(`Calling ${request.driverName} (${driverId}) about ${order?.reference ?? orderId}…`)
+  const result = await callDriverRemote(appUrl, request)
+  console.log(`\nCall ${result.status}.`)
+  for (const turn of result.transcript) console.log(`${turn.speaker === "agent" ? "Agent " : "Driver"}: ${turn.text}`)
+  console.log(`\nSummary: ${result.summary}`)
+  for (const fact of result.facts) console.log(`  · ${fact.text} (${fact.strength}, ${fact.sources[0]?.label})`)
+}
+
+main().catch((error) => { console.error(error); process.exit(1) })

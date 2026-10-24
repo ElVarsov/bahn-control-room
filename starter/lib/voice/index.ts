@@ -6,7 +6,7 @@ import type { CallRequest, CallResult } from "@/lib/contracts"
 import { factsFromCall, nextAgentTurn } from "./call-agent"
 import { TERMINAL, addTurn, createCall, getCall, subscribe, toResult, updateCall, type LiveCall } from "./store"
 
-export { getCall, ringingCallFor, subscribe, toResult } from "./store"
+export { getCall, latestCallFor, ringingCallFor, subscribe, toResult } from "./store"
 
 const RING_SECONDS = Number(process.env.VOICE_RING_SECONDS ?? 45)
 const MAX_CALL_SECONDS = Number(process.env.VOICE_MAX_CALL_SECONDS ?? 300)

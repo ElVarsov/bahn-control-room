@@ -48,6 +48,9 @@ export function DriverPhone({ driverId }: { driverId: string }) {
   const audio = useRef<AudioContext | null>(null)
   const ringTimer = useRef<ReturnType<typeof setInterval> | null>(null)
   const recognition = useRef<Recognition | null>(null)
+  const speaking = useRef<SpeechSynthesisUtterance | null>(null)
+  const [micError, setMicError] = useState("")
+  const [micTest, setMicTest] = useState("")
   const callRef = useRef<IncomingCall | null>(null)
   const phaseRef = useRef<Phase>("off")
   phaseRef.current = phase
@@ -85,26 +88,37 @@ export function DriverPhone({ driverId }: { driverId: string }) {
 
   // --- incoming calls --------------------------------------------------------
 
+  // Poll once a second rather than holding a stream open: the Cloudflare tunnel
+  // buffers server-sent events, so a stream would never ring the phone.
   useEffect(() => {
     if (phase === "off") return
-    const source = new EventSource(`/api/voice/stream?driverId=${encodeURIComponent(driverId)}`)
-    source.onmessage = (message) => {
-      const event = JSON.parse(message.data) as { type: string; call: IncomingCall }
-      if (event.type === "incoming" && (phaseRef.current === "waiting" || phaseRef.current === "ended")) {
-        setCall(event.call)
-        setTurns([])
-        setEndedText("")
-        setPhase("ringing")
-        startRinging()
-      } else if (event.type === "update" && event.call.id === callRef.current?.id) {
-        setTurns(event.call.transcript)
-        if (["no_answer", "failed"].includes(event.call.status) && phaseRef.current !== "ended") {
-          stopRinging()
-          endLocally(event.call.status === "no_answer" ? "Missed call" : "Call dropped")
+    let stopped = false
+    const tick = async () => {
+      try {
+        const response = await fetch(`/api/voice/poll?driverId=${encodeURIComponent(driverId)}`, { cache: "no-store" })
+        const { call: latest } = (await response.json()) as { call: IncomingCall | null }
+        if (stopped || !latest) return
+        const isNew = latest.id !== callRef.current?.id
+        if (isNew && latest.status === "ringing" && (phaseRef.current === "waiting" || phaseRef.current === "ended")) {
+          setCall(latest)
+          setTurns([])
+          setEndedText("")
+          setPhase("ringing")
+          startRinging()
+        } else if (!isNew) {
+          setTurns(latest.transcript)
+          if (["no_answer", "failed"].includes(latest.status) && phaseRef.current !== "ended") {
+            stopRinging()
+            endLocally(latest.status === "no_answer" ? "Missed call" : "Call dropped")
+          }
         }
+      } catch {
+        // Offline for a moment; the next tick tries again.
       }
     }
-    return () => source.close()
+    void tick()
+    const timer = setInterval(tick, 1000)
+    return () => { stopped = true; clearInterval(timer) }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [phase === "off", driverId])
 
@@ -116,18 +130,37 @@ export function DriverPhone({ driverId }: { driverId: string }) {
 
   // --- talking -----------------------------------------------------------------
 
+  // Android Chrome sometimes never fires `end` on an utterance, which would leave
+  // the call stuck on "Bahn is speaking". So we also watch `speechSynthesis.speaking`
+  // and give up after a length-based timeout.
   const speak = useCallback((text: string) => new Promise<void>((resolve) => {
     if (!text) return resolve()
+    let done = false
+    let started = false
+    const finish = () => {
+      if (done) return
+      done = true
+      clearInterval(watch)
+      clearTimeout(limit)
+      resolve()
+    }
     const utterance = new SpeechSynthesisUtterance(text)
     utterance.lang = "en-GB"
     utterance.rate = 1.05
     const voice = speechSynthesis.getVoices().find((v) => v.lang.startsWith("en") && /female|samantha|google uk|serena|libby/i.test(v.name))
       ?? speechSynthesis.getVoices().find((v) => v.lang.startsWith("en"))
     if (voice) utterance.voice = voice
-    utterance.onend = () => resolve()
-    utterance.onerror = () => resolve()
+    utterance.onstart = () => { started = true }
+    utterance.onend = finish
+    utterance.onerror = finish
+    speaking.current = utterance // keep a reference so the browser does not drop it mid-sentence
     speechSynthesis.cancel()
     speechSynthesis.speak(utterance)
+    const watch = setInterval(() => {
+      if (speechSynthesis.speaking) started = true
+      else if (started) finish()
+    }, 300)
+    const limit = setTimeout(finish, 2500 + text.length * 90)
   }), [])
 
   const post = useCallback(async (action: string, body?: unknown) => {
@@ -187,16 +220,33 @@ export function DriverPhone({ driverId }: { driverId: string }) {
       setHeard((finalText + " " + interim).trim())
     }
     rec.onerror = (event) => {
-      if (event.error === "not-allowed") setSpeechSupported(false)
+      if (event.error === "no-speech" || event.error === "aborted") return
+      setMicError(event.error === "not-allowed" || event.error === "service-not-allowed"
+        ? "Microphone blocked. Type your answer below."
+        : `Speech recognition problem (${event.error}). Type your answer below.`)
+      if (event.error === "not-allowed" || event.error === "service-not-allowed") setSpeechSupported(false)
     }
     rec.onend = () => {
       if (phaseRef.current !== "listening") return
       if (finalText.trim()) sendDriverText(finalText.trim())
-      else setTimeout(() => phaseRef.current === "listening" && rec.start(), 150) // silence: keep listening
+      else setTimeout(() => { // silence: keep listening
+        if (phaseRef.current !== "listening") return
+        try { rec.start() } catch { /* already listening */ }
+      }, 150)
     }
+    setMicError("")
     setPhase("listening")
-    rec.start()
+    try { rec.start() } catch { setMicError("Could not start the microphone. Type your answer below.") }
   }, [sendDriverText])
+
+  // Send what was heard so far, or what was typed, without waiting for the browser to decide the sentence ended.
+  const sendNow = (text: string) => {
+    const clean = text.trim()
+    if (!clean || phaseRef.current !== "listening") return
+    recognition.current?.abort()
+    setTyped("")
+    sendDriverText(clean)
+  }
 
   // --- buttons -------------------------------------------------------------------
 
@@ -206,9 +256,32 @@ export function DriverPhone({ driverId }: { driverId: string }) {
     audio.current = new AudioContext()
     void audio.current.resume()
     speechSynthesis.speak(new SpeechSynthesisUtterance("")) // unlock speech on iOS
-    navigator.mediaDevices?.getUserMedia({ audio: true }).then((s) => s.getTracks().forEach((t) => t.stop())).catch(() => setSpeechSupported(false))
+    // Ask for the mic up front, but only report a failure: speech recognition asks again itself.
+    if (!makeRecognition()) setMicError("This browser has no speech recognition. Use Chrome on Android or Safari on iPhone, or type your answers.")
+    navigator.mediaDevices?.getUserMedia({ audio: true })
+      .then((s) => s.getTracks().forEach((t) => t.stop()))
+      .catch((error: Error) => setMicError(`Microphone check failed (${error.name}). Tap "Test microphone" or check Chrome's site settings.`))
     ;(navigator as Navigator & { wakeLock?: { request(type: string): Promise<unknown> } }).wakeLock?.request("screen").catch(() => {})
     setPhase("waiting")
+  }
+
+  // Listens for one sentence and shows what it heard, so the person playing the driver can check before a demo.
+  const testMic = () => {
+    const rec = makeRecognition()
+    if (!rec) return setMicTest("No speech recognition in this browser.")
+    rec.lang = "en-US"
+    rec.interimResults = false
+    rec.continuous = false
+    setMicError("")
+    setMicTest("Listening… say something.")
+    let heardSomething = false
+    rec.onresult = (event) => {
+      heardSomething = true
+      setMicTest(`Heard: "${event.results[0][0].transcript}". Speech works.`)
+    }
+    rec.onerror = (event) => setMicTest(`Speech recognition error: ${event.error}.`)
+    rec.onend = () => { if (!heardSomething) setMicTest((t) => (t.startsWith("Listening") ? "Heard nothing. Try again closer to the phone." : t)) }
+    try { rec.start() } catch (error) { setMicTest(`Could not start: ${(error as Error).message}`) }
   }
 
   const accept = async () => {
@@ -250,6 +323,9 @@ export function DriverPhone({ driverId }: { driverId: string }) {
         <div className={styles.brand}>Bahn Driver</div>
         <div className={styles.status}><span className={styles.dot} /> On shift</div>
         <p className={styles.lead}>No calls right now.</p>
+        <button className={styles.secondary} onClick={testMic}>Test microphone</button>
+        {micTest && <p className={styles.fine}>{micTest}</p>}
+        {micError && <p className={styles.micErrorLight}>{micError}</p>}
         <p className={styles.fine}>Driver {driverId}</p>
       </main>
     )
@@ -283,7 +359,7 @@ export function DriverPhone({ driverId }: { driverId: string }) {
     )
   }
 
-  const label = phase === "connecting" ? "Connecting…" : phase === "agent" ? "Bahn is speaking" : phase === "thinking" ? "…" : "Listening"
+  const label = phase === "connecting" ? "Connecting…" : phase === "agent" ? "Bahn is speaking" : phase === "thinking" ? "Bahn is thinking…" : "Your turn, speak now"
   return (
     <main className={`${styles.screen} ${styles.dark}`}>
       <div className={styles.caller}>
@@ -292,12 +368,20 @@ export function DriverPhone({ driverId }: { driverId: string }) {
         <div className={styles.callerSub}>{mmss} · {label}</div>
       </div>
       <Transcript turns={turns} live={heard} dark />
-      {phase === "listening" && !speechSupported && (
-        <form className={styles.typeBox} onSubmit={(e) => { e.preventDefault(); if (typed.trim()) { sendDriverText(typed.trim()); setTyped("") } }}>
-          <input value={typed} onChange={(e) => setTyped(e.target.value)} placeholder="Speech is not available here. Type your answer" autoFocus />
-          <button type="submit">Send</button>
-        </form>
+      {micError && <p className={styles.micError}>{micError}</p>}
+      {phase === "listening" && heard && (
+        <button className={styles.sendHeard} onClick={() => sendNow(heard)}>Done talking</button>
       )}
+      {/* Always there, so a call can never get stuck on a phone whose speech recognition misbehaves. */}
+      <form className={styles.typeBox} onSubmit={(e) => { e.preventDefault(); sendNow(typed) }}>
+        <input
+          value={typed}
+          onChange={(e) => setTyped(e.target.value)}
+          placeholder={speechSupported ? "Or type your answer" : "Type your answer"}
+          disabled={phase !== "listening"}
+        />
+        <button type="submit" disabled={phase !== "listening" || !typed.trim()}>Send</button>
+      </form>
       <div className={styles.callButtons}>
         <button className={styles.decline} onClick={hangUp} aria-label="Hang up">✕</button>
       </div>
@@ -307,7 +391,7 @@ export function DriverPhone({ driverId }: { driverId: string }) {
 
 function Transcript({ turns, live, dark }: { turns: CallTurn[]; live?: string; dark?: boolean }) {
   const end = useRef<HTMLDivElement>(null)
-  useEffect(() => end.current?.scrollIntoView({ behavior: "smooth" }), [turns.length, live])
+  useEffect(() => { end.current?.scrollIntoView({ behavior: "smooth" }) }, [turns.length, live])
   if (!turns.length && !live) return null
   return (
     <div className={`${styles.transcript} ${dark ? styles.transcriptDark : ""}`}>
