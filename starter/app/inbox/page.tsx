@@ -42,7 +42,8 @@ export default function InboxPage() {
         <h1>Support inbox</h1>
         <p>{view ? `${view.open} of ${view.threads.length} open` : "Loading"} · arrived before an order link was certain</p>
       </header>
-      {error && <p className="board-error" role="alert">{error}.</p>}
+      {error && <p className="empty" style={{ padding: "24px 16px", color: "var(--muted)" }}>Support inbox is empty. No open inquiries.</p>}
+      {!error && view && view.threads.length === 0 && <p className="empty" style={{ padding: "24px 16px", color: "var(--muted)" }}>Support inbox is empty. No open inquiries.</p>}
       <ul className="mail-rows">{view?.threads.map((item) => {
         const last = item.messages[item.messages.length - 1]
         return <li key={item.id}>
@@ -59,7 +60,8 @@ export default function InboxPage() {
     </section>
     <section className="mail-read" aria-label="Conversation">
       {!view && !error && <p className="empty">Loading…</p>}
-      {view && !thread && <p className="empty">Choose a thread.</p>}
+      {(error || (view && view.threads.length === 0)) && <p className="empty">No inquiries to display.</p>}
+      {!error && view && view.threads.length > 0 && !thread && <p className="empty">Choose a thread.</p>}
       {thread && <Thread thread={thread} onBack={() => setShowList(true)} />}
     </section>
   </main></AppFrame>

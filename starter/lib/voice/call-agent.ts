@@ -88,7 +88,7 @@ export async function nextAgentTurn(call: LiveCall): Promise<AgentTurn> {
   if (response.stop_reason === "refusal") {
     return { say: "Sorry, I have to hand this over to a colleague. Someone from Bahn will call you back.", end_call: true, summary: "The assistant could not continue the call.", facts: [], order_reference: "", queue_headline: "Call the driver back: the assistant could not continue the call.", urgency: "now" }
   }
-  const text = response.content.flatMap((block) => (block.type === "text" ? [block.text] : [])).join("")
+  const text = response.content.flatMap((block: any) => (block.type === "text" ? [block.text] : [])).join("")
   // Structured output should give bare JSON; if a gateway drops the format, take the outermost object.
   const json = text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1)
   return JSON.parse(json) as AgentTurn
