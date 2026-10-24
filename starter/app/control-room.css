@@ -238,3 +238,10 @@ kbd {
   .decision { padding: 18px 16px; }
   .decision-actions .btn { flex: 1 1 auto; }
 }
+
+/* A driver's call-in sits above any older proposal on the same order. */
+.decision.is-report { box-shadow: 0 0 0 1.5px var(--teal), 0 8px 24px rgba(66, 61, 51, 0.08); }
+.report-agent { display: flex; align-items: flex-start; gap: 7px; margin-top: 10px; font-size: 13px; color: var(--teal-ink); }
+.report-agent .icon { margin-top: 2px; flex: none; }
+.case-main > .decision + .decision { margin-top: -16px; }
+@media (max-width: 1180px) { .case-grid > .case-main > .decision.is-report { order: -3; } }

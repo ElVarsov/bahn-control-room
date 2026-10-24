@@ -77,3 +77,11 @@
   border: 1px solid var(--sand); border-radius: 999px; padding: 10px 24px;
   background: transparent; color: var(--ink); cursor: pointer;
 }
+.callBahn {
+  display: inline-flex; align-items: center; gap: 10px;
+  font: inherit; font-size: 18px; font-weight: 600;
+  border: 0; border-radius: 999px; padding: 16px 36px;
+  background: var(--green); color: white; cursor: pointer;
+  box-shadow: 0 6px 18px rgba(41, 175, 119, 0.3);
+}
+.callBahn span { font-size: 22px; }

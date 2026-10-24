@@ -15,6 +15,10 @@ export type LiveCall = {
   transcript: CallTurn[]
   summary: string
   facts: Fact[]
+  /** Filled in by the in-call agent: what a person must do because of this call. */
+  queueHeadline?: string
+  urgency?: "now" | "today" | "soon"
+  orderReference?: string
 }
 
 export type CallEvent = { type: "incoming" | "update"; call: LiveCall }
@@ -83,6 +87,10 @@ function emit(type: CallEvent["type"], call: LiveCall) {
   store().events.emit("call", { type, call } satisfies CallEvent)
 }
 
+export function allCalls(): LiveCall[] {
+  return [...store().calls.values()]
+}
+
 export function subscribe(listener: (event: CallEvent) => void): () => void {
   store().events.on("call", listener)
   return () => store().events.off("call", listener)
@@ -91,6 +99,9 @@ export function subscribe(listener: (event: CallEvent) => void): () => void {
 export function toResult(call: LiveCall): CallResult {
   return {
     callId: call.id,
+    direction: call.request.direction ?? "outbound",
+    driverId: call.request.driverId,
+    orderId: call.request.orderId || undefined,
     status: call.status,
     startedAt: call.startedAt,
     endedAt: call.endedAt,

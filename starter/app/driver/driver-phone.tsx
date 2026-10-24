@@ -291,6 +291,28 @@ export function DriverPhone({ driverId }: { driverId: string }) {
     agentTurn(await post("answer"))
   }
 
+  // The driver calls Bahn: the agent answers straight away and already knows their jobs.
+  const callBahn = async () => {
+    setSeconds(0)
+    setTurns([])
+    setEndedText("")
+    setMicError("")
+    setPhase("connecting")
+    try {
+      const response = await fetch("/api/voice/calls/inbound", {
+        method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ driverId }),
+      })
+      if (!response.ok) throw new Error(String(response.status))
+      const reply = (await response.json()) as { callId: string; say: string; end: boolean }
+      const started: IncomingCall = { id: reply.callId, status: "in_call", request: { driverName: "", purpose: "", orderId: "" }, transcript: [] }
+      callRef.current = started
+      setCall(started)
+      void agentTurn(reply)
+    } catch {
+      endLocally("Could not reach Bahn. Try again.")
+    }
+  }
+
   const declineCall = async () => {
     stopRinging()
     await post("decline")
@@ -323,6 +345,8 @@ export function DriverPhone({ driverId }: { driverId: string }) {
         <div className={styles.brand}>Bahn Driver</div>
         <div className={styles.status}><span className={styles.dot} /> On shift</div>
         <p className={styles.lead}>No calls right now.</p>
+        <button className={styles.callBahn} onClick={callBahn}><span aria-hidden="true">✆</span> Call Bahn</button>
+        <p className={styles.fine}>Something wrong on the road? Call and tell the assistant.</p>
         <button className={styles.secondary} onClick={testMic}>Test microphone</button>
         {micTest && <p className={styles.fine}>{micTest}</p>}
         {micError && <p className={styles.micErrorLight}>{micError}</p>}
@@ -355,6 +379,7 @@ export function DriverPhone({ driverId }: { driverId: string }) {
         <p className={styles.lead}>{endedText}{seconds ? ` · ${mmss}` : ""}</p>
         <Transcript turns={turns} />
         <div className={styles.status}><span className={styles.dot} /> On shift</div>
+        <button className={styles.callBahn} onClick={callBahn}><span aria-hidden="true">✆</span> Call Bahn</button>
       </main>
     )
   }

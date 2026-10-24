@@ -4,9 +4,11 @@
 
 import type { CallRequest, CallResult } from "@/lib/contracts"
 import { factsFromCall, nextAgentTurn } from "./call-agent"
+import { driverContext } from "./driver-context"
 import { TERMINAL, addTurn, createCall, getCall, subscribe, toResult, updateCall, type LiveCall } from "./store"
 
-export { getCall, latestCallFor, ringingCallFor, subscribe, toResult } from "./store"
+export { allCalls, getCall, latestCallFor, ringingCallFor, subscribe, toResult } from "./store"
+export type { LiveCall } from "./store"
 
 const RING_SECONDS = Number(process.env.VOICE_RING_SECONDS ?? 45)
 const MAX_CALL_SECONDS = Number(process.env.VOICE_MAX_CALL_SECONDS ?? 300)
@@ -59,6 +61,51 @@ export async function callDriverRemote(appUrl: string, request: CallRequest): Pr
   }
 }
 
+/**
+ * The driver tapped "Call Bahn". The call is answered at once by the in-call
+ * agent, which already knows the driver's current jobs.
+ */
+export async function startInboundCall(driverId: string): Promise<{ callId: string; say: string; end: boolean }> {
+  const context = driverContext(driverId)
+  const jobs = context.jobs.map((job) => `- ${job.reference}: ${job.car}, ${job.route}, ${job.status}`).join("\n")
+  const call = createCall({
+    direction: "inbound",
+    orderId: context.jobs.length === 1 ? context.jobs[0].orderId : "",
+    driverId,
+    driverName: context.driverName,
+    purpose: "Find out why they are calling and what they need.",
+    questions: [
+      "What happened, in their words?",
+      "Is the driver safe? Is anyone hurt?",
+      "Which car and order is it about?",
+      "Where exactly are they?",
+      "What do they need from Bahn right now?",
+    ],
+    context: jobs ? `The driver's current jobs:
+${jobs}` : "The driver has no current job on record.",
+  })
+  updateCall(call.id, { status: "in_call", answeredAt: new Date().toISOString() })
+  const reply = await agentSpeaks(call)
+  return { callId: call.id, ...reply }
+}
+
+// Lane B registers here to turn a finished inbound call into an agent run.
+type InboundHandler = (result: CallResult) => void | Promise<void>
+const hooks = globalThis as typeof globalThis & { __voiceInbound?: { handlers: InboundHandler[]; wired: boolean } }
+const inbound = (hooks.__voiceInbound ??= { handlers: [], wired: false })
+if (!inbound.wired) {
+  inbound.wired = true
+  subscribe(({ call }) => {
+    if (call.request.direction !== "inbound" || !TERMINAL.includes(call.status)) return
+    for (const handler of inbound.handlers) void Promise.resolve(handler(toResult(call))).catch((error) => console.error("[voice] inbound handler failed", error))
+  })
+}
+
+export function onInboundCall(handler: InboundHandler): () => void {
+  inbound.handlers.push(handler)
+  return () => { inbound.handlers = inbound.handlers.filter((h) => h !== handler) }
+}
+
 // --- actions from the phone -------------------------------------------------
 
 export async function answer(callId: string): Promise<{ say: string; end: boolean }> {
@@ -90,6 +137,13 @@ async function agentSpeaks(call: LiveCall): Promise<{ say: string; end: boolean 
     addTurn(call.id, { speaker: "agent", text: turn.say, at: new Date().toISOString() })
     call.summary = turn.summary
     call.facts = factsFromCall(call, turn.facts)
+    call.queueHeadline = turn.queue_headline || undefined
+    call.urgency = turn.urgency
+    if (turn.order_reference) {
+      call.orderReference = turn.order_reference
+      const job = driverContext(call.request.driverId).jobs.find((j) => j.reference === turn.order_reference)
+      if (job && !call.request.orderId) call.request.orderId = job.orderId
+    }
     // The phone hangs up after it finishes speaking the goodbye.
     return { say: turn.say, end: turn.end_call }
   } catch (error) {

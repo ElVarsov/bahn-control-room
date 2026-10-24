@@ -5,6 +5,7 @@ import { getCase, OPS_ZONE, SNAPSHOT_AT } from "@/lib/present/source"
 import { AppFrame } from "../../components/app-frame"
 import { AgentWork } from "../../components/case/agent-work"
 import { DecisionPanel } from "../../components/case/decision-panel"
+import { DriverReportCard } from "../../components/case/driver-report-card"
 import { FactsPanel } from "../../components/case/facts-panel"
 import { Timeline } from "../../components/case/timeline"
 import { Icon } from "../../components/icons"
@@ -50,14 +51,15 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
             <Link className="chip-fact link" href={`/orders/${encodeURIComponent(id)}/record`}><Icon name="file" size={13} />Full order record</Link>
           </div>
           <p className={`story-headline tone-${tone} case-headline`}>{view.headline}</p>
-          {item?.why && item.why !== view.headline && <p className="case-why">{item.why}</p>}
+          {item?.why && item.why !== view.headline && item.reason !== "driver_report" && <p className="case-why">{item.why}</p>}
         </header>
 
         <div className="case-grid">
           <div className="case-main">
+            {item?.reason === "driver_report" && <DriverReportCard item={item} />}
             {view.proposals.length > 0
               ? <DecisionPanel proposals={view.proposals} />
-              : item && (
+              : item && item.reason !== "driver_report" && (
                 <section className="decision decision-lite">
                   <p className="decision-eyebrow">{reason?.label ?? "Needs a person"}</p>
                   <h2 className="decision-title">{item.headline}</h2>

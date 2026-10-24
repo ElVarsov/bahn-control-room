@@ -46,6 +46,15 @@ road agent ──call_driver(tool)──► lib/voice (call store + in-call agen
 - **No answer / declined**: returns `no_answer` or `declined`; the road agent
   decides when to try again ("retry in 15 min") and shows that in the trace.
 
+## The driver calls Bahn
+
+The driver page has a **Call Bahn** button. The in-call agent answers at once
+("Bahn operations, this is the AI assistant. What's happening?"), already knowing the
+driver's current jobs from the dataset. It works out which order the call is about,
+and when the call ends it leaves a one-line `queue_headline` and an urgency. The
+control room shows it in "Needs you" as **Driver called in** within a few seconds.
+Lane B can react to every finished inbound call with `onInboundCall(handler)`.
+
 ## The contract (what Lane B calls)
 
 ```ts

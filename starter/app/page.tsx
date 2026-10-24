@@ -5,6 +5,7 @@ import { fmtWeekday, fmtClock } from "@/lib/present/time"
 import { AppFrame } from "./components/app-frame"
 import { Icon } from "./components/icons"
 import { AgentsWorking } from "./components/queue/agents-working"
+import { LiveRefresh } from "./components/queue/live-refresh"
 import { QueueList } from "./components/queue/queue-list"
 
 export const metadata: Metadata = { title: "Needs you · Control Room" }
@@ -19,6 +20,7 @@ export default async function NeedsYou() {
   return (
     <AppFrame section="queue" snapshotAt={queue.snapshotAt}>
       <main className="page queue-page">
+        <LiveRefresh />
         <header className="queue-head">
           <div>
             <h1 className="queue-title">Needs you{decisions > 0 && <span className="queue-count num">{decisions}</span>}</h1>
