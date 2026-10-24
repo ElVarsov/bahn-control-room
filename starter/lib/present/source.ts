@@ -6,6 +6,7 @@
 import "server-only"
 import type { CaseView, Fact, QueueItem, QueueResponse, SourceKind, TimelineEntry } from "@/lib/contracts"
 import { actorName, forOrder } from "@/lib/agent/dataset"
+import { evaluateJourney, scanJourneys } from "@/lib/agent/monitor"
 import { allRuns, latestRunFor, type RunRecord } from "@/lib/agent/runs"
 import { allCalls } from "@/lib/voice"
 import { driverContext } from "@/lib/voice/driver-context"
@@ -23,17 +24,55 @@ const useFixtures = process.env.USE_FIXTURES !== "0"
 
 export async function getQueue(): Promise<QueueResponse> {
   const queue: QueueResponse = useFixtures ? (queueFixture as QueueResponse) : worldStore.getQueue()
-  // Live phone calls and agent runs happen in this process, so they join the queue as
-  // they happen. An order the agent has worked replaces its sample entry.
+  // Live phone calls, agent runs and journey forecasts happen in this process, so they
+  // join the queue as they happen. An order the agent has worked replaces its sample entry.
   const calls = callItems()
   const agent = agentItems()
   const keep = (item: QueueItem) => !agent.orders.has(item.orderId)
+
+  // Journey Monitor forecasts for moving fleet
+  const accounted = new Set([...calls.needsPerson, ...calls.working, ...agent.needsPerson, ...agent.working].map((x) => x.orderId))
+  const forecasts = journeyForecastItems(accounted)
+
   return {
     ...queue,
-    needsPerson: [...calls.needsPerson, ...agent.needsPerson, ...queue.needsPerson.filter(keep)],
-    agentsWorking: [...calls.working, ...agent.working, ...(queue.agentsWorking ?? []).filter(keep)],
-    quiet: { ...queue.quiet, count: queue.quiet.count + agent.settled },
+    needsPerson: [...calls.needsPerson, ...agent.needsPerson, ...forecasts.needsPerson, ...queue.needsPerson.filter(keep)],
+    agentsWorking: [...calls.working, ...agent.working, ...forecasts.working, ...(queue.agentsWorking ?? []).filter(keep)],
+    quiet: { ...queue.quiet, count: Math.max(0, queue.quiet.count + agent.settled - forecasts.needsPerson.length - forecasts.working.length) },
   }
+}
+
+function journeyForecastItems(existingOrders: Set<string>): { needsPerson: QueueItem[]; working: QueueItem[] } {
+  const needsPerson: QueueItem[] = []
+  const working: QueueItem[] = []
+  const forecasts = scanJourneys()
+
+  for (const f of forecasts) {
+    if (existingOrders.has(f.orderId)) continue
+    const base: QueueItem = {
+      id: `forecast-${f.orderId}`,
+      orderId: f.orderId,
+      orderReference: f.orderReference,
+      car: f.car,
+      route: f.route,
+      customer: f.customer,
+      headline: f.headline,
+      why: f.summary,
+      urgency: f.urgency,
+      updatedAt: SNAPSHOT_AT,
+      reason: "forecast",
+      agentState: "working",
+    }
+    if (f.needsIntervention) {
+      needsPerson.push({
+        ...base,
+        agentState: "needs_person",
+      })
+    } else {
+      working.push(base)
+    }
+  }
+  return { needsPerson, working }
 }
 
 // --- agent runs ------------------------------------------------------------------
@@ -187,12 +226,14 @@ export async function getCase(orderId: string): Promise<{ view: CaseView; item: 
   const run = latestRunFor(orderId)
   const full: CaseView | null = run ? agentCase(orderId, run) : useFixtures ? FIXTURE_CASES[orderId] ?? null : worldStore.getCase(orderId)
   const live = callFacts(orderId)
-  if (full) return { view: { ...full, facts: [...live.facts, ...full.facts], timeline: [...full.timeline, ...live.timeline] }, item, full: true }
+  const forecast = evaluateJourney(orderId)
+  const forecastFacts = forecast ? forecast.facts : []
+  if (full) return { view: { ...full, facts: [...forecastFacts, ...live.facts, ...full.facts], timeline: [...full.timeline, ...live.timeline] }, item, full: true }
   if (!item) return null
   return {
     item,
     full: false,
-    view: { orderId, orderReference: item.orderReference, headline: item.headline, facts: live.facts, proposals: [], runs: [], timeline: live.timeline },
+    view: { orderId, orderReference: item.orderReference, headline: item.headline, facts: [...forecastFacts, ...live.facts], proposals: [], runs: [], timeline: live.timeline },
   }
 }
 

@@ -1,7 +1,8 @@
-// In-memory store of agent runs, their proposals and facts. Every finished run is
-// also written to traces/<runId>.json so judges and teammates can read what it did.
+// Persistent store of agent runs, their proposals and facts. Every finished run is
+// saved to traces/<runId>.json, and loaded back into memory on startup so restarts
+// never clear active runs or proposals.
 
-import { mkdirSync, writeFileSync } from "node:fs"
+import { existsSync, mkdirSync, readdirSync, readFileSync, writeFileSync } from "node:fs"
 import path from "node:path"
 import type { AgentRun, Decision, Fact, Proposal, TraceStep, Urgency } from "@/lib/contracts"
 
@@ -24,12 +25,43 @@ export type RunRecord = {
   usage: { inputTokens: number; outputTokens: number }
 }
 
+function getTracesDir(): string {
+  const local = path.resolve(process.cwd(), "traces")
+  if (existsSync(local)) return local
+  const parent = path.resolve(process.cwd(), "../traces")
+  return parent
+}
+
+function loadTracesFromDisk(): Map<string, RunRecord> {
+  const map = new Map<string, RunRecord>()
+  try {
+    const dir = getTracesDir()
+    if (!existsSync(dir)) return map
+    const files = readdirSync(dir).filter((f) => f.startsWith("run-") && f.endsWith(".json"))
+    for (const file of files) {
+      try {
+        const content = readFileSync(path.join(dir, file), "utf8")
+        const record = JSON.parse(content) as RunRecord
+        if (record?.run?.id) {
+          map.set(record.run.id, record)
+        }
+      } catch (e) {
+        // Ignore malformed trace file
+      }
+    }
+  } catch (error) {
+    console.warn("[agent] could not load initial traces", error)
+  }
+  return map
+}
+
 type Store = { runs: Map<string, RunRecord> }
 const g = globalThis as typeof globalThis & { __agentRuns?: Store }
-const store = (g.__agentRuns ??= { runs: new Map() })
+const store = (g.__agentRuns ??= { runs: loadTracesFromDisk() })
 
 export function saveRun(record: RunRecord) {
   store.runs.set(record.run.id, record)
+  writeTrace(record)
 }
 
 export function getRun(id: string) {
@@ -59,7 +91,7 @@ export function findProposal(proposalId: string): { record: RunRecord; proposal:
 
 export function writeTrace(record: RunRecord) {
   try {
-    const dir = path.resolve(process.cwd(), "../traces")
+    const dir = getTracesDir()
     mkdirSync(dir, { recursive: true })
     writeFileSync(path.join(dir, `${record.run.id}.json`), JSON.stringify(record, null, 2))
   } catch (error) {

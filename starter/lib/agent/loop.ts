@@ -6,14 +6,20 @@
 
 import type Anthropic from "@anthropic-ai/sdk"
 import type { ActionKind, Change, Fact, FactStrength, Proposal, SourceKind, Urgency } from "@/lib/contracts"
+import { worldStore } from "@/lib/world/store"
 import { byId, SNAPSHOT_AT, type Row } from "./dataset"
+import { execute } from "./decide"
 import { callAssignedDriver, type DriverMode } from "./driver-call"
+import { wireInboundCalls } from "./inbound"
 import { client, FALLBACKS, MODEL } from "./model"
 import { addStep, allRuns, saveRun, writeTrace, type RunRecord } from "./runs"
 import {
   TOOLS, carOf, readConversation, readOpenIssues, readOrder, readTracking, readTravel, resolveOrder, routeOf,
   searchFerries, searchHotels,
 } from "./tools"
+
+// Hook inbound driver "Call Bahn" phoning to the agent loop
+wireInboundCalls()
 
 const MAX_TURNS = 16
 
@@ -217,6 +223,12 @@ async function runTool(record: RunRecord, order: Row, name: string, input: Recor
       const action = input.action as ActionKind
       const draft = input.draft_message as { to: string; channel: string; body: string } | undefined
       if (action === "message_customer" && !draft?.body) throw new Error("A customer message needs the exact draft_message text.")
+
+      // Autonomy Dial evaluation
+      const autonomySettings = worldStore.getAutonomySettings()
+      // Customer Lock: messaging customer is permanently locked to ask_first
+      const autonomy = action === "message_customer" ? "ask_first" : (autonomySettings[action] ?? "ask_first")
+
       const proposal: Proposal = {
         id: `${record.run.id}-p${record.proposals.length + 1}`,
         orderId: order.id,
@@ -234,6 +246,19 @@ async function runTool(record: RunRecord, order: Row, name: string, input: Recor
       }
       record.proposals.push(proposal)
       addStep(record, { kind: "proposal", at: now(), proposalId: proposal.id })
+
+      if (autonomy === "do_quietly") {
+        proposal.status = "executed"
+        execute(record, proposal, { verdict: "approve", decidedBy: "Autonomy Dial (do_quietly)", decidedAt: now() })
+        return { content: json({ proposal_id: proposal.id, status: "executed", note: "Auto-executed quietly per autonomy settings." }) }
+      }
+
+      if (autonomy === "do_and_tell") {
+        proposal.status = "executed"
+        execute(record, proposal, { verdict: "approve", decidedBy: "Autonomy Dial (do_and_tell)", decidedAt: now() })
+        return { content: json({ proposal_id: proposal.id, status: "executed", note: "Auto-executed per autonomy settings (operator notified in log)." }) }
+      }
+
       return { content: json({ proposal_id: proposal.id, status: "pending", note: "Waiting for a person. Nothing has changed." }) }
     }
     case "finish": {

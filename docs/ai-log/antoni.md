@@ -54,3 +54,24 @@ Built:
 - Added real vehicle markers with pulsing exception halos and camera flyTo animations.
 - Embedded map view toggle directly on the dashboard (`app/page.tsx`): `[Needs you]` | `[🗺️ Live Fleet Radar]` | `[🔀 Split View]`, plus full `/map` route.
 
+## Journey Monitor, Autonomy Dial & Trace Persistence
+
+Asked: Implement the 3 Lane B requirements: early journey bottleneck forecaster, autonomy dial enforcement in the loop, and persistent run/trace storage across server restarts with driver inbound phoning.
+Built:
+1. **Journey Monitor (`lib/agent/monitor.ts`)**:
+   - Scans all 24 active in-transit orders in real time.
+   - Evaluates tracking telemetry age: flags stale GPS signals (>3h telemetry gap) with provenance.
+   - Evaluates customer delivery promise windows: calculates SLA delay delta (hours late).
+   - Evaluates Baltic ferry timetables: detects check-in cutoff breaches (e.g. Travemünde/Fehmarn departures) before the driver misses the boat.
+   - Stamped with fact strength `estimate` (non-negotiable rubric rule).
+   - Embedded into `getQueue()` and `getCase()` so operators see forecasted risks before domino delays occur.
+2. **Autonomy Dial Integration (`lib/agent/loop.ts` & `lib/agent/decide.ts`)**:
+   - Reads `worldStore.getAutonomySettings()`.
+   - Actions set to `do_quietly` or `do_and_tell` are auto-executed by the agent loop and marked `executed` with trace steps.
+   - Actions set to `ask_first` remain `pending` for human confirmation.
+   - Strict Customer Lock: `message_customer` is permanently locked to `ask_first`.
+3. **Trace Persistence & Inbound Calling (`lib/agent/runs.ts` & `lib/agent/inbound.ts`)**:
+   - Hydrates past runs, facts, and proposals from `traces/run-*.json` on startup so server restarts never lose active runs.
+   - Wired `wireInboundCalls()` to `onInboundCall` from `lib/voice`: when a driver taps "Call Bahn", the agent identifies their active order and spawns a responsive agent run.
+
+

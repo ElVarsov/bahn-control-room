@@ -46,7 +46,7 @@ export function decideAgentProposal(proposalId: string, decision: Decision): { p
   return { proposal }
 }
 
-function execute(record: RunRecord, proposal: Proposal, decision: Decision) {
+export function execute(record: RunRecord, proposal: Proposal, decision: Decision) {
   const ref = `VCL-${Math.random().toString(36).slice(2, 7).toUpperCase()}`
   const after = proposal.changes.map((c) => `${c.label}: ${c.after}`).join("; ")
   const step = (tool: string, summary: string) => {
@@ -86,7 +86,7 @@ function execute(record: RunRecord, proposal: Proposal, decision: Decision) {
   }
 }
 
-function settle(record: RunRecord) {
+export function settle(record: RunRecord) {
   const open = record.proposals.some((p) => p.status === "pending")
   const waitingOnCustomer = record.proposals.some((p) => p.action === "message_customer" && p.status === "executed")
   record.run.state = open ? "needs_person" : waitingOnCustomer ? "waiting_reply" : "done"
