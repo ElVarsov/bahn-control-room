@@ -14,7 +14,6 @@ import queueFixture from "@/lib/contracts/fixtures/queue.json"
 import case299 from "@/lib/contracts/fixtures/case-ord-00299.json"
 import case322 from "@/lib/contracts/fixtures/case-ord-00322.json"
 import { worldStore } from "@/lib/world/store"
-import { evaluateCascadeRisk, scanAllCascadeRisks } from "@/lib/cascade-risk"
 
 const FIXTURE_CASES: Record<string, CaseView> = {
   "ord-00299": case299 as CaseView,
@@ -38,14 +37,12 @@ export async function getQueue(): Promise<QueueResponse> {
     ...queue.needsPerson.filter(keep), ...(queue.agentsWorking ?? []).filter(keep),
   ].map((x) => x.orderId))
   const forecasts = journeyForecastItems(accounted)
-  const cascadeRisks = scanAllCascadeRisks()
 
   return {
     ...queue,
     needsPerson: [...calls.needsPerson, ...agent.needsPerson, ...forecasts.needsPerson, ...queue.needsPerson.filter(keep)],
     agentsWorking: [...calls.working, ...agent.working, ...forecasts.working, ...(queue.agentsWorking ?? []).filter(keep)],
     quiet: { ...queue.quiet, count: Math.max(0, queue.quiet.count + agent.settled - forecasts.needsPerson.length - forecasts.working.length) },
-    cascadeRisks,
   }
 }
 
@@ -236,47 +233,12 @@ export async function getCase(orderId: string): Promise<{ view: CaseView; item: 
   const live = callFacts(orderId)
   const forecast = evaluateJourney(orderId)
   const forecastFacts = forecast ? forecast.facts : []
-  const cascadeAssessment = evaluateCascadeRisk(orderId)
-
-  if (full) {
-    return {
-      view: {
-        ...full,
-        facts: [...forecastFacts, ...live.facts, ...full.facts],
-        timeline: [...full.timeline, ...live.timeline],
-        cascadeAssessment,
-      },
-      item,
-      full: true,
-    }
-  }
-
-  if (!item && !cascadeAssessment) return null
-
+  if (full) return { view: { ...full, facts: [...forecastFacts, ...live.facts, ...full.facts], timeline: [...full.timeline, ...live.timeline] }, item, full: true }
+  if (!item) return null
   return {
-    item: item ?? {
-      id: `order-${orderId}`,
-      orderId,
-      orderReference: cascadeAssessment?.orderReference ?? orderId,
-      car: cascadeAssessment?.car ?? "Delivery Vehicle",
-      route: cascadeAssessment?.route ?? "Transit Route",
-      headline: cascadeAssessment?.summary ?? "Cascade Risk Review",
-      why: cascadeAssessment?.rootCause ?? "Predictive Cascade Risk Flagged",
-      urgency: cascadeAssessment?.triageState === "NEEDS_DECISION_NOW" ? "now" : "today",
-      agentState: "needs_person",
-      updatedAt: SNAPSHOT_AT,
-    },
+    item,
     full: false,
-    view: {
-      orderId,
-      orderReference: item?.orderReference ?? cascadeAssessment?.orderReference ?? orderId,
-      headline: item?.headline ?? cascadeAssessment?.summary ?? "Order Cascade Review",
-      facts: [...forecastFacts, ...live.facts],
-      proposals: [],
-      runs: [],
-      timeline: live.timeline,
-      cascadeAssessment,
-    },
+    view: { orderId, orderReference: item.orderReference, headline: item.headline, facts: [...forecastFacts, ...live.facts], proposals: [], runs: [], timeline: live.timeline },
   }
 }
 

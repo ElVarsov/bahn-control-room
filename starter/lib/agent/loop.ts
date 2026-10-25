@@ -15,7 +15,7 @@ import { client, FALLBACKS, MODEL } from "./model"
 import { addStep, allRuns, saveRun, writeTrace, type RunRecord } from "./runs"
 import {
   TOOLS, carOf, readConversation, readOpenIssues, readOrder, readTracking, readTravel, resolveOrder, routeOf,
-  searchFerries, searchHotels, inspectAttachments, evaluateAndRankOptions, getOrderFullContext,
+  searchFerries, searchHotels,
 } from "./tools"
 
 // Hook inbound driver "Call Bahn" phoning to the agent loop
@@ -186,19 +186,6 @@ async function runTool(record: RunRecord, order: Row, name: string, input: Recor
     case "search_hotels": {
       const h = searchHotels(String(input.near), String(input.night))
       return result(name, `${h.hotels.length} hotels near ${h.near}, from € ${Math.min(...h.hotels.map((x) => x.price_eur))} (quotes).`, h)
-    }
-    case "inspect_attachments": {
-      const atts = inspectAttachments(target())
-      return result(name, `Inspected ${atts.attachments_count} attachments (${atts.documents.length} document records on file).`, atts)
-    }
-    case "evaluate_and_rank_options": {
-      const candidates = Array.isArray(input.candidates) ? (input.candidates as any) : []
-      const ranked = evaluateAndRankOptions(target(), candidates)
-      return result(name, `Evaluated ${ranked.ranked_options.length} candidate options on Risk-Adjusted Total Cost.`, ranked)
-    }
-    case "get_order_full_context": {
-      const ctx = getOrderFullContext(target())
-      return result(name, `Cascade assessment: ${ctx?.triageState} (${ctx?.pointOfNoReturnLabel}). €${ctx?.cascadeCostAtRiskEur} cost at risk.`, ctx)
     }
     case "call_driver": {
       const o = target()
