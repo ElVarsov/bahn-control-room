@@ -10,10 +10,12 @@ import { addStep, findProposal, writeTrace, type RunRecord } from "./runs"
 
 const now = () => new Date().toISOString()
 
-export function decideAgentProposal(proposalId: string, decision: Decision): { proposal: Proposal; followUpRunId?: string } | null {
+export function decideAgentProposal(proposalId: string, decision: Decision): { proposal: Proposal; followUpRunId?: string; alreadyDecided?: boolean } | null {
   const found = findProposal(proposalId)
   if (!found) return null
   const { record, proposal } = found
+  // One yes, one action: a double click, a retry or a second person never carries it out again.
+  if (proposal.status !== "pending") return { proposal, alreadyDecided: true }
   proposal.decision = decision
   if (decision.editedChanges?.length) proposal.changes = decision.editedChanges
 

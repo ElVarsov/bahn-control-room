@@ -1,7 +1,7 @@
 "use client"
 
 import { useRouter } from "next/navigation"
-import { useState } from "react"
+import { useRef, useState } from "react"
 import { withoutIds } from "@/lib/present/ids"
 import type { AgentRun, Change, Decision, Proposal } from "@/lib/contracts"
 import { Icon } from "../icons"
@@ -26,10 +26,20 @@ async function sendDecision(proposalId: string, decision: Decision): Promise<"se
     const response = await fetch(`/api/proposals/${encodeURIComponent(proposalId)}/decision`, {
       method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify(decision),
     })
-    return response.ok ? "sent" : "local"
+    // 409: someone already decided this one; show the real state instead of acting again.
+    return response.ok || response.status === 409 ? "sent" : "local"
   } catch {
     return "local"
   }
+}
+
+/** "Ferry booked: Vela Coast…, €387. Reference VCL-NJO3D (fictional…)." → "Ferry booked · VCL-NJO3D". */
+function shortDone(line: string): string {
+  const booked = line.match(/^(.+?) booked: .*Reference (\S+) \(fictional/i)
+  if (booked) return `${booked[1]} booked · ${booked[2]}`
+  if (/^Checked the earlier failed attempt/i.test(line)) return "Checked the earlier attempt first: nothing was booked, so nothing is booked twice"
+  if (/^Sent the driver/i.test(line)) return `Driver told: ${line.replace(/^Sent the driver:\s*booked for you,\s*/i, "").replace(/\.\s*Details are in the app\.?$/i, "")}`
+  return line.replace(/\s*\(fictional, nothing real was bought\)/i, "")
 }
 
 // Steps that only ever run after a person's yes: what the agent actually did with it.
@@ -71,7 +81,10 @@ function ProposalCard({ proposal }: { proposal: Proposal }) {
   const [busy, setBusy] = useState(false)
   const router = useRouter()
 
+  const inFlight = useRef(false)
   const decide = async (verdict: Decision["verdict"], extra: Partial<Decision> = {}) => {
+    if (inFlight.current) return // a second click before the first answer is ignored
+    inFlight.current = true
     setBusy(true)
     const decision: Decision = { verdict, decidedBy: WHO, decidedAt: new Date().toISOString(), ...extra }
     const delivery = await sendDecision(proposal.id, decision)
@@ -222,7 +235,12 @@ function DecidedCard({ proposal, decision, delivery, onUndo, done = [] }: { prop
         ? (
           <div className="next-step">
             <b>What the agent did after your yes.</b>
-            <ul className="done-list">{done.map((line, i) => <li key={i}><Icon name="check" size={12} /> {line}</li>)}</ul>
+            <ul className="done-list">{done.map((line, i) => <li key={i}><Icon name="check" size={12} /> {shortDone(line)}</li>)}</ul>
+            {done.some((line) => /fictional/i.test(line)) && <p className="done-note">References are fictional: nothing real was bought.</p>}
+            <details className="done-details">
+              <summary>Full details</summary>
+              <ul>{done.map((line, i) => <li key={i}>{line}</li>)}</ul>
+            </details>
           </div>
         )
         : <p className="next-step"><b>What happens next.</b> {next}</p>}

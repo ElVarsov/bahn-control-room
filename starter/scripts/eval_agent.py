@@ -24,6 +24,8 @@ What it checks, per run:
   pending_surfaces   A run that leaves a proposal waiting ends as "needs a person", never
                      "waiting for a reply" or "nothing needs a person".
   strength_honest    No verified fact predicts the future ("will", "likely"): that is an estimate.
+  once_per_yes       One yes carries out its change once: nothing booked twice, no cost or
+                     provider check repeated for the same approval.
   customer_clock     What a customer reads (a message or a call brief) uses their own clock, never
                      "Helsinki time" unless their end of the route is in Finland.
   grounded           Every record a fact cites exists in the dataset (or is one of the
@@ -172,6 +174,18 @@ def check(trace):
         f"{f['id']}: verified but forecasts (\"{next(w for w in forecast_words if w in ' ' + f.get('text', '').lower() + ' ').strip()}\")"
         for f in facts if f.get("strength") == "verified" and any(w in " " + f.get("text", "").lower() + " " for w in forecast_words)
     ]
+    # once_per_yes: one yes carries out its change once. No item booked twice, no cost recorded
+    # twice, no second provider check for the same approval.
+    executed = [p for p in proposals if p.get("status") == "executed"]
+    booked = [str(s.get("summary", "")).split(" booked:")[0].strip().lower() for s in steps if s["kind"] == "tool_result" and s.get("tool") == "book_travel"]
+    bad = [f"'{label}' booked {booked.count(label)} times" for label in sorted(set(booked)) if booked.count(label) > 1]
+    for tool in ("approve_cost", "check_booking_outcome"):
+        n = sum(1 for s in steps if s["kind"] == "tool_result" and s.get("tool") == tool)
+        allowed = sum(1 for p in executed if p.get("action") in ("book_travel", "approve_cost"))
+        if n > allowed:
+            bad.append(f"{tool} ran {n} times for {allowed} approval(s)")
+    results["once_per_yes"] = bad
+
     # customer_clock: what a customer reads (a message or a call brief) uses their own clock,
     # so "Helsinki time" may only appear when their end of the route is in Finland.
     route = " ".join(str(s.get("summary", "")) for s in steps if s["kind"] == "tool_result" and s.get("tool") == "read_order")
@@ -211,6 +225,7 @@ def self_test():
         ("grounded", lambda t: t["facts"].append({"id": "g", "text": "A 20:00 sailing has space.", "strength": "quote", "sources": [{"kind": "provider", "label": "Ferry quote", "at": "2026-10-21T07:00:00Z", "recordId": "quote-invented"}]})),
         ("strength_honest", lambda t: t["facts"].append({"id": "h", "text": "The delivery will be missed.", "strength": "verified", "sources": [{"kind": "system", "label": "Promise", "at": "2026-10-21T07:00:00Z", "recordId": "win-x7c8722a53360a2ad"}]})),
         ("pending_surfaces", lambda t: (t["proposals"].append({"id": "q", "action": "approve_cost", "status": "pending"}), t.update(outcome="waiting_reply"))),
+        ("once_per_yes", lambda t: (t["proposals"].append({"id": "d", "action": "book_travel", "status": "executed", "decision": {"verdict": "approve", "decidedBy": "You"}}), [steps(t).append({"kind": "tool_result", "tool": "book_travel", "summary": f"Ferry booked: 24 Oct 15:00. Reference VCL-{r} (fictional)."}) for r in ("AAAAA", "BBBBB")])),
         ("customer_clock", lambda t: (steps(t).insert(0, {"kind": "tool_result", "tool": "read_order", "summary": "Audi A6 for Dealer GmbH, Munich → Hamburg."}), [s.update(summary="") for s in steps(t)[1:] if s.get("tool") == "read_order"], t["proposals"].append({"id": "c", "action": "message_customer", "status": "pending", "draftMessage": {"to": "Dealer GmbH", "body": "We deliver 13:00-17:00 Helsinki time."}}))),
         ("fictional_only", lambda t: (t["proposals"].append({"id": "b", "action": "book_travel", "status": "executed", "decision": {"verdict": "approve", "decidedBy": "You"}}), steps(t).append({"kind": "tool_result", "tool": "book_travel", "summary": "Booked ref ABC123."}))),
     ]

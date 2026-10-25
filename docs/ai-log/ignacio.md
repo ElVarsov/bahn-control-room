@@ -149,3 +149,11 @@ reran three cases with real triggers and added an eval check, customer_clock, wh
 322 seed before the rerun. The eval then caught our own change: logging the approved total as a
 cost step looked like a cost change without a yes. We allowed it only when the approved proposal
 listed that cost, rather than dropping the check.
+
+## Judge round 7 (avg 3.74, down from 4.09)
+The score dropped because the judges found a real bug in our own showcase screenshot: approving the
+same proposal twice carried it out twice (two ferries, two hotels). We had taken two decided
+screenshots in one server session and did not look closely; all twelve checks passed the trace.
+Fixed at the cause (a decided proposal is never carried out again, the API answers 409, the button
+ignores a second click), added `once_per_yes` to the eval, and committed the double-booked trace as
+a rejected example that the new check fails. Lesson: a screenshot is evidence too; read it like a trace.

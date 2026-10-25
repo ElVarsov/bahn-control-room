@@ -15,6 +15,10 @@ export async function POST(
     const body = (await request.json()) as Decision
     // Proposals from a live agent run are decided (and carried out) by the agent store.
     const fromAgent = decideAgentProposal(proposalId, body)
+    if (fromAgent?.alreadyDecided) {
+      const by = fromAgent.proposal.decision?.decidedBy
+      return NextResponse.json({ error: `Already decided${by ? ` by ${by === "You" ? "you" : by}` : ""}. Nothing was done twice.`, proposal: fromAgent.proposal }, { status: 409 })
+    }
     if (fromAgent) return NextResponse.json({ ...fromAgent.proposal, followUpRunId: fromAgent.followUpRunId })
     const updated = worldStore.recordDecision(proposalId, body)
     if (!updated) {

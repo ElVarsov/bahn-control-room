@@ -110,10 +110,16 @@ scripted backup. A road-agent run costs about $0.25 on Opus 5.5.
 > (PowerShell: `$env:NODE_USE_SYSTEM_CA = '1'; npm run dev`).
 
 ### Try the agent
-- Open **`/orders/ord-00322`** (Bentley stopped with a red warning light) or
-  **`/orders/ord-00299`** (ferry sold out) and press **Ask the agent to work on this**.
+- **Approve a decision:** open **`/orders/ord-00299`** (ferry sold out) and press **Approve**.
+  The card then lists what the agent did after your yes: it checks the earlier failed booking
+  first, books the ferry and the hotel (fictional references) and tells the driver. A second
+  approval is refused, so nothing is ever booked twice.
+- **Watch the agent work:** open **`/orders/ord-00322`** (Bentley stopped with a red warning
+  light) and press **Ask the agent to look again**.
 - Or from a terminal while the app runs: `npm run agent -- CD-420322`
   (`--phone` always rings the phone, `--simulated` never does).
+- **Start over:** `npm run demo:reset`, then restart `npm run dev`. This removes your local runs
+  and decisions; the committed runs in `traces/seed/` come back.
 
 ### Take a call on your phone
 The microphone needs HTTPS, so open the app on the phone through a free tunnel:
