@@ -122,6 +122,14 @@ invented percentages. We removed all of it.
   caught one in our own seed. Sample "agents are working" items with no run behind them were removed,
   and forecasts are labelled as the monitor watching, not as agent work.
 
+## Judge round 4 (avg 4.00)
+Judges found a run that ended "waiting for a reply" with a pending proposal, so a yes it needed never
+reached Needs you. The loop now forces needs_person whenever a proposal is pending and a new eval
+check, pending_surfaces, proves it. One judge said CD-420299 should arrive 19:00 Helsinki time; we did
+not take that: 25 Oct 2026 is the night EU clocks go back, so 18:00 was right. We still moved time
+conversion out of the model into the tools so it can never get it wrong. Added elapsed step times,
+stripped record ids from change rows, and rendered the call brief as numbered questions.
+
 ## Judge round 5 (avg 4.09)
 All four judges flagged the same regression from round 4: the "Noted" timeline steps repeated the
 facts panel word for word. Folded them into one line. T1 caught that the simulated driver invented a

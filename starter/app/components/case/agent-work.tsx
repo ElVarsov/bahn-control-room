@@ -39,7 +39,14 @@ function toLines(steps: TraceStep[]): Line[] {
   let stopped = false
   for (const step of steps) {
     // Anything after the agent handed over happened later, once a person decided.
-    if (stopped && step.kind !== "stop") { const before = lines.length; pushStep(step); lines.slice(before).forEach((l) => { l.afterYes = true }); continue }
+    // The decision card above lists that work line by line, so here it is one line.
+    if (stopped && step.kind !== "stop") {
+      const done = lines.find((l) => l.afterYes)
+      const count = step.kind === "tool_result" || step.kind === "message_out" ? 1 : 0
+      if (done) done.notes!.push(...Array(count).fill(""))
+      else if (count) lines.push({ at: step.at, icon: "check", title: "Carried out after the decision", detail: "Each step is listed in the decision card above.", notes: [""], afterYes: true, kind: "check" })
+      continue
+    }
     if (step.kind === "stop") stopped = true
     pushStep(step)
   }
@@ -88,8 +95,11 @@ function elapsed(at: string, start: string): string {
 }
 
 function runSummary(run: AgentRun): string {
-  const checks = run.steps.filter((s) => s.kind === "tool_result").length
-  const calls = run.steps.filter((s) => s.kind === "call").length
+  // Only the agent's own pass counts; what it did after a decision is listed in the card.
+  const stop = run.steps.findIndex((s) => s.kind === "stop")
+  const own = stop >= 0 ? run.steps.slice(0, stop) : run.steps
+  const checks = own.filter((s) => s.kind === "tool_result").length
+  const calls = own.filter((s) => s.kind === "call").length
   const last = run.steps.find((s) => s.kind === "stop")?.at ?? run.steps.at(-1)?.at ?? run.startedAt
   const secs = Math.max(1, Math.round((Date.parse(last) - Date.parse(run.startedAt)) / 1000))
   const took = secs < 60 ? `${secs} s` : `${Math.round(secs / 60)} min`
@@ -106,7 +116,7 @@ export function AgentWork({ runs, zone }: { runs: AgentRun[]; snapshotAt: string
       {runs.map((run) => (
         <div key={run.id} className="agent-run">
           <p className="agent-run-trigger">
-            <Icon name="bot" size={14} /> Started at {fmtClock(run.startedAt, zone)} because: {run.trigger.toLowerCase()}
+            <Icon name="bot" size={14} /> Started at {fmtClock(run.startedAt, zone)} because: {/^(seed|command line)/i.test(run.trigger) ? "operations asked the agent to work this case" : run.trigger.replace(/^\w/, (c) => c.toLowerCase())}
             <span className="agent-run-meta">{runSummary(run)}</span>
           </p>
           <ol className="agent-steps">
@@ -114,9 +124,9 @@ export function AgentWork({ runs, zone }: { runs: AgentRun[]; snapshotAt: string
               <li key={index} className={`agent-step kind-${line.kind}`}>
                 <span className="agent-step-icon"><Icon name={line.icon} size={13} /></span>
                 <div>
-                  <p className="agent-step-title">{line.notes ? `Noted ${line.notes.length} ${line.notes.length === 1 ? "fact" : "facts"}` : line.title}<time dateTime={line.at} title={fmtLong(line.at)}>{line.afterYes ? "later" : elapsed(line.at, run.startedAt)}</time></p>
+                  <p className="agent-step-title">{line.notes && !line.afterYes ? `Noted ${line.notes.length} ${line.notes.length === 1 ? "fact" : "facts"}` : line.title}<time dateTime={line.at} title={fmtLong(line.at)}>{line.afterYes ? "later" : elapsed(line.at, run.startedAt)}</time></p>
                   {line.detail && <p className="agent-step-detail">{line.detail}</p>}
-                  {line.notes && (
+                  {line.notes && !line.afterYes && (
                     <details className="agent-step-notes">
                       <summary>They are listed under What we know, with their sources. Show them here</summary>
                       <ul>{line.notes.map((n, i) => <li key={i}>{n}</li>)}</ul>

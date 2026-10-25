@@ -2,7 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { latestRunFor } from "@/lib/agent/runs"
-import { carOf, resolveOrder } from "@/lib/agent/tools"
+import { carOf, resolveOrder, routeOf } from "@/lib/agent/tools"
 import { getCase, OPS_ZONE, SNAPSHOT_AT } from "@/lib/present/source"
 import { AppFrame } from "../../components/app-frame"
 import { AgentControl } from "../../components/case/agent-control"
@@ -51,7 +51,7 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
           <h1 className="case-car">{item?.car ?? carName(view.orderReference)}</h1>
           <div className="chips">
             <span className="chip-fact mono">{view.orderReference}</span>
-            {item?.route && <span className="chip-fact"><Icon name="arrow" size={13} />{item.route}</span>}
+            {(item?.route ?? routeName(view.orderReference)) && <span className="chip-fact"><Icon name="arrow" size={13} />{item?.route ?? routeName(view.orderReference)}</span>}
             {item?.customer && <span className="chip-fact"><Icon name="people" size={13} />{item.customer}</span>}
             <Link className="chip-fact link" href={`/orders/${encodeURIComponent(id)}/record`}><Icon name="file" size={13} />Full order record</Link>
           </div>
@@ -91,4 +91,8 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
 // A case that has left the queue still shows the car, not just its number.
 function carName(reference: string): string {
   try { return carOf(resolveOrder(reference)) } catch { return reference }
+}
+
+function routeName(reference: string): string | undefined {
+  try { return routeOf(resolveOrder(reference)) } catch { return undefined }
 }

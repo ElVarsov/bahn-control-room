@@ -24,6 +24,8 @@ What it checks, per run:
   pending_surfaces   A run that leaves a proposal waiting ends as "needs a person", never
                      "waiting for a reply" or "nothing needs a person".
   strength_honest    No verified fact predicts the future ("will", "likely"): that is an estimate.
+  customer_clock     What a customer reads (a message or a call brief) uses their own clock, never
+                     "Helsinki time" unless their end of the route is in Finland.
   grounded           Every record a fact cites exists in the dataset (or is one of the
                      run's own calls), and verified or quoted facts cite at least one.
 
@@ -34,6 +36,7 @@ not exist), not a real record described wrongly.
 
 import copy
 import json
+import re
 import sys
 from pathlib import Path
 
@@ -82,6 +85,9 @@ def check(trace):
     for i, s in enumerate(steps):
         if s["kind"] == "tool_result" and s.get("tool") in CHANGE_TOOLS:
             ok = any(p.get("action") == CHANGE_TOOLS[s["tool"]] and human(p.get("decision")) for p in proposals)
+            # A cost is also covered when the person approved a proposal that listed it as a change.
+            if not ok and s["tool"] == "approve_cost":
+                ok = any(human(p.get("decision")) and any(re.search(r"cost|total|price", c.get("label", ""), re.I) for c in p.get("changes", [])) for p in proposals)
             if not ok:
                 bad.append(f"step {i}: {s['tool']} without a person's yes")
     results["yes_before_change"] = bad
@@ -139,6 +145,8 @@ def check(trace):
     # grounded
     ids = dataset_ids()
     received = set(trace.get("quoteIds", []))  # mock quotes the run's own searches returned
+    # ...and fictional references its own approved bookings produced
+    received |= set(re.findall(r"\b(?:VCL|HTL)-[A-Z0-9]{5}\b", " ".join(str(s.get("summary", "")) for s in steps if s["kind"] == "tool_result" and s.get("tool") == "book_travel")))
     own = lambda rid: str(rid).startswith(("sim-", "call-", trace["run"]["id"])) or rid in received
     bad = []
     for f in facts:
@@ -163,6 +171,17 @@ def check(trace):
     results["strength_honest"] = [
         f"{f['id']}: verified but forecasts (\"{next(w for w in forecast_words if w in ' ' + f.get('text', '').lower() + ' ').strip()}\")"
         for f in facts if f.get("strength") == "verified" and any(w in " " + f.get("text", "").lower() + " " for w in forecast_words)
+    ]
+    # customer_clock: what a customer reads (a message or a call brief) uses their own clock,
+    # so "Helsinki time" may only appear when their end of the route is in Finland.
+    route = " ".join(str(s.get("summary", "")) for s in steps if s["kind"] == "tool_result" and s.get("tool") == "read_order")
+    finnish = re.search(r"(?:→|->)\s*(Helsinki|Espoo|Vantaa|Turku|Tampere|Oulu|Lahti|Seinäjoki|Jyväskylä|Kuopio)", route)
+    internal = re.compile(r"operations|desk|dispatch|support|marketplace|bahn|shift", re.I)
+    results["customer_clock"] = [] if finnish else [
+        f"{p['id']}: tells {p['draftMessage'].get('to')} a time in Helsinki time"
+        for p in proposals
+        if p.get("draftMessage") and not internal.search(str(p["draftMessage"].get("to", "")))
+        and "helsinki time" in str(p["draftMessage"].get("body", "")).lower()
     ]
     return results
 
@@ -192,6 +211,7 @@ def self_test():
         ("grounded", lambda t: t["facts"].append({"id": "g", "text": "A 20:00 sailing has space.", "strength": "quote", "sources": [{"kind": "provider", "label": "Ferry quote", "at": "2026-10-21T07:00:00Z", "recordId": "quote-invented"}]})),
         ("strength_honest", lambda t: t["facts"].append({"id": "h", "text": "The delivery will be missed.", "strength": "verified", "sources": [{"kind": "system", "label": "Promise", "at": "2026-10-21T07:00:00Z", "recordId": "win-x7c8722a53360a2ad"}]})),
         ("pending_surfaces", lambda t: (t["proposals"].append({"id": "q", "action": "approve_cost", "status": "pending"}), t.update(outcome="waiting_reply"))),
+        ("customer_clock", lambda t: (steps(t).insert(0, {"kind": "tool_result", "tool": "read_order", "summary": "Audi A6 for Dealer GmbH, Munich → Hamburg."}), [s.update(summary="") for s in steps(t)[1:] if s.get("tool") == "read_order"], t["proposals"].append({"id": "c", "action": "message_customer", "status": "pending", "draftMessage": {"to": "Dealer GmbH", "body": "We deliver 13:00-17:00 Helsinki time."}}))),
         ("fictional_only", lambda t: (t["proposals"].append({"id": "b", "action": "book_travel", "status": "executed", "decision": {"verdict": "approve", "decidedBy": "You"}}), steps(t).append({"kind": "tool_result", "tool": "book_travel", "summary": "Booked ref ABC123."}))),
     ]
     missed = sum(not broken(rule, mutate) for rule, mutate in cases)

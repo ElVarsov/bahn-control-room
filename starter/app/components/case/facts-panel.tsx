@@ -7,6 +7,20 @@ export function FactsPanel({ facts, zone }: { facts: Fact[]; zone: string }) {
   return (
     <section className="facts-panel" aria-labelledby="facts-title">
       <h2 id="facts-title" className="case-section-title">What we know<span className="facts-zone">Times in Helsinki time</span></h2>
+      <FactList facts={facts.filter((f) => !f.outdated)} zone={zone} />
+      {facts.some((f) => f.outdated) && (
+        <details className="facts-outdated">
+          <summary>Before your yes ({facts.filter((f) => f.outdated).length}): what we knew before the change you approved</summary>
+          <FactList facts={facts.filter((f) => f.outdated)} zone={zone} />
+        </details>
+      )}
+      <p className="facts-legend">Tap a source to see the record it comes from.</p>
+    </section>
+  )
+}
+
+function FactList({ facts, zone }: { facts: Fact[]; zone: string }) {
+  return (
       <ul className="fact-list">
         {facts.map((fact) => {
           const strength = STRENGTH[fact.strength]
@@ -36,7 +50,5 @@ export function FactsPanel({ facts, zone }: { facts: Fact[]; zone: string }) {
           )
         })}
       </ul>
-      <p className="facts-legend">Tap a source to see the record it comes from.</p>
-    </section>
   )
 }

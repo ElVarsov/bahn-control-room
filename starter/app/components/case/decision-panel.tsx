@@ -215,7 +215,7 @@ function DecidedCard({ proposal, decision, delivery, onUndo, done = [] }: { prop
       : proposal.whatHappensAfter ?? proposal.whatHappensNext
   return (
     <section className={`decision decided tone-${verdict.tone}`} aria-live="polite">
-      <p className="decision-eyebrow"><Icon name="check" size={13} /> {verdict.title} by {decision.decidedBy}</p>
+      <p className="decision-eyebrow"><Icon name="check" size={13} /> {verdict.title} by {decision.decidedBy === WHO ? "you" : decision.decidedBy}</p>
       <h2 className="decision-title">{proposal.title}</h2>
       {decision.note && <p className="decided-note">“{decision.note}”</p>}
       {done.length > 0

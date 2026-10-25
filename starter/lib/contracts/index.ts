@@ -33,6 +33,7 @@ export type Fact = {
   text: string             // plain sentence: "Overnight sailing on 23 Oct is sold out."
   strength: FactStrength
   sources: SourceRef[]
+  outdated?: boolean       // a change a person approved has since overtaken it
 }
 
 // ---------------------------------------------------------------------------
