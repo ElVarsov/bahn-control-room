@@ -1,126 +1,124 @@
 # Demo script (2 min 45 s)
 
 Two voices: **A** drives the laptop, **B** holds the phone and plays the driver.
-Record the laptop screen at 1440 px wide with the browser zoom at 100%; keep the phone in
-frame (a second camera or a picture-in-picture of the phone screen).
+The script follows the brief in its own order: the control room, one real agent ("On the
+road"), the rules of the game, then how we built it. Spoken text is about 400 words, which
+fits 2:45 at a calm pace with the live call. Lines in *italics* are actions, not words.
+
+| Time | Screen | What it proves (brief / rubric) |
+|---|---|---|
+| 0:00–0:12 | Needs you | The stakes |
+| 0:12–0:35 | Needs you | Shows the orders that need a person, says why, keeps the rest out of the way |
+| 0:35–1:20 | CD-420322 + phone | An order in a few seconds; one real agent that does the cheap work first and talks to the driver |
+| 1:20–1:45 | CD-420299 | A person's yes before a booking or a cost; clear what happens next |
+| 1:45–2:00 | Phone, then Needs you | The driver talks to the agent; the operator steers it |
+| 2:00–2:10 | Autonomy dial | The rules: never a customer, never a change, without a person |
+| 2:10–2:45 | Code, terminal, ai-log | How we worked with AI: what we checked, threw away, did not take |
 
 ## Before you press record
 
-1. `starter/`: `$env:NODE_USE_SYSTEM_CA = '1'; npm run dev` (fresh start, so only the committed
-   agent runs are loaded and nothing is decided yet).
+1. In `starter/`: `npm run demo:reset`, then make sure the old server is really stopped
+   (Ctrl-C in its terminal), then `$env:NODE_USE_SYSTEM_CA = '1'; npm run dev`. CD-420299 must
+   show **Approve and book · €490**, and Needs you must show **8**.
 2. `cloudflared tunnel --url http://localhost:3000`; on the phone open
-   `https://<tunnel>/driver?d=drv-319` (Kasper, the Bentley's driver on CD-420322) and tap once so
-   speech is allowed. Leave it open.
-3. Laptop tabs, in order: `/` (Needs you), `/orders/ord-00322`, `/orders/ord-00299`, `/settings`.
-4. Phone volume up. Laptop notifications off. Test one call before recording.
-5. Backup if the tunnel or speech fails: the case pages already show real runs of the agent, with
-   the simulated driver labelled as such. Say so on camera; do not pretend a call happened.
-6. Record the 0:40–1:20 live run once as a separate take before the main recording. A live model
-   run can word things differently from the screenshots; if the take goes wrong, cut to it.
-7. After a rehearsal, reset with `npm run demo:reset` and restart the app, so CD-420299 is
-   undecided again for the real take.
+   `https://<tunnel>/driver?d=drv-319` (Kasper, the Bentley's driver) and tap **Go on shift** so
+   the microphone is allowed. Leave it open.
+3. Laptop tabs, in this order: `/`, `/orders/ord-00322`, `/orders/ord-00299`, `/settings`.
+   A terminal at the repo root, font large. `docs/screens/queue-round-01.png` and `docs/screens/queue-final.png` open side by side.
+4. Browser at 1440 px wide, zoom 100%, notifications off, phone volume up. Make one test call.
+5. **Record the 0:35–1:20 live run once on its own first.** A live model run words things a
+   little differently every time, and a call can fail. If the phone does not ring within about
+   10 seconds in the main take, cut to the recorded take and say "here the driver is simulated".
+6. After that rehearsal, repeat step 1 so CD-420299 is undecided again.
 
 ## The script
 
-### 0:00–0:15 · The stakes (queue on screen)
-**A:** "A ferry sells out overnight and nobody notices. Now a BMW sits in Leipzig, a driver waits
-at the terminal, and a dealer in Helsinki misses a delivery. Bahn moves over 25,000 cars a year
-with a team of about 50 people, so misses like that are what they fight every day. Our control
-room lets AI agents work every order, and a person sees only the ones that need a human. Today
-that is eight out of about a hundred."
+### 0:00–0:12 · The stakes *(Needs you)*
+**A:** "A ferry sells out overnight, nobody notices, and a dealer in Helsinki misses a delivery.
+Bahn moves 25,000 cars a year with about 50 people. This is their control room."
 
-*On screen: Needs you, 8 cards. Point at the count and the "83 running quietly" line.*
+### 0:12–0:35 · Only what needs a person *(Needs you)*
+**A:** "Agents work every order. A person sees only what needs a human: eight out of about a
+hundred." *Point at the 8 and at "83 running quietly".*
 
-### 0:15–0:40 · One glance, one question (queue)
-**A:** "Every card is a question, not an alert. 'Call the customer for the Bentley's recovery
-decision?' It has a deadline, 'in 15 min', and one line on what the agent already did. The tag
-says what it takes: 'Call needed' here means you phone someone" *(point at CD-420322)*, "'Approve
-here' is one click" *(point at CD-420299)*. "Cards are grouped by how soon you must decide, and red
-means within half an hour. Below, 'On watch': things the agents are waiting on. If an answer does
-not come, the agent brings the order back up here."
+"Each card is a decision with its reason. 'Call needed' means you phone someone"
+*(point at CD-420322)*, "'Approve here' is one click" *(point at CD-420299)*. "Red means decide
+within half an hour. 'On watch' is what the agents are waiting on."
 
-*Hover the CD-420322 card, then scroll once to On watch. Open CD-420322.*
+*Open CD-420322.*
 
-### 0:40–1:20 · The agent works the case, live (case 322 + phone)
-**A:** "Let's ask the agent to look again." *Click **Ask the agent to look again**.*
-"It reads the order, the chat, the alerts, the tracking and the travel first. Those are free.
-Then it phones the driver."
+### 0:35–1:20 · One real agent, on the road *(CD-420322 + phone)*
+**A:** "A Bentley stopped with a red warning. You see who said what and when"
+*(point at Who said what)*, "what we know and how sure we are" *(point at What we know)*,
+"and the next decision. Let's have the agent look again." *Click **Ask the agent to look again**.*
+
+"Cheap work first: the order, the chat, alerts, tracking, travel. Then it phones the driver."
 
 *The phone rings. B answers on speaker.*
 
-**Agent (phone):** asks whether they are safe and where exactly they are.
+**Agent (phone):** asks whether they are safe and exactly where they are.
 **B (as Kasper):** "I'm safe, parked at a service area, engine off. I'll send you a pin."
 
-**A** *(back on the laptop as the run finishes)*: "Here's what it brings back. A call brief for
-the customer with numbered questions and what not to agree to. Every fact with its strength:
-'Reported' for what the driver said, 'Not known' for the exact location, because a driver's word
-is not a location fix. Tap a source and you see the record it came from."
+**A** *(as the run finishes)*: "The driver's words come back 'Reported', the location still
+'Not known': a driver's word is not a location fix. Every fact links to its record. And the
+agent never contacts a customer itself, so it hands a person this call brief."
 
-*Tap one source in What we know. Point at the run line, e.g. "5 checks, 1 driver call, took 41 s"
-(the live numbers will differ slightly).*
+### 1:20–1:45 · A person says yes *(CD-420299)*
+*Open CD-420299.*
+**A:** "Bookings, dates, costs and customer messages always wait for a person. The ferry is sold
+out; the agent compared sailings and hotels and proposes one plan, with what changes and what
+happens next." *Click **Approve and book · €490**.*
 
-### 1:20–1:50 · A person says yes, and sees what happened (case 299)
-**A:** "Bookings, dates, costs and customer messages always wait for a person." *Open CD-420299.*
-"The overnight ferry is sold out. The agent checked sailings and hotels and proposes the next-day
-ferry plus a hotel night, €490. Now, After, and what happens next."
+"An earlier attempt failed, so it checks that first, then books and tells the driver."
+*Zoom for 2 s on "Approved by you at 12:00".* "And the record says who decided."
+*Click **Back to Needs you**: the queue shows 7.*
 
-"The button says what you commit to: 'Approve and book, €490'." *Click it.*
+### 1:45–2:00 · Talking to the agent *(phone, then Needs you)*
+**B** taps **Call Bahn**: "Hi, it's Kasper on the Bentley. I've sent the pin, and the warning
+light is flashing now."
 
-"Because the records show an earlier booking attempt failed, it checks with the provider first,
-then books the ferry and the hotel, each with its own reference, and tells the driver."
+**A:** "Drivers talk to the agent by voice, and the report lands here as 'Driver called in'.
+Operators steer it in plain words: 'Tell the agent something else'." *Show the new card.*
 
-*Zoom for 2 s on "Approved by you at 12:00".*
+### 2:00–2:10 · The rules *(Autonomy dial)*
+*Open `/settings`.*
+**A:** "Phoning a driver is free. Bookings, times, costs, customer messages: always 'Ask me
+first', enforced on the server, not just on this page."
 
-"A person made this call, and the record says so. The facts that are no longer true move under
-'Before your yes'. And behind this button, a second request for the same yes is refused; our
-eval checks every run for it."
-*Point at the five rows, then the facts panel. Click **Back to Needs you**: the queue is down to 7.*
+### 2:10–2:45 · How we built it *(every claim on screen)*
+**B:** "Two of us, each with Claude Code, in parallel lanes joined by one contract file."
+*Screen: `starter/lib/contracts/index.ts`, 2 s.*
 
-### 1:50–2:05 · The driver calls in (phone)
-**B** taps **Call Bahn** on the phone: "Hi, it's Kasper on the Bentley. I've sent the pin, and the
-warning light is flashing now."
+"Four AI judges, two business, two technical, scored Bahn's rubric for ten rounds: 3.4 to 4.5.
+Round one: eleven cards, mostly written by hand. Now: eight, each one a real agent run."
+*Screen: `docs/screens/queue-round-01.png` next to `queue-final.png`.*
 
-**A:** "The driver can call us too. The agent answers, works out which order it is about, and it
-lands in Needs you as 'Driver called in' within seconds. What the driver said comes in as
-'reported', not verified: a call is not a location fix." *Show the new card.*
-
-*(Do not script anything the case has not decided yet, such as a tow arriving: the owner has
-not chosen recovery, and the agent would rightly treat it as a conflict.)*
-
-### 2:05–2:45 · How we built it (every claim gets a screen)
-**A:** "Two of us built this in parallel with Claude Code, one on the screens and one on the
-agent, joined only by a shared contract file." *Screen: `starter/lib/contracts/index.ts`, 2 s.*
-
-**B:** "We didn't take the first answer. Four AI judges, two from the business side and two from
-engineering, scored Bahn's own rubric over ten rounds with fresh screenshots each time."
-*Screen: the round-1 queue screenshot next to today's (from `docs/ai-log/ignacio.md` scores).*
-
-"They caught real problems. In round seven, a double booking in our own screenshot: approving
-twice booked twice. We fixed it and wrote a check that fails that exact trace."
-*Screen: terminal running
+"They caught real bugs: a second approval booked twice. Now it's refused, and a check fails
+that run." *Terminal:*
 `python starter/scripts/eval_agent.py traces/examples/rejected/run-mvn3ijhi2y3-double-booked.json`
-→ "once_per_yes: … booked 2 times", 3 s.*
+*→ "once_per_yes: … booked 2 times".*
 
-"And in the last round they caught us again: after the 25 October clock change, a rerun put the
-Leipzig delivery an hour late, and our notes called it a fix. The record said otherwise. Now the
-tools hand the agent converted times, and a check compares every time with the record."
-*Screen: terminal running
-`python starter/scripts/eval_agent.py traces/examples/rejected/run-mvno42zlb5g-wrong-time.json`
-→ "times_match: says 27 Oct 14:00-16:00; the record says 13:00-15:00", 3 s.*
+"After the clock change, a rerun put a delivery an hour late, and our notes called it a fix.
+Now every time is checked against the record."
+*Terminal:* `python starter/scripts/eval_agent.py traces/examples/rejected/run-mvno42zlb5g-wrong-time.json`
+*→ "times_match: says 27 Oct 14:00-16:00; the record says 13:00-15:00".*
 
-**A:** "We also threw away what looked impressive but wasn't true: a risk dashboard, a map and KPI
-tiles with made-up numbers. Fifteen checks run over every committed agent run, and a self-test
-plants one violation per check to prove each one can fail."
-*Screen: `python starter/scripts/eval_agent.py --self-test` ending in "caught", 2 s.*
+**A:** "We threw away what looked good but wasn't true: a map, made-up KPIs. Agents do the
+legwork, people make the calls, and every fact shows where it came from."
 
-**A:** "Agents do the legwork, people make the calls, and every fact shows where it came from.
-That's the Car Delivery Control Room."
+## Numbers on screen (check right before the main take)
 
-## Numbers to say (check before recording)
+- Needs you **8**, running quietly **83**; after approving CD-420299: **7** and **84**.
+- `python starter/scripts/eval_agent.py` → **14/14 runs pass all 15 checks**;
+  `--self-test` → **16/16 caught**.
+- Judges, average per round out of 5: 3.44 · 3.70 · 3.74 · 4.00 · 4.09 · 4.09 · 3.74 · 4.24 ·
+  4.48 · 4.29 (say "from 3.4 to 4.5"; the dips are where they caught real bugs).
 
-- Needs you: 8 · running quietly: 83 (top of the queue page).
-- Eval: `python starter/scripts/eval_agent.py` → 14/14 runs pass all 15 checks;
-  `--self-test` → 16/16 caught.
-- Judges, average per round (out of 5): 3.44 · 3.70 · 3.74 · 4.00 · 4.09 · 4.09 · 3.74 · 4.24 ·
-  4.48 · 4.29. Say "from 3.4 to 4.5"; the dips are where they caught real bugs.
-- After approving CD-420299 the queue shows 7.
+## If the live parts fail
+
+- **No ring within ~10 s:** cut to the pre-recorded take of 0:35–1:20 and say "here the driver is
+  simulated". The committed run on this case is a real agent run with the simulated driver
+  labelled "demo stand-in".
+- **Speech fails on the phone:** skip 1:45–2:00 and say the line about steering the agent over the
+  queue instead; the voice path is described in `docs/VOICE.md`.
+- **Never** say a call happened if it did not, and never read out a number the screen does not show.
