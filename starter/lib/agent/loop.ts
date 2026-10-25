@@ -5,7 +5,7 @@
 // a customer: those only exist as proposals a person approves.
 
 import type Anthropic from "@anthropic-ai/sdk"
-import type { ActionKind, Change, Fact, FactStrength, Proposal, SourceKind, Urgency } from "@/lib/contracts"
+import { ALWAYS_ASK, type ActionKind, type Change, type Fact, type FactStrength, type Proposal, type SourceKind, type Urgency } from "@/lib/contracts"
 import { worldStore } from "@/lib/world/store"
 import { byId, SNAPSHOT_AT, type Row } from "./dataset"
 import { execute } from "./decide"
@@ -226,8 +226,8 @@ async function runTool(record: RunRecord, order: Row, name: string, input: Recor
 
       // Autonomy Dial evaluation
       const autonomySettings = worldStore.getAutonomySettings()
-      // Customer Lock: messaging customer is permanently locked to ask_first
-      const autonomy = action === "message_customer" ? "ask_first" : (autonomySettings[action] ?? "ask_first")
+      // Bookings, dates, costs, customer messages and handovers always wait for a person.
+      const autonomy = ALWAYS_ASK.includes(action) ? "ask_first" : (autonomySettings[action] ?? "ask_first")
 
       const proposal: Proposal = {
         id: `${record.run.id}-p${record.proposals.length + 1}`,

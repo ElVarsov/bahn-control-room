@@ -4,13 +4,15 @@
 // domino delays strike. Forecasts carry strength "estimate", never treated as facts.
 
 import type { Change, Fact, QueueItem, Urgency } from "@/lib/contracts"
-import { fmtClock, fmtDateTime } from "@/lib/present/time"
+import { fmtClock, fmtDateTime, fmtDay } from "@/lib/present/time"
 import { actorName, byId, forOrder, minutesBeforeSnapshot, rows, SNAPSHOT_AT, type Row } from "./dataset"
 import { carOf, resolveOrder, routeOf } from "./tools"
 import { startRun } from "./loop"
 import { allRuns, type RunRecord } from "./runs"
 
 export interface JourneyForecast {
+  /** When waiting stops being free: a few hours before the promise ends or the check-in closes. */
+  decideBy?: string
   orderId: string
   orderReference: string
   car: string
@@ -117,7 +119,7 @@ export function evaluateJourney(orderRef: Row | string): JourneyForecast | null 
     const promiseMs = Date.parse(promiseEnd)
     if (etaMs > promiseMs) {
       hoursDelayed = Math.max(1, Math.round((etaMs - promiseMs) / 3600000))
-      reasons.push(`Likely about ${hoursDelayed} h late: the last ETA is ${fmtDateTime(eta, promiseZone, false)}, the promise ends ${fmtDateTime(promiseEnd, promiseZone)}`)
+      reasons.push(`Likely about ${hoursDelayed} h late for the ${fmtDay(promiseEnd, promiseZone)} delivery promise`)
       facts.push({
         id: `${order.id}-forecast-promise`,
         text: `The last driver-app ETA (${fmtDateTime(eta, promiseZone)}) is about ${hoursDelayed} h after the promised window ends (${fmtDateTime(promiseEnd, promiseZone)}). This is an estimate from the app, not a confirmed delay.`,
@@ -130,7 +132,9 @@ export function evaluateJourney(orderRef: Row | string): JourneyForecast | null 
           recordId: promiseWindow?.id,
         }],
       })
-      urgency = hoursDelayed >= 4 ? "now" : "today"
+      // Urgency follows how soon the promise ends, not only how late the estimate is.
+      const hoursToPromise = -(minutesBeforeSnapshot(promiseEnd) ?? 0) / 60
+      urgency = hoursToPromise <= 6 ? (hoursDelayed >= 2 ? "now" : "today") : hoursToPromise <= 30 ? "today" : "soon"
     }
   }
 
@@ -184,6 +188,12 @@ export function evaluateJourney(orderRef: Row | string): JourneyForecast | null 
     summary,
     reasons,
     facts,
+    decideBy: (() => {
+      const limit = upcomingFerry ? String(upcomingFerry.check_in_cutoff_at ?? upcomingFerry.departure_at) : promiseEnd
+      if (!limit) return undefined
+      const at = Date.parse(limit) - 3 * 3600000
+      return new Date(Math.max(at, Date.parse(SNAPSHOT_AT) + 30 * 60000)).toISOString()
+    })(),
     estimatedArrival: eta ?? undefined,
     promiseDeadline: promiseEnd,
     hoursDelayed,

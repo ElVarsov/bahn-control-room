@@ -12,3 +12,5 @@ Kept / threw away, and why: ...
 
 Good entries: a first answer we rejected, a bug the agent introduced that we
 caught, a design the agent proposed that we overrode, a prompt that worked well.
+
+Logs: `ignacio.md` (Lane A: control room, voice, road agent loop) and `antoni.md` (Lane B: agent world, monitor, autonomy).

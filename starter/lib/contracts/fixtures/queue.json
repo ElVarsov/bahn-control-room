@@ -80,8 +80,8 @@
       "customer": "Kavellora Car House",
       "stage": "Driver booked",
       "reason": "decision",
-      "headline": "Ferry sold out. Approve the next-day sailing and ask the dealer about a later delivery?",
-      "why": "The overnight crossing on 23 Oct is full, and the earlier booking attempt timed out with no reference.",
+      "headline": "Ferry sold out. Approve the next sailing and one hotel night (€490)? Delivery date holds.",
+      "why": "The overnight crossing on 23 Oct is full and the earlier booking attempt timed out with no reference. The next sailing still arrives before the 27 Oct promise.",
       "agentDid": "Confirmed nothing was booked, found the next sailing with space, and checked with the driver.",
       "urgency": "today",
       "decideBy": "2026-10-21T12:00:00Z",
@@ -245,9 +245,24 @@
   "quiet": {
     "count": 85,
     "sample": [
-      { "orderId": "ord-00004", "orderReference": "CD-420004", "car": "Porsche Taycan", "stage": "Delivered" },
-      { "orderId": "ord-00009", "orderReference": "CD-420009", "car": "Toyota RAV4", "stage": "Being prepared" },
-      { "orderId": "ord-00071", "orderReference": "CD-420071", "car": "Audi Q8 e-tron", "stage": "Moving" }
+      {
+        "orderId": "ord-00004",
+        "orderReference": "CD-420004",
+        "car": "Porsche Taycan",
+        "stage": "Delivered"
+      },
+      {
+        "orderId": "ord-00009",
+        "orderReference": "CD-420009",
+        "car": "Toyota RAV4",
+        "stage": "Being prepared"
+      },
+      {
+        "orderId": "ord-00071",
+        "orderReference": "CD-420071",
+        "car": "Audi Q8 e-tron",
+        "stage": "Moving"
+      }
     ]
   }
 }

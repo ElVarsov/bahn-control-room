@@ -3,8 +3,8 @@ import "./globals.css"
 import "./control-room.css"
 
 export const metadata: Metadata = {
-  title: "Car Delivery Control Room starter",
-  description: "A fictional operations dataset and a simple read-only starting point.",
+  title: "Control Room",
+  description: "Bahn control room: the orders that need a person, and an agent that does the legwork.",
 }
 
 export const viewport: Viewport = { themeColor: "#fffef7", width: "device-width", initialScale: 1 }

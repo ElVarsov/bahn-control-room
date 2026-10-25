@@ -1,5 +1,6 @@
 import fs from "node:fs"
 import path from "node:path"
+import { ALWAYS_ASK } from "../contracts"
 import type {
   ActionKind,
   AgentRun,
@@ -59,7 +60,7 @@ class WorldStore {
     ask_driver: "do_quietly",
     ask_site: "do_quietly",
     refresh_quote: "do_quietly",
-    resolve_alert: "do_and_tell",
+    resolve_alert: "ask_first",
     handover_to_person: "ask_first",
   }
 
@@ -297,7 +298,8 @@ class WorldStore {
 
   public updateAutonomySettings(settings: Partial<Record<ActionKind, Autonomy>>) {
     for (const [k, v] of Object.entries(settings)) {
-      if (k === "message_customer") continue // Always locked to ask_first
+      if (ALWAYS_ASK.includes(k as ActionKind)) continue // the brief: these always wait for a person
+      if (!(k in this.autonomy) || !["ask_first", "do_and_tell", "do_quietly"].includes(String(v))) continue
       if (v) this.autonomy[k as ActionKind] = v
     }
     return this.getAutonomySettings()

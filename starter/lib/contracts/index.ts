@@ -52,6 +52,9 @@ export type ActionKind =
 
 export type Autonomy = "ask_first" | "do_and_tell" | "do_quietly"
 
+/** The brief: a person says yes before bookings, dates, costs or customer messages. Never adjustable. */
+export const ALWAYS_ASK: ActionKind[] = ["message_customer", "book_travel", "change_date", "approve_cost", "handover_to_person"]
+
 /** One field that would change if the proposal is approved. */
 export type Change = {
   label: string            // "Ferry", "Delivery promise", "Cost"

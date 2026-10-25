@@ -23,7 +23,15 @@ const FIXTURE_CASES: Record<string, CaseView> = {
 const useFixtures = process.env.USE_FIXTURES !== "0"
 
 export async function getQueue(): Promise<QueueResponse> {
-  const queue: QueueResponse = useFixtures ? (queueFixture as QueueResponse) : worldStore.getQueue()
+  const raw: QueueResponse = useFixtures ? (queueFixture as QueueResponse) : worldStore.getQueue()
+  // A sample case without a case file has had no agent work we can show, so its card
+  // must not claim any. It says so and invites a person to start the agent.
+  const queue: QueueResponse = useFixtures ? {
+    ...raw,
+    needsPerson: raw.needsPerson.map((item) => FIXTURE_CASES[item.orderId] ? item : {
+      ...item, agentDid: "The agent has not looked at this order yet. Open it to start the agent.", agentState: "idle" as const,
+    }),
+  } : raw
   // Live phone calls, agent runs and journey forecasts happen in this process, so they
   // join the queue as they happen. An order the agent has worked replaces its sample entry.
   const calls = callItems()
@@ -61,7 +69,8 @@ function journeyForecastItems(existingOrders: Set<string>): { needsPerson: Queue
       route: f.route,
       customer: f.customer,
       headline: f.headline,
-      why: f.summary,
+      why: "An estimate from the journey monitor, not a confirmed problem. The agent can check with the driver.",
+      decideBy: f.decideBy,
       urgency: f.urgency,
       updatedAt: SNAPSHOT_AT,
       reason: "forecast",

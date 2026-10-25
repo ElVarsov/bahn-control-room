@@ -28,7 +28,7 @@ export function FactsPanel({ facts, zone }: { facts: Fact[]; zone: string }) {
           )
         })}
       </ul>
-      <p className="facts-legend">Hover a source to see the record it comes from.</p>
+      <p className="facts-legend">Each source names the record it comes from; hover for its record id.</p>
     </section>
   )
 }

@@ -1,216 +1,117 @@
 "use client"
 
 import { useEffect, useState } from "react"
-import Link from "next/link"
+import { ALWAYS_ASK, type ActionKind, type Autonomy } from "@/lib/contracts"
 import { AppFrame } from "../components/app-frame"
 import { Icon } from "../components/icons"
-import type { ActionKind, Autonomy } from "@/lib/contracts"
 
-const ACTION_DESCRIPTIONS: Record<ActionKind, { title: string; desc: string; locked?: boolean; ruleReason?: string }> = {
-  message_customer: {
-    title: "Message Paying Customer / Dealer",
-    desc: "Drafts and sends emails, SMS or notifications to the car dealer or buyer.",
-    locked: true,
-    ruleReason: "Rule of the Game: The agent never contacts a customer on its own. Permanently locked to 'Ask me first'.",
-  },
-  book_travel: {
-    title: "Book Ferry, Train, Flight or Hotel",
-    desc: "Executes purchased transport bookings with Vela Coast Lines, Scandlines, Deutsche Bahn, or hotels.",
-  },
-  change_date: {
-    title: "Change Delivery Promise or Pickup Slot",
-    desc: "Adjusts promised handover windows in marketplace systems and notifies field network.",
-  },
-  approve_cost: {
-    title: "Approve Extra Travel & Waiting Costs",
-    desc: "Authorizes unforeseen expense reimbursements, bridge tolls, or emergency driver vouchers.",
-  },
-  ask_driver: {
-    title: "Interview Driver via In-App Chat / Phone",
-    desc: "Queries assigned driver on driving hours, safe stops, GPS location, and condition photos.",
-  },
-  ask_site: {
-    title: "Verify Site Access & Gate Releases",
-    desc: "Contacts seller or delivery compound receptionists to verify paperwork and release codes.",
-  },
-  refresh_quote: {
-    title: "Query Provider Timetables & Quotes",
-    desc: "Refreshes live sailing capacity, hotel room availability, and alternative routing options.",
-  },
-  resolve_alert: {
-    title: "Resolve Tracking & Telematics Warnings",
-    desc: "Clears alerts once fresh GPS coordinates or driver messages confirm compliance.",
-  },
-  handover_to_person: {
-    title: "Human Escalation & Phone Briefings",
-    desc: "Prepares one-click briefing cards for complex cases needing human judgment.",
-  },
-}
+// How much the agent may do on its own, per kind of action. Bookings, dates, costs,
+// customer messages and handovers always wait for a person: the challenge rules say so.
+
+const ACTIONS: { kind: ActionKind; title: string; detail: string }[] = [
+  { kind: "ask_driver", title: "Ask the driver", detail: "Chat with or phone the driver about where they are, whether they are safe, photos." },
+  { kind: "ask_site", title: "Ask the pickup or delivery site", detail: "Check opening hours, gate access, keys and release papers." },
+  { kind: "refresh_quote", title: "Look up travel options", detail: "Check ferry space, trains and hotels. Quotes only; nothing is bought." },
+  { kind: "resolve_alert", title: "Close an alert", detail: "Mark a warning as handled once the facts behind it are cleared." },
+  { kind: "book_travel", title: "Book travel", detail: "Ferries, trains, flights and hotels for the driver." },
+  { kind: "change_date", title: "Change a pickup or delivery time", detail: "Move a slot or the promise to the customer." },
+  { kind: "approve_cost", title: "Approve a cost", detail: "Extra travel, waiting time or other expenses." },
+  { kind: "message_customer", title: "Message a customer", detail: "Anything the dealer or buyer would read." },
+  { kind: "handover_to_person", title: "Hand a case to a person", detail: "Calls only a person can make, like asking a dealer to decide." },
+]
+
+const LEVELS: { value: Autonomy; label: string }[] = [
+  { value: "ask_first", label: "Ask me first" },
+  { value: "do_and_tell", label: "Do it and tell me" },
+  { value: "do_quietly", label: "Do it quietly" },
+]
 
 export default function SettingsPage() {
   const [settings, setSettings] = useState<Record<ActionKind, Autonomy> | null>(null)
-  const [saving, setSaving] = useState(false)
-  const [savedSuccess, setSavedSuccess] = useState(false)
+  const [error, setError] = useState("")
+  const [saved, setSaved] = useState(false)
 
   useEffect(() => {
     fetch("/api/settings/autonomy")
-      .then((res) => res.json())
-      .then((data) => setSettings(data))
-      .catch((err) => console.error("Failed to load settings:", err))
+      .then((res) => (res.ok ? res.json() : Promise.reject(new Error(String(res.status)))))
+      .then(setSettings)
+      .catch(() => setError("Could not load the settings. Reload the page to try again."))
   }, [])
 
-  const updateSetting = async (action: ActionKind, value: Autonomy) => {
-    if (!settings || ACTION_DESCRIPTIONS[action]?.locked) return
-    const updated = { ...settings, [action]: value }
-    setSettings(updated)
-    setSaving(true)
-    try {
-      await fetch("/api/settings/autonomy", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(updated),
-      })
-      setSavedSuccess(true)
-      setTimeout(() => setSavedSuccess(false), 2000)
-    } finally {
-      setSaving(false)
-    }
+  const update = async (kind: ActionKind, value: Autonomy) => {
+    if (!settings || ALWAYS_ASK.includes(kind)) return
+    const next = { ...settings, [kind]: value }
+    setSettings(next)
+    const response = await fetch("/api/settings/autonomy", { method: "PUT", headers: { "content-type": "application/json" }, body: JSON.stringify({ [kind]: value }) })
+    setSaved(response.ok)
+    if (response.ok) setTimeout(() => setSaved(false), 2000)
+    else setError("That change was not saved.")
   }
+
+  const free = ACTIONS.filter((a) => !ALWAYS_ASK.includes(a.kind))
+  const locked = ACTIONS.filter((a) => ALWAYS_ASK.includes(a.kind))
 
   return (
     <AppFrame section="settings">
-      <div style={{ maxWidth: "1000px", margin: "0 auto", padding: "32px 28px 60px" }}>
-        <div style={{ marginBottom: "24px" }}>
-          <h1 style={{ fontSize: "24px", fontFamily: "var(--font-display)", fontWeight: 700, letterSpacing: "-0.02em", marginBottom: "6px" }}>
-            Agent Autonomy Dial
-          </h1>
-          <p style={{ color: "var(--muted)", fontSize: "14px", lineHeight: 1.45 }}>
-            Configure the boundary between autonomous agent execution and human sign-off. As agents earn operational trust, routine actions can be delegated to run quietly.
-          </p>
-        </div>
-
-        {/* Banner on Safety Guardrails */}
-        <div
-          style={{
-            background: "var(--tray)",
-            border: "1px solid var(--hair)",
-            borderRadius: "10px",
-            padding: "16px 20px",
-            marginBottom: "28px",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-            <span style={{ fontSize: "24px" }}>🔒</span>
-            <div>
-              <div style={{ fontWeight: 600, fontSize: "13.5px", color: "var(--ink)" }}>
-                Strict Customer Communication Guardrail
-              </div>
-              <div style={{ fontSize: "12.5px", color: "var(--muted)", marginTop: "2px" }}>
-                Under hackathon judging rules, the agent <b>never</b> contacts a paying car dealer directly. All customer communications are locked to require human approval.
-              </div>
-            </div>
+      <main className="page settings-page">
+        <header className="queue-head">
+          <div>
+            <h1 className="queue-title">Autonomy dial</h1>
+            <p className="queue-sub">What the agent may do without asking. Start strict and give it more room as it earns trust.</p>
           </div>
-          {savedSuccess && (
-            <span style={{ color: "var(--green-ink)", fontWeight: 600, fontSize: "12.5px" }}>
-              ✓ Saved successfully
-            </span>
-          )}
-        </div>
+          <p className="settings-saved" aria-live="polite">{saved ? "Saved" : ""}</p>
+        </header>
 
-        {/* Action Controls List */}
-        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
-          {settings &&
-            (Object.keys(ACTION_DESCRIPTIONS) as ActionKind[]).map((action) => {
-              const meta = ACTION_DESCRIPTIONS[action]
-              const currentVal = settings[action] || "ask_first"
+        {error && <p className="board-error" role="alert">{error}</p>}
+        {!settings && !error && <p className="settings-loading">Loading settings…</p>}
 
-              return (
-                <div
-                  key={action}
-                  style={{
-                    background: "var(--birch)",
-                    border: "1px solid var(--hair)",
-                    borderRadius: "10px",
-                    padding: "16px 20px",
-                    boxShadow: "var(--shadow-card)",
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    gap: "24px",
-                  }}
-                >
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                      <span style={{ fontWeight: 700, fontSize: "14px", color: "var(--ink)" }}>{meta.title}</span>
-                      {meta.locked && (
-                        <span
-                          style={{
-                            background: "var(--orange-bg)",
-                            color: "var(--orange-ink)",
-                            padding: "2px 8px",
-                            borderRadius: "999px",
-                            fontSize: "11px",
-                            fontWeight: 600,
-                          }}
-                        >
-                          🔒 Permanent Guardrail
-                        </span>
-                      )}
+        {settings && (
+          <>
+            <section className="settings-group" aria-labelledby="free-title">
+              <h2 id="free-title" className="queue-group-title">You choose</h2>
+              <ul className="settings-rows">
+                {free.map((action) => (
+                  <li key={action.kind} className="settings-row">
+                    <div>
+                      <p className="settings-title">{action.title}</p>
+                      <p className="settings-detail">{action.detail}</p>
                     </div>
-                    <p style={{ fontSize: "12.5px", color: "var(--muted)", margin: 0 }}>
-                      {meta.locked ? meta.ruleReason : meta.desc}
-                    </p>
-                  </div>
-
-                  {/* Radio Group */}
-                  <div
-                    style={{
-                      display: "inline-flex",
-                      background: "var(--canvas)",
-                      padding: "3px",
-                      borderRadius: "8px",
-                      border: "1px solid var(--hair)",
-                      opacity: meta.locked ? 0.6 : 1,
-                    }}
-                  >
-                    {(["ask_first", "do_and_tell", "do_quietly"] as Autonomy[]).map((level) => {
-                      const labels = {
-                        ask_first: "Ask me first",
-                        do_and_tell: "Do it & tell me",
-                        do_quietly: "Do it quietly",
-                      }
-                      const active = currentVal === level
-
-                      return (
+                    <div className="segmented" role="radiogroup" aria-label={action.title}>
+                      {LEVELS.map((level) => (
                         <button
-                          key={level}
-                          disabled={meta.locked}
-                          onClick={() => updateSetting(action, level)}
-                          style={{
-                            padding: "6px 12px",
-                            borderRadius: "6px",
-                            fontSize: "12px",
-                            fontWeight: 600,
-                            border: "none",
-                            background: active ? "var(--birch)" : "transparent",
-                            color: active ? "var(--ink)" : "var(--muted)",
-                            boxShadow: active ? "0 1px 2px rgba(0,0,0,0.06)" : "none",
-                            cursor: meta.locked ? "not-allowed" : "pointer",
-                          }}
-                        >
-                          {labels[level]}
-                        </button>
-                      )
-                    })}
-                  </div>
-                </div>
-              )
-            })}
-        </div>
-      </div>
+                          key={level.value}
+                          type="button"
+                          role="radio"
+                          aria-checked={settings[action.kind] === level.value}
+                          className={settings[action.kind] === level.value ? "is-on" : ""}
+                          onClick={() => void update(action.kind, level.value)}
+                        >{level.label}</button>
+                      ))}
+                    </div>
+                  </li>
+                ))}
+              </ul>
+            </section>
+
+            <section className="settings-group" aria-labelledby="locked-title">
+              <h2 id="locked-title" className="queue-group-title">
+                Always asks you first<span className="queue-group-note">A person says yes before bookings, dates, costs or anything a customer hears.</span>
+              </h2>
+              <ul className="settings-rows">
+                {locked.map((action) => (
+                  <li key={action.kind} className="settings-row is-locked">
+                    <div>
+                      <p className="settings-title">{action.title}</p>
+                      <p className="settings-detail">{action.detail}</p>
+                    </div>
+                    <p className="settings-fixed"><Icon name="check" size={13} /> Asks you first</p>
+                  </li>
+                ))}
+              </ul>
+            </section>
+          </>
+        )}
+      </main>
     </AppFrame>
   )
 }

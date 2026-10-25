@@ -31,11 +31,10 @@ is in [`PARTICIPANT-BRIEF.md`](./PARTICIPANT-BRIEF.md).
   and the page updates live while it works.
 - **All orders (`/board`)**, **Inbox**, **Customers / Drivers / Places**: the starter's
   views, kept for depth.
-- **Autonomy dial (`/settings`)**: per action, *ask first / do and tell / do quietly*.
-  Bookings, dates, costs and customer messages default to *ask first*; customer
-  messages are locked there.
-- **Map (`/map`)**: an illustrative overview. The packet has no coordinates, so it does
-  not show tracked positions.
+- **Autonomy dial (`/settings`)**: what the agent may do without asking (asking the driver
+  or a site, looking up travel, closing an alert). Bookings, date changes, costs, customer
+  messages and handovers always ask a person first; that is enforced on the server, not
+  just in the page.
 
 ### The road agent (`starter/lib/agent`)
 A Claude tool-use loop for one order at a time:
@@ -155,7 +154,7 @@ did not take the first answer:
 ## Repository map
 | Path | What |
 |---|---|
-| `starter/app` | Pages: queue, case, driver phone, settings, map, starter views |
+| `starter/app` | Pages: queue, case, driver phone, settings, starter views |
 | `starter/lib/agent` | Road agent loop, tools, decisions, monitor, run store |
 | `starter/lib/voice` | Calls: call store, in-call agent, driver presence |
 | `starter/lib/present` | Read layer for the pages (`source.ts` decides where data comes from) |
