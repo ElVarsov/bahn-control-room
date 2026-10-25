@@ -66,17 +66,14 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
               ? <DecisionPanel proposals={view.proposals} />
               : item && item.reason !== "driver_report" && (
                 <section className="decision decision-lite">
-                  <p className="decision-eyebrow">{reason?.label ?? "Needs a person"}</p>
-                  <h2 className="decision-title">{item.headline}</h2>
-                  {item.agentDid && <p className="decision-rationale"><Icon name="bot" size={14} /> {item.agentDid}</p>}
-                  <p className="decision-note">The agent has not written up a proposal for this order yet. Ask it to work on it above, or open the full record to work by hand.</p>
+                  <p className="decision-eyebrow"><Icon name="bot" size={13} /> Not looked at yet</p>
+                  <p className="decision-rationale">Nobody has worked this order yet. Ask the agent above: it reads the order and conversation, may phone the driver, and brings you a proposal. The conversation so far is below.</p>
                   <Link className="btn btn-secondary" href={`/orders/${encodeURIComponent(id)}/record`}>Open the full record</Link>
                 </section>
               )}
 
             {view.runs.length > 0 && <AgentWork runs={view.runs} snapshotAt={SNAPSHOT_AT} zone={OPS_ZONE} />}
             {view.timeline.length > 0 && <Timeline entries={view.timeline} zone={OPS_ZONE} />}
-            {!full && <p className="case-partial">The case file for this order is still being built. Facts and history are in the <Link className="name-link" href={`/orders/${encodeURIComponent(id)}/record`}>full record</Link>.</p>}
           </div>
 
           {view.facts.length > 0 && (

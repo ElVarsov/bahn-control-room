@@ -91,3 +91,25 @@ tunnel). Real phone network stays a stretch goal.
   evidence drawer and lock badges we do not have, invented savings figures, and skipped the API key.
 - Flagged, not changed: `eval_agent.py` prints PASS without testing anything; the map's hubs,
   car counts and positions are made up and name real ferry companies.
+
+## Four AI judges, ten rounds (Sun 25 Oct, from 03:00)
+We set up four judge agents that score the product each round against Bahn's own rubric
+(control room 40%, AI process 30%, taste 30%): Bahn's head of operations and a pitch judge
+(business), an agent-systems engineer and a frontend engineer (technical). They see fresh
+screenshots and read the code; we fix their top findings, then they judge again.
+
+Before round 1 we simplified by hand: the overnight redesign had added KPI cards, tabs, a map
+with made-up positions and a "cascade risk engine" that displayed pre-written agent activity and
+invented percentages. We removed all of it.
+
+- **Round 1 (avg 3.44):** all four found that the Autonomy dial could let the agent book, change
+  dates and approve costs alone. Locked those to "ask a person" in the loop and the store, not just
+  the page. Rewrote Settings in plain words. The phone "overflow" they saw was our screenshot tool
+  (headless browsers won't go below 512px); we fixed the tool, not the app. Queue cards stopped
+  claiming agent work that was not on the case page. Added a `grounded` eval check, which now fails
+  the run we rejected for inventing a sailing. Deleted a log that put invented prompts in my name.
+- **Round 2 (avg 3.70):** the ferry case still told two stories (proposal fixed, timeline not), and
+  eight "not looked at yet" cards made the agent look idle. Instead of hiding that, we ran the real
+  agent on those eight orders. Parallel runs hit OpenRouter's 20-requests-a-minute limit, so the
+  client now retries with backoff. The "Ask the driver" dial row did nothing; it now really decides
+  whether the agent may phone. Fact sources open on tap, not only on hover.

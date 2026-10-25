@@ -272,3 +272,18 @@ kbd {
   .segmented { width: 100%; }
   .segmented button { flex: 1; padding: 0 6px; font-size: 12.5px; }
 }
+
+/* Fact sources open in place: works with touch and keyboard, not only hover */
+.fact-sources details summary { cursor: pointer; list-style: none; }
+.fact-sources details summary::-webkit-details-marker { display: none; }
+.fact-sources details summary:hover, .fact-sources details[open] summary { color: var(--ink); }
+.fact-sources li::before { content: none; }
+.fact-sources details summary::before { content: "↳ "; color: var(--sand); }
+.fact-record { margin: 2px 0 4px 14px; font-size: 11.5px; color: var(--brown); }
+.fact-record .mono { font-size: 11px; }
+
+/* Phone menu wraps instead of hiding links off-screen */
+@media (max-width: 900px) {
+  .sidebar { flex-wrap: wrap; row-gap: 4px; overflow-x: visible; }
+  .sidebar-nav, .nav-group { flex-wrap: wrap; }
+}

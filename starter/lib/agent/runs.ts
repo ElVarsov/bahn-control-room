@@ -32,12 +32,17 @@ function getTracesDir(): string {
   return parent
 }
 
+// Seed runs (traces/seed, committed) are real agent runs on the demo cases, so a fresh
+// clone opens with the agent's actual work. Live runs (traces/run-*.json, local) load after
+// them and, being newer, take over the order they belong to.
 function loadTracesFromDisk(): Map<string, RunRecord> {
   const map = new Map<string, RunRecord>()
   try {
     const dir = getTracesDir()
     if (!existsSync(dir)) return map
-    const files = readdirSync(dir).filter((f) => f.startsWith("run-") && f.endsWith(".json"))
+    const seedDir = path.join(dir, "seed")
+    const seeds = existsSync(seedDir) ? readdirSync(seedDir).filter((f) => f.startsWith("run-") && f.endsWith(".json")).map((f) => path.join("seed", f)) : []
+    const files = [...seeds, ...readdirSync(dir).filter((f) => f.startsWith("run-") && f.endsWith(".json"))]
     for (const file of files) {
       try {
         const content = readFileSync(path.join(dir, file), "utf8")

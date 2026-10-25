@@ -1,0 +1,211 @@
+{
+  "run": {
+    "id": "run-mvn2zkk4o88",
+    "orderId": "ord-00458",
+    "agentId": "road-agent",
+    "trigger": "Operations asked the agent to work this case",
+    "state": "waiting_reply",
+    "startedAt": "2026-10-25T00:20:03.412Z",
+    "steps": [
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:20:06.484Z",
+        "tool": "read_order",
+        "input": {
+          "order": "CD-420458"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:20:06.484Z",
+        "tool": "read_order",
+        "summary": "Ferrari Roma for Kovellin Automobilhandel, Hamburg → Hamburg. No driver assigned."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:20:06.484Z",
+        "tool": "read_conversation",
+        "input": {
+          "order": "CD-420458"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:20:06.484Z",
+        "tool": "read_conversation",
+        "summary": "8 recent messages. Latest from Readiness desk: “The branch has confirmed that the car is present, but the seller has placed a release hold and the signed vehi”"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:20:06.484Z",
+        "tool": "read_open_issues",
+        "input": {
+          "order": "CD-420458"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:20:06.484Z",
+        "tool": "read_open_issues",
+        "summary": "1 open alert(s) (Site now reports a seller-imposed commercial hold in addition to the missing signed release; vehicle presence is not pickup authority.), 0 incident(s), 1 open work item(s)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:20:06.484Z",
+        "tool": "read_tracking",
+        "input": {
+          "order": "CD-420458"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:20:06.484Z",
+        "tool": "read_tracking",
+        "summary": "No tracking on record."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:20:06.485Z",
+        "tool": "read_travel",
+        "input": {
+          "order": "CD-420458"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:20:06.485Z",
+        "tool": "read_travel",
+        "summary": "0 booked, 0 quote(s) or capacity check(s) that are not bookings."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:20:14.878Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "Pickup branch says the car is there, but the seller has withdrawn permission to hand it over until an invoice is paid. There is no signed release, and the branch will refuse handover until the seller lifts the hold and sends signed authority.",
+          "strength": "reported",
+          "source_kind": "site",
+          "source_label": "Site call to Readiness desk",
+          "source_at": "2026-10-21T08:38:00Z",
+          "source_record_id": "msg-x577aebe6f59acb2d",
+          "source_table": "conversation"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:20:14.878Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "Readiness desk already asked the customer at 10:51 Hamburg time to sort out the seller hold and send the signed release. That covers the open work item due 12:00 Hamburg time. No reply yet.",
+          "strength": "verified",
+          "source_kind": "operator",
+          "source_label": "Readiness desk email to customer",
+          "source_at": "2026-10-21T08:51:00Z",
+          "source_record_id": "msg-x6046c939ec86422a",
+          "source_table": "conversation"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:20:14.878Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "No driver assigned, no pickup slot picked, no delivery promise and no travel booked. Pickup contact Jasper Alderfield is still unconfirmed.",
+          "strength": "verified",
+          "source_kind": "system",
+          "source_label": "Order record",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_record_id": "ep-x5786c4f238c8e0e8",
+          "source_table": "endpoints"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:20:19.063Z",
+        "tool": "finish",
+        "input": {
+          "outcome": "waiting_reply",
+          "headline": "Collection stays blocked: the seller has put a hold on the car and there is no signed release. Waiting for the customer.",
+          "summary": "The branch says the car is there but won't hand it over until the seller lifts the unpaid-invoice hold and sends a signed release. Readiness already asked the customer for both at 10:51 Hamburg time. No driver, slot or travel is in place, so nothing is costing money while we wait. When the release arrives, check it with the branch and confirm the pickup contact before giving out a slot.",
+          "agent_did": "Read the order, messages, alerts, tracking and travel, and noted the hold, the request to the customer and the empty schedule. No calls, since there is no driver to call.",
+          "urgency": "watch"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "stop",
+        "at": "2026-10-25T00:20:19.063Z",
+        "reason": "waiting_reply",
+        "summary": "The branch says the car is there but won't hand it over until the seller lifts the unpaid-invoice hold and sends a signed release. Readiness already asked the customer for both at 10:51 Hamburg time. No driver, slot or travel is in place, so nothing is costing money while we wait. When the release arrives, check it with the branch and confirm the pickup contact before giving out a slot."
+      }
+    ]
+  },
+  "orderId": "ord-00458",
+  "orderReference": "CD-420458",
+  "car": "Ferrari Roma",
+  "route": "Hamburg → Hamburg",
+  "customer": "Kovellin Automobilhandel",
+  "proposals": [],
+  "facts": [
+    {
+      "id": "run-mvn2zkk4o88-f1",
+      "text": "Pickup branch says the car is there, but the seller has withdrawn permission to hand it over until an invoice is paid. There is no signed release, and the branch will refuse handover until the seller lifts the hold and sends signed authority.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "site",
+          "label": "Site call to Readiness desk",
+          "at": "2026-10-21T08:38:00Z",
+          "table": "conversation",
+          "recordId": "msg-x577aebe6f59acb2d"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn2zkk4o88-f2",
+      "text": "Readiness desk already asked the customer at 10:51 Hamburg time to sort out the seller hold and send the signed release. That covers the open work item due 12:00 Hamburg time. No reply yet.",
+      "strength": "verified",
+      "sources": [
+        {
+          "kind": "operator",
+          "label": "Readiness desk email to customer",
+          "at": "2026-10-21T08:51:00Z",
+          "table": "conversation",
+          "recordId": "msg-x6046c939ec86422a"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn2zkk4o88-f3",
+      "text": "No driver assigned, no pickup slot picked, no delivery promise and no travel booked. Pickup contact Jasper Alderfield is still unconfirmed.",
+      "strength": "verified",
+      "sources": [
+        {
+          "kind": "system",
+          "label": "Order record",
+          "at": "2026-10-21T09:00:00Z",
+          "table": "endpoints",
+          "recordId": "ep-x5786c4f238c8e0e8"
+        }
+      ]
+    }
+  ],
+  "model": "anthropic/claude-opus-5.5",
+  "usage": {
+    "inputTokens": 16713,
+    "outputTokens": 1570
+  },
+  "outcome": "waiting_reply",
+  "headline": "Collection stays blocked: the seller has put a hold on the car and there is no signed release. Waiting for the customer.",
+  "summary": "The branch says the car is there but won't hand it over until the seller lifts the unpaid-invoice hold and sends a signed release. Readiness already asked the customer for both at 10:51 Hamburg time. No driver, slot or travel is in place, so nothing is costing money while we wait. When the release arrives, check it with the branch and confirm the pickup contact before giving out a slot.",
+  "agentDid": "Read the order, messages, alerts, tracking and travel, and noted the hold, the request to the customer and the empty schedule. No calls, since there is no driver to call.",
+  "urgency": "watch"
+}

@@ -3,7 +3,8 @@
 
 import Anthropic from "@anthropic-ai/sdk"
 
-export const client = new Anthropic()
+// New OpenRouter accounts allow 20 requests a minute; retry rate-limited calls with backoff.
+export const client = new Anthropic({ maxRetries: 6 })
 export const VIA_OPENROUTER = (process.env.ANTHROPIC_BASE_URL ?? "").includes("openrouter.ai")
 export const MODEL = process.env.AGENT_MODEL || (VIA_OPENROUTER ? "anthropic/claude-opus-5.5" : "claude-opus-5-5")
 

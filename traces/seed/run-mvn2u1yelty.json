@@ -1,0 +1,337 @@
+{
+  "run": {
+    "id": "run-mvn2u1yelty",
+    "orderId": "ord-00055",
+    "agentId": "road-agent",
+    "trigger": "Operations asked the agent to work this case",
+    "state": "needs_person",
+    "startedAt": "2026-10-25T00:15:46.022Z",
+    "steps": [
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:15:50.434Z",
+        "tool": "read_order",
+        "input": {
+          "order": "CD-420055"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:15:50.434Z",
+        "tool": "read_order",
+        "summary": "Bentley Continental GT for Norvessia Autotalot, Seinäjoki → Turku. Driver Alex Forvelin (in progress)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:15:50.434Z",
+        "tool": "read_conversation",
+        "input": {
+          "order": "CD-420055"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:15:50.434Z",
+        "tool": "read_conversation",
+        "summary": "5 recent messages. Latest from Support desk: “Thank you. We will review both sets of evidence and return with what can actually be established.”"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:15:50.434Z",
+        "tool": "read_open_issues",
+        "input": {
+          "order": "CD-420055"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:15:50.434Z",
+        "tool": "read_open_issues",
+        "summary": "1 open alert(s) (Review post delivery condition for CD-420055; source is a conversation, not a verified outcome.), 0 incident(s), 0 open work item(s)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:15:50.434Z",
+        "tool": "read_tracking",
+        "input": {
+          "order": "CD-420055"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:15:50.434Z",
+        "tool": "read_tracking",
+        "summary": "Last driver-app position 27 min ago (coarse), 237 km to go."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:15:50.434Z",
+        "tool": "read_travel",
+        "input": {
+          "order": "CD-420055"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:15:50.434Z",
+        "tool": "read_travel",
+        "summary": "0 booked, 0 quote(s) or capacity check(s) that are not bookings."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:15:59.852Z",
+        "tool": "call_driver",
+        "input": {
+          "order": "CD-420055",
+          "purpose": "Bahn operations here about the Bentley you are driving on CD-420055: we need to check the car's condition and your arrival plan.",
+          "questions": [
+            "Did you take pickup photos this morning, and do they show the left rear of the car?",
+            "Did you see any mark on the left rear at pickup?",
+            "When do you expect to reach Turku?",
+            "Do you know the delivery window is 23 Oct 11:00–16:00 Finnish time, not 22 Oct?"
+          ]
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "call",
+        "at": "2026-10-25T00:16:05.623Z",
+        "callId": "sim-mvn2uh2v",
+        "status": "completed",
+        "summary": "Simulated call Alex Forvelin. Yes, I took pickup photos this morning, but I'm not sure they clearly cover the left rear, so I'll check and send them over. I didn't notice any mark on the left rear at pickup, but I wasn't looking closely at that corner. I don't have an exact time yet; it's "
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:16:17.107Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The customer reports that the receiving partner found a mark on the left rear and sent two photos. They cannot say when it was first noticed. This is a claim, not a damage finding.",
+          "strength": "reported",
+          "source_kind": "customer",
+          "source_label": "Support chat",
+          "source_at": "2026-10-21T08:09:00Z",
+          "source_actor": "Norvessia Autotalot",
+          "source_record_id": "msg-x9eb6cf0c35899038",
+          "source_table": "conversation"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:16:17.107Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The records disagree on where the car is. The order says DELIVERED (Oliver Karvenby's job completed, promised for 16 Oct), but a second job with Alex Forvelin on the same route started today at 10:11 Helsinki time, and the driver app shows the car moving with 237 km left. It is not clear which handover the mark claim is about.",
+          "strength": "unknown",
+          "source_kind": "system",
+          "source_label": "Order and tracking",
+          "source_at": "2026-10-21T08:33:00Z",
+          "source_record_id": "asg-xb21b8c6f3175033c",
+          "source_table": "assignments"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:16:17.107Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "Alex Forvelin took pickup photos this morning but is not sure they clearly show the left rear, and will send them. They saw no mark at pickup but did not look closely at that corner.",
+          "strength": "reported",
+          "source_kind": "driver",
+          "source_label": "Driver call",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_actor": "Alex Forvelin",
+          "source_record_id": "sim-mvn2uh2v",
+          "source_table": "driver_calls"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:16:17.107Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The app's arrival estimate was 22 Oct 12:00 Helsinki time, but the requested delivery slot is 23 Oct 11:00–16:00 Helsinki time. The driver did not know this and now plans to deliver on 23 Oct in that window. The delivery contact, Gemma Briarmere, has not yet confirmed they can take the car then.",
+          "strength": "reported",
+          "source_kind": "driver",
+          "source_label": "Driver call and delivery slot",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_actor": "Alex Forvelin",
+          "source_record_id": "win-x128177a4d5b3db94",
+          "source_table": "windows"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:16:29.227Z",
+        "tool": "propose",
+        "input": {
+          "action": "handover_to_person",
+          "title": "Review the left rear mark claim using all photo sets, and work out which handover it is about",
+          "rationale": "Deciding who is responsible for a damage claim is a person's job. The order says delivered, yet a second job on the same route is in progress, so it is not clear which handover the mark is about. Alex Forvelin's photos from today may not cover the left rear, so check them before anything else touches that corner.",
+          "changes": [
+            {
+              "label": "Condition claim review",
+              "before": "Open, no owner; evidence comparison waiting for review",
+              "after": "Owned by an operator who compares the 15 Oct pickup photos, the 16 Oct delivery photos, today's pickup photos from Alex Forvelin and the receiving partner's two photos"
+            },
+            {
+              "label": "Order status",
+              "before": "DELIVERED, with a second job in progress (Alex Forvelin)",
+              "after": "Operator confirms which delivery the claim is about and whether the status is correct"
+            }
+          ],
+          "draft_message": {
+            "to": "Operations / claims reviewer",
+            "channel": "internal",
+            "body": "CD-420055, Bentley Continental GT. The customer says the receiving partner found a mark on the left rear. They sent 2 photos and cannot say when it was first noticed. Nothing has been found or blamed on anyone yet. The earlier proposal to blame the delivery driver was rejected. Records disagree: the order says DELIVERED (Oliver Karvenby, 16 Oct), but Alex Forvelin picked the car up again today at 10:11 Helsinki time and is driving to Turku. Alex says they saw no mark at pickup but did not look closely at the left rear. They are sending their photos and are not sure the photos cover that corner. Please: 1) confirm which handover the claim is about, 2) compare all four photo sets, 3) reply to the customer once the evidence is reviewed. Separately: Alex now plans to deliver on 23 Oct 11:00–16:00 Helsinki time, but the delivery contact, Gemma Briarmere, has not confirmed that window."
+          },
+          "what_happens_next": "Once approved, the case goes to an operator with this brief. Alex Forvelin's pickup photos get added to the evidence when they arrive.",
+          "what_happens_after": "An operator owns the claim, compares the evidence and decides what to tell the customer."
+        },
+        "cost": "needs_approval"
+      },
+      {
+        "kind": "proposal",
+        "at": "2026-10-25T00:16:29.227Z",
+        "proposalId": "run-mvn2u1yelty-p1"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:16:33.475Z",
+        "tool": "finish",
+        "input": {
+          "outcome": "needs_person",
+          "headline": "Left rear mark claim on the Bentley needs a person to review the photos, and the records disagree on whether the car was already delivered",
+          "summary": "The customer reports a left rear mark (2 photos, no time it was first noticed). The order says DELIVERED, but Alex Forvelin picked the car up again today and is driving to Turku, so it is unclear which handover the claim is about. Alex saw no mark but did not look closely at that corner, and is sending photos. They now plan to deliver 23 Oct 11:00–16:00 Helsinki time. The delivery contact has not confirmed that window.",
+          "agent_did": "Read the order, chat, issues, tracking and travel. Phoned the driver, recorded 4 facts and handed the review to a person.",
+          "urgency": "today",
+          "decide_within_minutes": 240
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "stop",
+        "at": "2026-10-25T00:16:33.475Z",
+        "reason": "needs_person",
+        "summary": "The customer reports a left rear mark (2 photos, no time it was first noticed). The order says DELIVERED, but Alex Forvelin picked the car up again today and is driving to Turku, so it is unclear which handover the claim is about. Alex saw no mark but did not look closely at that corner, and is sending photos. They now plan to deliver 23 Oct 11:00–16:00 Helsinki time. The delivery contact has not confirmed that window."
+      }
+    ]
+  },
+  "orderId": "ord-00055",
+  "orderReference": "CD-420055",
+  "car": "Bentley Continental GT",
+  "route": "Seinäjoki → Turku",
+  "customer": "Norvessia Autotalot",
+  "proposals": [
+    {
+      "id": "run-mvn2u1yelty-p1",
+      "orderId": "ord-00055",
+      "action": "handover_to_person",
+      "title": "Review the left rear mark claim using all photo sets, and work out which handover it is about",
+      "rationale": "Deciding who is responsible for a damage claim is a person's job. The order says delivered, yet a second job on the same route is in progress, so it is not clear which handover the mark is about. Alex Forvelin's photos from today may not cover the left rear, so check them before anything else touches that corner.",
+      "changes": [
+        {
+          "label": "Condition claim review",
+          "before": "Open, no owner; evidence comparison waiting for review",
+          "after": "Owned by an operator who compares the 15 Oct pickup photos, the 16 Oct delivery photos, today's pickup photos from Alex Forvelin and the receiving partner's two photos"
+        },
+        {
+          "label": "Order status",
+          "before": "DELIVERED, with a second job in progress (Alex Forvelin)",
+          "after": "Operator confirms which delivery the claim is about and whether the status is correct"
+        }
+      ],
+      "draftMessage": {
+        "to": "Operations / claims reviewer",
+        "channel": "internal",
+        "body": "CD-420055, Bentley Continental GT. The customer says the receiving partner found a mark on the left rear. They sent 2 photos and cannot say when it was first noticed. Nothing has been found or blamed on anyone yet. The earlier proposal to blame the delivery driver was rejected. Records disagree: the order says DELIVERED (Oliver Karvenby, 16 Oct), but Alex Forvelin picked the car up again today at 10:11 Helsinki time and is driving to Turku. Alex says they saw no mark at pickup but did not look closely at the left rear. They are sending their photos and are not sure the photos cover that corner. Please: 1) confirm which handover the claim is about, 2) compare all four photo sets, 3) reply to the customer once the evidence is reviewed. Separately: Alex now plans to deliver on 23 Oct 11:00–16:00 Helsinki time, but the delivery contact, Gemma Briarmere, has not confirmed that window."
+      },
+      "evidence": [],
+      "status": "pending",
+      "createdAt": "2026-10-25T00:16:29.227Z",
+      "createdBy": "road-agent",
+      "whatHappensNext": "Once approved, the case goes to an operator with this brief. Alex Forvelin's pickup photos get added to the evidence when they arrive.",
+      "whatHappensAfter": "An operator owns the claim, compares the evidence and decides what to tell the customer."
+    }
+  ],
+  "facts": [
+    {
+      "id": "run-mvn2u1yelty-f1",
+      "text": "The customer reports that the receiving partner found a mark on the left rear and sent two photos. They cannot say when it was first noticed. This is a claim, not a damage finding.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "customer",
+          "label": "Support chat",
+          "actorName": "Norvessia Autotalot",
+          "at": "2026-10-21T08:09:00Z",
+          "table": "conversation",
+          "recordId": "msg-x9eb6cf0c35899038"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn2u1yelty-f2",
+      "text": "The records disagree on where the car is. The order says DELIVERED (Oliver Karvenby's job completed, promised for 16 Oct), but a second job with Alex Forvelin on the same route started today at 10:11 Helsinki time, and the driver app shows the car moving with 237 km left. It is not clear which handover the mark claim is about.",
+      "strength": "unknown",
+      "sources": [
+        {
+          "kind": "system",
+          "label": "Order and tracking",
+          "at": "2026-10-21T08:33:00Z",
+          "table": "assignments",
+          "recordId": "asg-xb21b8c6f3175033c"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn2u1yelty-f3",
+      "text": "Alex Forvelin took pickup photos this morning but is not sure they clearly show the left rear, and will send them. They saw no mark at pickup but did not look closely at that corner.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "driver",
+          "label": "Driver call",
+          "actorName": "Alex Forvelin",
+          "at": "2026-10-21T09:00:00Z",
+          "table": "driver_calls",
+          "recordId": "sim-mvn2uh2v"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn2u1yelty-f4",
+      "text": "The app's arrival estimate was 22 Oct 12:00 Helsinki time, but the requested delivery slot is 23 Oct 11:00–16:00 Helsinki time. The driver did not know this and now plans to deliver on 23 Oct in that window. The delivery contact, Gemma Briarmere, has not yet confirmed they can take the car then.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "driver",
+          "label": "Driver call and delivery slot",
+          "actorName": "Alex Forvelin",
+          "at": "2026-10-21T09:00:00Z",
+          "table": "windows",
+          "recordId": "win-x128177a4d5b3db94"
+        }
+      ]
+    }
+  ],
+  "model": "anthropic/claude-opus-5.5",
+  "usage": {
+    "inputTokens": 37853,
+    "outputTokens": 3780
+  },
+  "outcome": "needs_person",
+  "headline": "Left rear mark claim on the Bentley needs a person to review the photos, and the records disagree on whether the car was already delivered",
+  "summary": "The customer reports a left rear mark (2 photos, no time it was first noticed). The order says DELIVERED, but Alex Forvelin picked the car up again today and is driving to Turku, so it is unclear which handover the claim is about. Alex saw no mark but did not look closely at that corner, and is sending photos. They now plan to deliver 23 Oct 11:00–16:00 Helsinki time. The delivery contact has not confirmed that window.",
+  "agentDid": "Read the order, chat, issues, tracking and travel. Phoned the driver, recorded 4 facts and handed the review to a person.",
+  "urgency": "today",
+  "decideBy": "2026-10-21T13:00:00.000Z"
+}

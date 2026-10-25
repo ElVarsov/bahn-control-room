@@ -188,6 +188,10 @@ async function runTool(record: RunRecord, order: Row, name: string, input: Recor
       return result(name, `${h.hotels.length} hotels near ${h.near}, from € ${Math.min(...h.hotels.map((x) => x.price_eur))} (quotes).`, h)
     }
     case "call_driver": {
+      // The Autonomy dial decides whether the agent may phone a driver without asking.
+      if ((worldStore.getAutonomySettings().ask_driver ?? "do_quietly") === "ask_first") {
+        throw new Error("The Autonomy dial says to ask a person before contacting drivers. Use propose with handover_to_person and the questions you would ask.")
+      }
       const o = target()
       const questions = Array.isArray(input.questions) ? input.questions.map(String).slice(0, 5) : []
       const call = await callAssignedDriver(o, String(input.purpose ?? ""), questions, driverMode, record.run.id)

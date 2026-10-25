@@ -1,0 +1,393 @@
+{
+  "run": {
+    "id": "run-mvn308cr5pv",
+    "orderId": "ord-00299",
+    "agentId": "road-agent",
+    "trigger": "Ferry sold out alert",
+    "state": "needs_person",
+    "startedAt": "2026-10-25T00:20:34.251Z",
+    "steps": [
+      {
+        "kind": "thought",
+        "at": "2026-10-25T00:20:37.600Z",
+        "text": "I'll start with the records."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:20:37.600Z",
+        "tool": "read_order",
+        "input": {
+          "order": "CD-420299"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:20:37.601Z",
+        "tool": "read_order",
+        "summary": "BMW M4 for Kavellora Car House, Leipzig → Helsinki. Driver Camille Emberwick (assigned)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:20:37.601Z",
+        "tool": "read_conversation",
+        "input": {
+          "order": "CD-420299"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:20:37.601Z",
+        "tool": "read_conversation",
+        "summary": "7 recent messages. Latest from Driver travel: “No ferry booking, hotel booking or changed customer promise exists yet. Prepare a reviewable plan with the cos”"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:20:37.601Z",
+        "tool": "read_open_issues",
+        "input": {
+          "order": "CD-420299"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:20:37.601Z",
+        "tool": "read_open_issues",
+        "summary": "1 open alert(s) (Current crossing is unavailable; alternative and customer promise need a decision.), 1 incident(s), 0 open work item(s)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:20:37.601Z",
+        "tool": "read_tracking",
+        "input": {
+          "order": "CD-420299"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:20:37.601Z",
+        "tool": "read_tracking",
+        "summary": "No tracking on record."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:20:37.601Z",
+        "tool": "read_travel",
+        "input": {
+          "order": "CD-420299"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:20:37.601Z",
+        "tool": "read_travel",
+        "summary": "0 booked, 2 quote(s) or capacity check(s) that are not bookings."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:20:44.564Z",
+        "tool": "search_ferries",
+        "input": {
+          "from_terminal": "West Baltic terminal",
+          "to_terminal": "South Finland terminal",
+          "earliest_departure": "2026-10-23T12:00:00Z"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:20:44.564Z",
+        "tool": "search_ferries",
+        "summary": "6 sailings checked, 5 with vehicle space (quotes, not booked)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:20:44.564Z",
+        "tool": "search_hotels",
+        "input": {
+          "near": "West Baltic terminal",
+          "night": "2026-10-23"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:20:44.565Z",
+        "tool": "search_hotels",
+        "summary": "3 hotels near West Baltic terminal, from € 103 (quotes)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:21:00.759Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The overnight crossing on 23 Oct (departs 24 Oct 00:00 Berlin time) has no vehicle space left.",
+          "strength": "verified",
+          "source_kind": "provider",
+          "source_label": "Ferry availability check",
+          "source_at": "2026-10-21T07:00:00Z",
+          "source_record_id": "travel-xc1d8163d5443a606",
+          "source_actor": "Vela Coast Lines"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:21:00.759Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The next sailing has a 387 EUR quote, not a booking. It leaves 24 Oct 14:00 Berlin time, check-in closes 12:00 Berlin time, and it arrives 25 Oct 19:00 Helsinki time. The price was checked 2 h ago and the space could go.",
+          "strength": "quote",
+          "source_kind": "provider",
+          "source_label": "Ferry quote",
+          "source_at": "2026-10-21T07:00:00Z",
+          "source_record_id": "travel-xf29ed1732d895f37",
+          "source_actor": "Vela Coast Lines"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:21:00.759Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The delivery promise is 27 Oct 14:00–16:00 Helsinki time. The later sailing arrives about 1.5 days before that, so the customer's date does not need to change.",
+          "strength": "estimate",
+          "source_kind": "customer",
+          "source_label": "Delivery promise",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_record_id": "win-xd989292fd4c1ccb9",
+          "source_actor": "Kavellora Car House"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:21:00.759Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The driver says the later sailing works if the overnight stop and return travel are arranged. The pickup time is unchanged.",
+          "strength": "reported",
+          "source_kind": "driver",
+          "source_label": "Driver chat",
+          "source_at": "2026-10-21T08:05:00Z",
+          "source_record_id": "msg-xb315bf2f67bbfb61",
+          "source_actor": "Camille Emberwick"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:21:00.759Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "An earlier attempt to book the later ferry failed. A check on what the ferry company recorded is still waiting for review. Travel records and the travel desk both show no booking. Confirm there is no booking with the ferry company before booking again, so the crossing is not booked twice.",
+          "strength": "unknown",
+          "source_kind": "agent",
+          "source_label": "Earlier booking attempt",
+          "source_at": "2026-10-21T08:14:00Z",
+          "source_record_id": "agent-x4ac988b20000595f"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:21:08.723Z",
+        "tool": "propose",
+        "input": {
+          "action": "book_travel",
+          "title": "Book the 24 Oct 14:00 (Berlin time) ferry and one hotel night on 23 Oct for the driver: 490 EUR",
+          "rationale": "The overnight crossing is sold out. The next sailing still gets the car to Helsinki on 25 Oct, well before the 27 Oct promise, so the customer's date does not change. The driver has said this plan works if the overnight stop is arranged. The quote is 2 h old, so book soon.",
+          "changes": [
+            {
+              "label": "Ferry",
+              "before": "None booked (overnight sailing 24 Oct 00:00 Berlin time is sold out)",
+              "after": "Vela Coast Lines, departs 24 Oct 14:00 Berlin time, check-in by 12:00 Berlin time, arrives 25 Oct 19:00 Helsinki time, car + driver, 387 EUR (quote)"
+            },
+            {
+              "label": "Driver hotel",
+              "before": "None",
+              "after": "Nordlicht Hotel, night of 23 Oct, 13 min from the terminal, free cancellation, 103 EUR (quote)"
+            },
+            {
+              "label": "Extra cost",
+              "before": "0 EUR",
+              "after": "490 EUR"
+            },
+            {
+              "label": "Customer delivery promise",
+              "before": "27 Oct 14:00–16:00 Helsinki time",
+              "after": "27 Oct 14:00–16:00 Helsinki time (unchanged)"
+            },
+            {
+              "label": "Pickup slot",
+              "before": "23 Oct 11:00–13:00 Berlin time",
+              "after": "23 Oct 11:00–13:00 Berlin time (unchanged)"
+            }
+          ],
+          "what_happens_next": "If you approve, I first confirm with Vela Coast Lines that the earlier failed attempt left no booking. Then I book the 24 Oct sailing and the Nordlicht Hotel and send both references to the driver. If the quoted price or space has changed, I come back to you before booking.",
+          "what_happens_after": "The ferry and hotel are booked and the driver has both references. Two things are still open: the driver's return travel from Helsinki, and the receiving contact, who has not yet confirmed the parking space or who will sign the handover."
+        },
+        "cost": "needs_approval"
+      },
+      {
+        "kind": "proposal",
+        "at": "2026-10-25T00:21:08.723Z",
+        "proposalId": "run-mvn308cr5pv-p1"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:21:13.025Z",
+        "tool": "finish",
+        "input": {
+          "outcome": "needs_person",
+          "headline": "Approve 490 EUR for the 24 Oct ferry and a hotel night on 23 Oct? The delivery date stays the same.",
+          "summary": "The overnight ferry is sold out. The next sailing (24 Oct 14:00 Berlin time, 387 EUR quote) arrives 25 Oct 19:00 Helsinki time, ahead of the 27 Oct promise, and the driver says it works with a hotel stop (103 EUR). Still open: make sure the earlier failed booking attempt didn't leave a booking, book the driver's trip home, and get the receiving contact to confirm parking and signer.",
+          "agent_did": "Read the order, messages, open issues and travel records, checked 6 ferry sailings and 3 hotels, and proposed one booking.",
+          "urgency": "today",
+          "decide_within_minutes": 240
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "stop",
+        "at": "2026-10-25T00:21:13.025Z",
+        "reason": "needs_person",
+        "summary": "The overnight ferry is sold out. The next sailing (24 Oct 14:00 Berlin time, 387 EUR quote) arrives 25 Oct 19:00 Helsinki time, ahead of the 27 Oct promise, and the driver says it works with a hotel stop (103 EUR). Still open: make sure the earlier failed booking attempt didn't leave a booking, book the driver's trip home, and get the receiving contact to confirm parking and signer."
+      }
+    ]
+  },
+  "orderId": "ord-00299",
+  "orderReference": "CD-420299",
+  "car": "BMW M4",
+  "route": "Leipzig → Helsinki",
+  "customer": "Kavellora Car House",
+  "proposals": [
+    {
+      "id": "run-mvn308cr5pv-p1",
+      "orderId": "ord-00299",
+      "action": "book_travel",
+      "title": "Book the 24 Oct 14:00 (Berlin time) ferry and one hotel night on 23 Oct for the driver: 490 EUR",
+      "rationale": "The overnight crossing is sold out. The next sailing still gets the car to Helsinki on 25 Oct, well before the 27 Oct promise, so the customer's date does not change. The driver has said this plan works if the overnight stop is arranged. The quote is 2 h old, so book soon.",
+      "changes": [
+        {
+          "label": "Ferry",
+          "before": "None booked (overnight sailing 24 Oct 00:00 Berlin time is sold out)",
+          "after": "Vela Coast Lines, departs 24 Oct 14:00 Berlin time, check-in by 12:00 Berlin time, arrives 25 Oct 19:00 Helsinki time, car + driver, 387 EUR (quote)"
+        },
+        {
+          "label": "Driver hotel",
+          "before": "None",
+          "after": "Nordlicht Hotel, night of 23 Oct, 13 min from the terminal, free cancellation, 103 EUR (quote)"
+        },
+        {
+          "label": "Extra cost",
+          "before": "0 EUR",
+          "after": "490 EUR"
+        },
+        {
+          "label": "Customer delivery promise",
+          "before": "27 Oct 14:00–16:00 Helsinki time",
+          "after": "27 Oct 14:00–16:00 Helsinki time (unchanged)"
+        },
+        {
+          "label": "Pickup slot",
+          "before": "23 Oct 11:00–13:00 Berlin time",
+          "after": "23 Oct 11:00–13:00 Berlin time (unchanged)"
+        }
+      ],
+      "evidence": [],
+      "status": "pending",
+      "createdAt": "2026-10-25T00:21:08.723Z",
+      "createdBy": "road-agent",
+      "whatHappensNext": "If you approve, I first confirm with Vela Coast Lines that the earlier failed attempt left no booking. Then I book the 24 Oct sailing and the Nordlicht Hotel and send both references to the driver. If the quoted price or space has changed, I come back to you before booking.",
+      "whatHappensAfter": "The ferry and hotel are booked and the driver has both references. Two things are still open: the driver's return travel from Helsinki, and the receiving contact, who has not yet confirmed the parking space or who will sign the handover."
+    }
+  ],
+  "facts": [
+    {
+      "id": "run-mvn308cr5pv-f1",
+      "text": "The overnight crossing on 23 Oct (departs 24 Oct 00:00 Berlin time) has no vehicle space left.",
+      "strength": "verified",
+      "sources": [
+        {
+          "kind": "provider",
+          "label": "Ferry availability check",
+          "actorName": "Vela Coast Lines",
+          "at": "2026-10-21T07:00:00Z",
+          "recordId": "travel-xc1d8163d5443a606"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn308cr5pv-f2",
+      "text": "The next sailing has a 387 EUR quote, not a booking. It leaves 24 Oct 14:00 Berlin time, check-in closes 12:00 Berlin time, and it arrives 25 Oct 19:00 Helsinki time. The price was checked 2 h ago and the space could go.",
+      "strength": "quote",
+      "sources": [
+        {
+          "kind": "provider",
+          "label": "Ferry quote",
+          "actorName": "Vela Coast Lines",
+          "at": "2026-10-21T07:00:00Z",
+          "recordId": "travel-xf29ed1732d895f37"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn308cr5pv-f3",
+      "text": "The delivery promise is 27 Oct 14:00–16:00 Helsinki time. The later sailing arrives about 1.5 days before that, so the customer's date does not need to change.",
+      "strength": "estimate",
+      "sources": [
+        {
+          "kind": "customer",
+          "label": "Delivery promise",
+          "actorName": "Kavellora Car House",
+          "at": "2026-10-21T09:00:00Z",
+          "recordId": "win-xd989292fd4c1ccb9"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn308cr5pv-f4",
+      "text": "The driver says the later sailing works if the overnight stop and return travel are arranged. The pickup time is unchanged.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "driver",
+          "label": "Driver chat",
+          "actorName": "Camille Emberwick",
+          "at": "2026-10-21T08:05:00Z",
+          "recordId": "msg-xb315bf2f67bbfb61"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn308cr5pv-f5",
+      "text": "An earlier attempt to book the later ferry failed. A check on what the ferry company recorded is still waiting for review. Travel records and the travel desk both show no booking. Confirm there is no booking with the ferry company before booking again, so the crossing is not booked twice.",
+      "strength": "unknown",
+      "sources": [
+        {
+          "kind": "agent",
+          "label": "Earlier booking attempt",
+          "at": "2026-10-21T08:14:00Z",
+          "recordId": "agent-x4ac988b20000595f"
+        }
+      ]
+    }
+  ],
+  "model": "anthropic/claude-opus-5.5",
+  "usage": {
+    "inputTokens": 40513,
+    "outputTokens": 3986
+  },
+  "outcome": "needs_person",
+  "headline": "Approve 490 EUR for the 24 Oct ferry and a hotel night on 23 Oct? The delivery date stays the same.",
+  "summary": "The overnight ferry is sold out. The next sailing (24 Oct 14:00 Berlin time, 387 EUR quote) arrives 25 Oct 19:00 Helsinki time, ahead of the 27 Oct promise, and the driver says it works with a hotel stop (103 EUR). Still open: make sure the earlier failed booking attempt didn't leave a booking, book the driver's trip home, and get the receiving contact to confirm parking and signer.",
+  "agentDid": "Read the order, messages, open issues and travel records, checked 6 ferry sailings and 3 hotels, and proposed one booking.",
+  "urgency": "today",
+  "decideBy": "2026-10-21T13:00:00.000Z"
+}

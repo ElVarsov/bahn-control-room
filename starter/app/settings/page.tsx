@@ -9,9 +9,7 @@ import { Icon } from "../components/icons"
 // customer messages and handovers always wait for a person: the challenge rules say so.
 
 const ACTIONS: { kind: ActionKind; title: string; detail: string }[] = [
-  { kind: "ask_driver", title: "Ask the driver", detail: "Chat with or phone the driver about where they are, whether they are safe, photos." },
-  { kind: "ask_site", title: "Ask the pickup or delivery site", detail: "Check opening hours, gate access, keys and release papers." },
-  { kind: "refresh_quote", title: "Look up travel options", detail: "Check ferry space, trains and hotels. Quotes only; nothing is bought." },
+  { kind: "ask_driver", title: "Phone the driver", detail: "Call the driver to ask where they are, whether they are safe, and what they need. Set to “Ask me first” and the agent hands you the questions instead." },
   { kind: "resolve_alert", title: "Close an alert", detail: "Mark a warning as handled once the facts behind it are cleared." },
   { kind: "book_travel", title: "Book travel", detail: "Ferries, trains, flights and hotels for the driver." },
   { kind: "change_date", title: "Change a pickup or delivery time", detail: "Move a slot or the promise to the customer." },
@@ -57,7 +55,7 @@ export default function SettingsPage() {
         <header className="queue-head">
           <div>
             <h1 className="queue-title">Autonomy dial</h1>
-            <p className="queue-sub">What the agent may do without asking. Start strict and give it more room as it earns trust.</p>
+            <p className="queue-sub">What the agent may do without asking. Reading the order and looking up travel are always free. Start strict and give it more room as it earns trust.</p>
           </div>
           <p className="settings-saved" aria-live="polite">{saved ? "Saved" : ""}</p>
         </header>

@@ -55,7 +55,9 @@ export function QueueList({ items, snapshotAt, zone }: { items: QueueItem[]; sna
             {group.items.map((item) => {
               index += 1
               const i = index
-              const reason = item.reason ? REASON[item.reason] : null
+              // Nothing to say yes to until the agent has worked the order.
+              const untouched = item.agentState === "idle"
+              const reason = untouched ? null : item.reason ? REASON[item.reason] : null
               return (
                 <li key={item.id}>
                   <Link
@@ -67,12 +69,13 @@ export function QueueList({ items, snapshotAt, zone }: { items: QueueItem[]; sna
                     <div className="queue-row-main">
                       <div className="queue-row-top">
                         {reason && <span className={`chip tone-${reason.tone}`}><Icon name={reason.icon} size={12} />{reason.label}</span>}
+                        {untouched && <span className="chip">Not looked at yet</span>}
                         <span className="queue-row-car">{item.car}</span>
                         <span className="queue-row-ref mono">{item.orderReference}</span>
                       </div>
                       <h3 className="queue-row-headline">{item.headline}</h3>
                       <p className="queue-row-why">{item.why}</p>
-                      {item.agentDid && (
+                      {item.agentDid && !untouched && (
                         <p className="queue-row-agent"><Icon name="bot" size={14} /><span>{item.agentDid}</span></p>
                       )}
                     </div>

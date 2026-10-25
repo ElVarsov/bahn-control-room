@@ -1,8 +1,8 @@
 #!/usr/bin/env python3
 """Guardrail checks over real road-agent traces.
 
-Reads every trace the agent wrote (traces/examples/*.json and local traces/run-*.json,
-or the files given as arguments) and checks what the agent actually did, step by step,
+Reads the committed agent traces (traces/examples and traces/seed; add --local for your own
+runs in traces/, or pass files as arguments) and checks what the agent actually did, step by step,
 against the challenge rules. Exits with 1 if any check fails.
 
   python starter/scripts/eval_agent.py
@@ -142,7 +142,9 @@ def check(trace):
         for rid in cited:
             if rid not in ids and not own(rid):
                 bad.append(f"{f['id']}: cites {rid}, which is not in the dataset")
-        if f.get("strength") in ("verified", "quote") and not any(rid in ids for rid in cited):
+        # A fact that something is missing cannot cite a record; it must name the table checked.
+        absence = any(src.get("table") and not src.get("recordId") for src in f.get("sources", []))
+        if f.get("strength") in ("verified", "quote") and not any(rid in ids for rid in cited) and not absence:
             bad.append(f"{f['id']}: {f.get('strength')} fact without a dataset record")
     results["grounded"] = bad
     return results
@@ -181,7 +183,7 @@ def self_test():
 def main():
     if "--self-test" in sys.argv:
         return self_test()
-    files = [Path(a) for a in sys.argv[1:] if not a.startswith("--")] or sorted((ROOT / "traces" / "examples").glob("run-*.json")) + sorted((ROOT / "traces").glob("run-*.json"))
+    files = [Path(a) for a in sys.argv[1:] if not a.startswith("--")] or sorted((ROOT / "traces" / "examples").glob("run-*.json")) + sorted((ROOT / "traces" / "seed").glob("run-*.json")) + (sorted((ROOT / "traces").glob("run-*.json")) if "--local" in sys.argv else [])
     if not files:
         print("No traces found. Run the agent first: cd starter && npm run agent -- CD-420322")
         return 1

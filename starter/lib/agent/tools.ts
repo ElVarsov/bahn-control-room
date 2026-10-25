@@ -75,7 +75,7 @@ export const TOOLS: Tool[] = [
   },
   {
     name: "note_fact",
-    description: "Record one fact for the operator, with how strong it is and where it came from. Use the record id from a tool result. verified = a record proves it; reported = someone said it; estimate = calculated; quote = offered not booked; unknown = not supplied or sources disagree.",
+    description: "Record one fact for the operator, with how strong it is and where it came from. Use the record id from a tool result. For a fact that something is missing (no booking, no tracking), set source_table to the table you checked, e.g. travel_reservations. verified = a record proves it; reported = someone said it; estimate = calculated; quote = offered not booked; unknown = not supplied or sources disagree.",
     input_schema: {
       type: "object",
       properties: {

@@ -101,9 +101,14 @@ This violated the primary rule of the hackathon:
 
 ---
 
-## Moment 4: The Explainable Cascade Risk Engine & Risk-Adjusted Proposals
+## Moment 4: What we threw away — the "Cascade Risk Engine"
 
-### The Breakthrough Differentiation
+> **Built, then removed.** It showed pre-written agent activity and invented percentages and
+> euro amounts as if the agent had produced them. Judges reviewing our build flagged it, and we
+> agreed: the brief asks that every fact show where it came from. Kept here as the record of
+> what we built and why it went (see Corrections below).
+
+### What it claimed (removed)
 Most hackathon solutions are purely reactive: an alert turns red when a ferry is already missed or a driver is already locked out of a seller's gate. 
 
 We built the **Explainable Cascade Risk Engine** (`starter/lib/cascade-risk.ts`) and **Risk-Avoiding Proposal Tooling** (`starter/lib/agent/tools.ts`) that anticipate chain reactions before they occur:

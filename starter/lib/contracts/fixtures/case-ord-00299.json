@@ -5,7 +5,7 @@
   "facts": [
     {
       "id": "f1",
-      "text": "The overnight vehicle crossing on 23 Oct 22:00 is sold out.",
+      "text": "The overnight vehicle crossing (24 Oct 01:00 Helsinki time) is sold out.",
       "strength": "verified",
       "sources": [
         {
@@ -33,7 +33,7 @@
     },
     {
       "id": "f3",
-      "text": "The 24 Oct 14:00 (Berlin time) sailing has a vehicle slot for €387. Quoted, not booked.",
+      "text": "The 24 Oct 15:00 (Helsinki time) sailing has a vehicle slot for €387. Quoted, not booked.",
       "strength": "quote",
       "sources": [
         {
@@ -93,13 +93,13 @@
       "id": "prop-299-rebook",
       "orderId": "ord-00299",
       "action": "book_travel",
-      "title": "Book the 24 Oct 14:00 sailing and one hotel night near the terminal (€490)",
+      "title": "Book the 24 Oct 15:00 sailing and one hotel night near the terminal (€490)",
       "rationale": "It is the first sailing with a vehicle slot, and it still arrives before the 27 Oct promise. The driver agreed if the overnight stop is arranged. Check first that the failed attempt left no booking.",
       "changes": [
         {
           "label": "Ferry",
-          "before": "23 Oct 00:00 Berlin time (sold out, not booked)",
-          "after": "24 Oct 14:00 Berlin time, vehicle slot (€387 quote)"
+          "before": "24 Oct 01:00 Helsinki time (sold out, not booked)",
+          "after": "24 Oct 15:00 Helsinki time, vehicle slot (€387 quote)"
         },
         {
           "label": "Hotel",
@@ -168,7 +168,7 @@
           "kind": "tool_result",
           "at": "2026-10-21T08:21:00Z",
           "tool": "search_ferries",
-          "summary": "23 Oct 22:00 sold out. 24 Oct 12:00 has a vehicle slot (quote, not booked). 24 Oct 22:00 has space but arrives too late for the driver's next job."
+          "summary": "24 Oct 01:00 sold out. 24 Oct 15:00 has a vehicle slot for €387 (quote, not booked). Times in Helsinki time."
         },
         {
           "kind": "tool_call",
@@ -204,7 +204,7 @@
         {
           "kind": "thought",
           "at": "2026-10-21T08:48:00Z",
-          "text": "Booking costs money and moves the delivery a day, and the dealer said they must approve a later date first. This needs a person."
+          "text": "The next sailing still arrives on 25 Oct, before the 27 Oct promise, so the date holds. But booking costs €490, so a person has to say yes."
         },
         {
           "kind": "proposal",
@@ -215,7 +215,7 @@
           "kind": "stop",
           "at": "2026-10-21T08:50:00Z",
           "reason": "needs_person",
-          "summary": "Waiting for a yes on the rebooking and the message to the dealer."
+          "summary": "Waiting for a yes on the booking (€490). The delivery date stays the same."
         }
       ]
     }

@@ -1,0 +1,327 @@
+{
+  "run": {
+    "id": "run-mvn2u1fp7g7",
+    "orderId": "ord-00702",
+    "agentId": "road-agent",
+    "trigger": "Operations asked the agent to work this case",
+    "state": "needs_person",
+    "startedAt": "2026-10-25T00:15:45.349Z",
+    "steps": [
+      {
+        "kind": "thought",
+        "at": "2026-10-25T00:15:48.063Z",
+        "text": "Starting with the free reads."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:15:48.063Z",
+        "tool": "read_order",
+        "input": {
+          "order": "CD-420702"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:15:48.063Z",
+        "tool": "read_order",
+        "summary": "Toyota Corolla for Calverin Car Centre, Oulu → Espoo. No driver assigned."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:15:48.063Z",
+        "tool": "read_conversation",
+        "input": {
+          "order": "CD-420702"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:15:48.063Z",
+        "tool": "read_conversation",
+        "summary": "4 recent messages. Latest from Shift lead: “The first driver handed the car and keys to the staffed yard, but the second driver did not collect it. The ya”"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:15:48.063Z",
+        "tool": "read_open_issues",
+        "input": {
+          "order": "CD-420702"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:15:48.063Z",
+        "tool": "read_open_issues",
+        "summary": "1 open alert(s) (Original customer delivery window ends today, but the next confirmed yard release window is tomorrow. No revised customer delivery promise is approved.), 0 incident(s), 0 open work item(s)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:15:48.063Z",
+        "tool": "read_tracking",
+        "input": {
+          "order": "CD-420702"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:15:48.063Z",
+        "tool": "read_tracking",
+        "summary": "No tracking on record."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:15:48.063Z",
+        "tool": "read_travel",
+        "input": {
+          "order": "CD-420702"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:15:48.063Z",
+        "tool": "read_travel",
+        "summary": "0 booked, 0 quote(s) or capacity check(s) that are not bookings."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:16:04.048Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "Car and keys are at the staffed Espoo transfer yard and were not released to anyone. The yard can release them to a replacement driver on 22 Oct, 09:00–11:00 Helsinki time, after an ID and condition check.",
+          "strength": "reported",
+          "source_kind": "site",
+          "source_label": "Site call",
+          "source_at": "2026-10-21T08:19:00Z",
+          "source_record_id": "msg-x62cdfdf60a47c0a3",
+          "source_table": "conversation",
+          "source_actor": "site-071"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:16:04.048Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The customer delivery promise (21 Oct 11:00–14:00 Helsinki time) cannot be met. The next release from the yard is tomorrow. No new promise is approved yet, and the order still shows the old window.",
+          "strength": "verified",
+          "source_kind": "system",
+          "source_label": "Delivery promise and alert",
+          "source_at": "2026-10-21T08:28:00Z",
+          "source_record_id": "alert-x9cd05869f6be7f09",
+          "source_table": "alerts"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:16:04.048Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "No driver is assigned to the second leg. The only assignment is Salla Pervalen (first leg, completed). Noel Jarnwell, the planned collector, said they cannot make it and is not on the order. There is no tracking and no booked travel.",
+          "strength": "verified",
+          "source_kind": "system",
+          "source_label": "Order assignments",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_record_id": "asg-xecf21eb947f3a0bd",
+          "source_table": "assignments"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:16:04.048Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "At 11:32 Helsinki time the shift lead emailed the customer to ask for a new acceptable delivery target. No reply is on record yet.",
+          "strength": "verified",
+          "source_kind": "operator",
+          "source_label": "Customer email",
+          "source_at": "2026-10-21T08:32:00Z",
+          "source_record_id": "msg-xa21f0478affd12de",
+          "source_table": "conversation",
+          "source_actor": "Shift lead"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:16:11.767Z",
+        "tool": "propose",
+        "input": {
+          "action": "handover_to_person",
+          "title": "Assign a replacement driver to collect the Corolla at the Espoo yard on 22 Oct, 09:00–11:00 Helsinki time",
+          "rationale": "The car and keys are safe at the staffed yard, but nobody is assigned to the second leg. The yard's only release window is tomorrow morning, so a driver must be confirmed today before any new delivery time can be offered to the customer.",
+          "changes": [
+            {
+              "label": "Second-leg driver",
+              "before": "None assigned (Noel Jarnwell dropped out)",
+              "after": "Replacement driver chosen by ops"
+            },
+            {
+              "label": "Yard collection",
+              "before": "21 Oct 09:00–11:00 Helsinki time (missed)",
+              "after": "22 Oct 09:00–11:00 Helsinki time (matches the pickup slot already in the order)"
+            },
+            {
+              "label": "Customer delivery promise",
+              "before": "21 Oct 11:00–14:00 Helsinki time",
+              "after": "Unchanged until the customer replies to the shift lead's email"
+            }
+          ],
+          "draft_message": {
+            "to": "Ops shift lead",
+            "channel": "internal",
+            "body": "CD-420702 Toyota Corolla DEMO-FI-K9R2B5. The car and keys are at the staffed Espoo transfer yard. Noel Jarnwell did not collect and is not on the order. The yard will release to a replacement driver on 22 Oct, 09:00–11:00 Helsinki time, after an ID and condition check. Use the staffed rear gate. Please assign a driver who can be there in that window. The delivery site is also a staffed rear gate that needs the guard's signature, with no after-hours drop. The customer was asked for a new delivery target at 11:32 and has not replied yet. Once they reply, change the delivery promise to match."
+          },
+          "what_happens_next": "The shift lead picks and assigns a replacement driver for tomorrow's yard release window.",
+          "what_happens_after": "A driver is booked to collect the car at the Espoo yard on 22 Oct, 09:00–11:00 Helsinki time. The delivery promise gets updated once the customer agrees a new target."
+        },
+        "cost": "needs_approval"
+      },
+      {
+        "kind": "proposal",
+        "at": "2026-10-25T00:16:11.767Z",
+        "proposalId": "run-mvn2u1fp7g7-p1"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:16:15.789Z",
+        "tool": "finish",
+        "input": {
+          "outcome": "needs_person",
+          "headline": "Corolla is safe at the Espoo yard but has no driver. Who collects it on 22 Oct, 09:00–11:00 Helsinki time?",
+          "summary": "The second-leg driver dropped out. The car and keys are at the staffed yard, which can release them tomorrow 09:00–11:00 Helsinki time. Today's delivery promise is lost. The customer was asked for a new target and hasn't replied, so the promise stays unchanged until they do.",
+          "agent_did": "Read the order, messages, alerts, tracking and travel. Noted 4 facts and asked the shift lead to assign a replacement driver.",
+          "urgency": "today",
+          "decide_within_minutes": 360
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "stop",
+        "at": "2026-10-25T00:16:15.789Z",
+        "reason": "needs_person",
+        "summary": "The second-leg driver dropped out. The car and keys are at the staffed yard, which can release them tomorrow 09:00–11:00 Helsinki time. Today's delivery promise is lost. The customer was asked for a new target and hasn't replied, so the promise stays unchanged until they do."
+      }
+    ]
+  },
+  "orderId": "ord-00702",
+  "orderReference": "CD-420702",
+  "car": "Toyota Corolla",
+  "route": "Oulu → Espoo",
+  "customer": "Calverin Car Centre",
+  "proposals": [
+    {
+      "id": "run-mvn2u1fp7g7-p1",
+      "orderId": "ord-00702",
+      "action": "handover_to_person",
+      "title": "Assign a replacement driver to collect the Corolla at the Espoo yard on 22 Oct, 09:00–11:00 Helsinki time",
+      "rationale": "The car and keys are safe at the staffed yard, but nobody is assigned to the second leg. The yard's only release window is tomorrow morning, so a driver must be confirmed today before any new delivery time can be offered to the customer.",
+      "changes": [
+        {
+          "label": "Second-leg driver",
+          "before": "None assigned (Noel Jarnwell dropped out)",
+          "after": "Replacement driver chosen by ops"
+        },
+        {
+          "label": "Yard collection",
+          "before": "21 Oct 09:00–11:00 Helsinki time (missed)",
+          "after": "22 Oct 09:00–11:00 Helsinki time (matches the pickup slot already in the order)"
+        },
+        {
+          "label": "Customer delivery promise",
+          "before": "21 Oct 11:00–14:00 Helsinki time",
+          "after": "Unchanged until the customer replies to the shift lead's email"
+        }
+      ],
+      "draftMessage": {
+        "to": "Ops shift lead",
+        "channel": "internal",
+        "body": "CD-420702 Toyota Corolla DEMO-FI-K9R2B5. The car and keys are at the staffed Espoo transfer yard. Noel Jarnwell did not collect and is not on the order. The yard will release to a replacement driver on 22 Oct, 09:00–11:00 Helsinki time, after an ID and condition check. Use the staffed rear gate. Please assign a driver who can be there in that window. The delivery site is also a staffed rear gate that needs the guard's signature, with no after-hours drop. The customer was asked for a new delivery target at 11:32 and has not replied yet. Once they reply, change the delivery promise to match."
+      },
+      "evidence": [],
+      "status": "pending",
+      "createdAt": "2026-10-25T00:16:11.767Z",
+      "createdBy": "road-agent",
+      "whatHappensNext": "The shift lead picks and assigns a replacement driver for tomorrow's yard release window.",
+      "whatHappensAfter": "A driver is booked to collect the car at the Espoo yard on 22 Oct, 09:00–11:00 Helsinki time. The delivery promise gets updated once the customer agrees a new target."
+    }
+  ],
+  "facts": [
+    {
+      "id": "run-mvn2u1fp7g7-f1",
+      "text": "Car and keys are at the staffed Espoo transfer yard and were not released to anyone. The yard can release them to a replacement driver on 22 Oct, 09:00–11:00 Helsinki time, after an ID and condition check.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "site",
+          "label": "Site call",
+          "actorName": "site-071",
+          "at": "2026-10-21T08:19:00Z",
+          "table": "conversation",
+          "recordId": "msg-x62cdfdf60a47c0a3"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn2u1fp7g7-f2",
+      "text": "The customer delivery promise (21 Oct 11:00–14:00 Helsinki time) cannot be met. The next release from the yard is tomorrow. No new promise is approved yet, and the order still shows the old window.",
+      "strength": "verified",
+      "sources": [
+        {
+          "kind": "system",
+          "label": "Delivery promise and alert",
+          "at": "2026-10-21T08:28:00Z",
+          "table": "alerts",
+          "recordId": "alert-x9cd05869f6be7f09"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn2u1fp7g7-f3",
+      "text": "No driver is assigned to the second leg. The only assignment is Salla Pervalen (first leg, completed). Noel Jarnwell, the planned collector, said they cannot make it and is not on the order. There is no tracking and no booked travel.",
+      "strength": "verified",
+      "sources": [
+        {
+          "kind": "system",
+          "label": "Order assignments",
+          "at": "2026-10-21T09:00:00Z",
+          "table": "assignments",
+          "recordId": "asg-xecf21eb947f3a0bd"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn2u1fp7g7-f4",
+      "text": "At 11:32 Helsinki time the shift lead emailed the customer to ask for a new acceptable delivery target. No reply is on record yet.",
+      "strength": "verified",
+      "sources": [
+        {
+          "kind": "operator",
+          "label": "Customer email",
+          "actorName": "Shift lead",
+          "at": "2026-10-21T08:32:00Z",
+          "table": "conversation",
+          "recordId": "msg-xa21f0478affd12de"
+        }
+      ]
+    }
+  ],
+  "model": "anthropic/claude-opus-5.5",
+  "usage": {
+    "inputTokens": 25713,
+    "outputTokens": 3270
+  },
+  "outcome": "needs_person",
+  "headline": "Corolla is safe at the Espoo yard but has no driver. Who collects it on 22 Oct, 09:00–11:00 Helsinki time?",
+  "summary": "The second-leg driver dropped out. The car and keys are at the staffed yard, which can release them tomorrow 09:00–11:00 Helsinki time. Today's delivery promise is lost. The customer was asked for a new target and hasn't replied, so the promise stays unchanged until they do.",
+  "agentDid": "Read the order, messages, alerts, tracking and travel. Noted 4 facts and asked the shift lead to assign a replacement driver.",
+  "urgency": "today",
+  "decideBy": "2026-10-21T15:00:00.000Z"
+}

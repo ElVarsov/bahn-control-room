@@ -29,7 +29,7 @@ export async function getQueue(): Promise<QueueResponse> {
   const queue: QueueResponse = useFixtures ? {
     ...raw,
     needsPerson: raw.needsPerson.map((item) => FIXTURE_CASES[item.orderId] ? item : {
-      ...item, agentDid: "The agent has not looked at this order yet. Open it to start the agent.", agentState: "idle" as const,
+      ...item, agentDid: undefined, agentState: "idle" as const,
     }),
   } : raw
   // Live phone calls, agent runs and journey forecasts happen in this process, so they
@@ -247,7 +247,7 @@ export async function getCase(orderId: string): Promise<{ view: CaseView; item: 
   return {
     item,
     full: false,
-    view: { orderId, orderReference: item.orderReference, headline: item.headline, facts: [...forecastFacts, ...live.facts], proposals: [], runs: [], timeline: live.timeline },
+    view: { orderId, orderReference: item.orderReference, headline: item.headline, facts: [...forecastFacts, ...live.facts], proposals: [], runs: [], timeline: [...datasetTimeline(orderId), ...live.timeline] },
   }
 }
 
