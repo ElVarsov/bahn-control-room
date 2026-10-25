@@ -65,15 +65,18 @@ export function execute(record: RunRecord, proposal: Proposal, decision: Decisio
       if (earlierFailed) step("check_booking_outcome", "Checked the earlier failed attempt with the provider: no reservation exists, so this cannot double-book (simulated check).")
       // One plain line per item, each with its own fictional reference.
       const refs: string[] = []
+      const bookedItems: string[] = []
       for (const change of proposal.changes) {
         const what = change.after.replace(/\s*\((?:quote|record)?\s*[a-z]+-[a-z0-9]{4,}\)/gi, "").replace(/,?\s*\bquote\b/gi, "").trim()
         if (/ferry|sailing|train|flight|travel/i.test(change.label)) {
           const ref = `VCL-${code()}`
           refs.push(`${/ferry|sailing/i.test(change.label + what) ? "ferry" : "travel"} ${ref}`)
+          bookedItems.push(change.label.toLowerCase())
           step("book_travel", `${change.label} booked: ${what}. Reference ${ref} (fictional, nothing real was bought).`)
         } else if (/hotel|night|room/i.test(change.label)) {
           const ref = `HTL-${code()}`
           refs.push(`hotel ${ref}`)
+          bookedItems.push(change.label.toLowerCase())
           step("book_travel", `${change.label} booked: ${what}. Reference ${ref} (fictional, nothing real was bought).`)
         } else if (/cost|total|price/i.test(change.label)) {
           step("approve_cost", `${change.label} approved by ${decision.decidedBy === "You" ? "you" : decision.decidedBy}: ${what}.`)
@@ -89,7 +92,7 @@ export function execute(record: RunRecord, proposal: Proposal, decision: Decisio
       for (const fact of record.facts) if (/book|reserv|quote|sold out|no ferry|no hotel|attempt/i.test(fact.text)) fact.outdated = true
       record.facts.unshift({
         id: `${proposal.id}-done`, strength: "verified",
-        text: `Booked after your yes: ${proposal.changes.filter((c) => !/promise|cost|total/i.test(c.label)).map((c) => c.label.toLowerCase()).join(" and ") || "travel"}, references ${refs.map((r) => r.split(" ").pop()).join(" and ")} (fictional).`,
+        text: `Booked after your yes: ${bookedItems.join(" and ") || "travel"}, references ${refs.map((r) => r.split(" ").pop()).join(" and ")} (fictional).`,
         sources: [{ kind: "agent", label: "Booking made after your yes", at: SNAPSHOT_AT, recordId: refs[0].split(" ").pop() }],
       })
       break

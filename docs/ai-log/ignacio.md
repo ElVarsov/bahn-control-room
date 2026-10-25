@@ -166,3 +166,12 @@ path got the same once-only guard, and the double-booking check now reads the FA
 the records instead of matching fact wording. Business judges asked for the button to state the
 cost, a second click on Reject, deadline-driven colour (red only within 30 minutes) and a demo
 script that never claims on camera what the screen does not show.
+
+## Judge round 9 (avg 4.48)
+Three judges caught the same mislabel: CD-420399 said "Approve here" while its real job was a call
+(the tag came from an optional holding message). The tag now follows the main decision. T1 asked
+for a provenance check; our first version failed ten runs, but almost all on general names like
+"tracking". We narrowed it to the real error (naming a different real table), which left exactly
+the one mislabel the judge found, then fixed the cause: the loop now takes the table from the record
+id instead of the model. The CD-420299 rerun also quietly corrected a time the old seed had wrong
+(the 27 Oct promise after the clock change).

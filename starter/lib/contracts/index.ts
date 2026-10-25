@@ -120,6 +120,7 @@ export type QueueItem = {
   urgency: Urgency
   decideBy?: Iso           // when waiting stops being free
   proposalId?: string
+  alsoToApprove?: number   // smaller yeses on the same order besides the main decision
   agentState: AgentState
   updatedAt: Iso
 }

@@ -106,7 +106,7 @@ function runSummary(run: AgentRun): string {
   return `${checks} ${checks === 1 ? "check" : "checks"}${calls ? `, ${calls} driver ${calls === 1 ? "call" : "calls"}` : ""}, took ${took}`
 }
 
-export function AgentWork({ runs, zone }: { runs: AgentRun[]; snapshotAt: string; zone: string }) {
+export function AgentWork({ runs, zone, decidedLabel }: { runs: AgentRun[]; snapshotAt: string; zone: string; decidedLabel?: string }) {
   return (
     <section className="agent-work" aria-labelledby="agent-work-title">
       <h2 id="agent-work-title" className="case-section-title">
@@ -124,7 +124,7 @@ export function AgentWork({ runs, zone }: { runs: AgentRun[]; snapshotAt: string
               <li key={index} className={`agent-step kind-${line.kind}`}>
                 <span className="agent-step-icon"><Icon name={line.icon} size={13} /></span>
                 <div>
-                  <p className="agent-step-title">{line.notes && !line.afterYes ? `Noted ${line.notes.length} ${line.notes.length === 1 ? "fact" : "facts"}` : line.title}<time dateTime={line.at} title={fmtLong(line.at)}>{line.afterYes ? "later" : elapsed(line.at, run.startedAt)}</time></p>
+                  <p className="agent-step-title">{line.notes && !line.afterYes ? `Noted ${line.notes.length} ${line.notes.length === 1 ? "fact" : "facts"}` : line.title}<time dateTime={line.at} title={fmtLong(line.at)}>{line.afterYes ? decidedLabel ?? "later" : elapsed(line.at, run.startedAt)}</time></p>
                   {line.detail && <p className="agent-step-detail">{line.detail}</p>}
                   {line.notes && !line.afterYes && (
                     <details className="agent-step-notes">

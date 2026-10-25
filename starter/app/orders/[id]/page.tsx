@@ -4,6 +4,7 @@ import { redirect } from "next/navigation"
 import { latestRunFor } from "@/lib/agent/runs"
 import { carOf, resolveOrder, routeOf } from "@/lib/agent/tools"
 import { getCase, OPS_ZONE, SNAPSHOT_AT } from "@/lib/present/source"
+import { fmtClock } from "@/lib/present/time"
 import { AppFrame } from "../../components/app-frame"
 import { AgentControl } from "../../components/case/agent-control"
 import { AgentWork } from "../../components/case/agent-work"
@@ -34,6 +35,9 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
   const running = run?.run.state === "working"
   const reason = item?.reason ? REASON[item.reason] : null
   const tone = item ? URGENCY_TONE[item.urgency] : "neutral"
+  // Decided and nothing left to approve: the case is closed for now.
+  const lastYes = [...view.proposals].reverse().find((p) => p.status !== "pending" && p.decision)
+  const closed = !!lastYes && !view.proposals.some((p) => p.status === "pending")
 
   return (
     <AppFrame section="queue" snapshotAt={SNAPSHOT_AT}>
@@ -57,7 +61,7 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
           </div>
           <p className={`story-headline tone-${tone} case-headline`}>{view.headline}</p>
           {item?.why && item.why !== view.headline && item.reason !== "driver_report" && <p className="case-why">{item.why}</p>}
-          <AgentControl orderId={id} running={running} hasRun={!!run} primary={!full && view.proposals.length === 0} />
+          <AgentControl orderId={id} running={running} hasRun={!!run} primary={!full && view.proposals.length === 0} quiet={closed} />
         </header>
 
         <div className="case-grid">
@@ -73,7 +77,7 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
                 </section>
               )}
 
-            {view.runs.length > 0 && <AgentWork runs={view.runs} snapshotAt={SNAPSHOT_AT} zone={OPS_ZONE} />}
+            {view.runs.length > 0 && <AgentWork runs={view.runs} snapshotAt={SNAPSHOT_AT} zone={OPS_ZONE} decidedLabel={lastYes?.decision ? `${fmtClock(lastYes.decision.decidedAt, OPS_ZONE)} · ${lastYes.decision.decidedBy === "You" ? "you" : lastYes.decision.decidedBy}` : undefined} />}
             {view.timeline.length > 0 && <Timeline entries={view.timeline} zone={OPS_ZONE} />}
           </div>
 

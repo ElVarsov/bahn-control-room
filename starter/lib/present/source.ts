@@ -115,7 +115,10 @@ function agentItems(): { needsPerson: QueueItem[]; working: QueueItem[]; orders:
       const pending = record.proposals.filter((p) => p.status === "pending")
       needsPerson.push({
         ...base,
-        reason: pending.some((p) => p.action !== "handover_to_person") ? "decision" : "handover",
+        // The tag follows the main decision: if a person has to make a call, that is the job,
+        // and any smaller yes (a holding message) is counted beside it.
+        reason: pending.some((p) => p.action === "handover_to_person") ? "handover" : "decision",
+        alsoToApprove: pending.some((p) => p.action === "handover_to_person") ? pending.filter((p) => p.action !== "handover_to_person").length || undefined : undefined,
         headline: record.headline ?? pending[0]?.title ?? "The agent needs a person",
         why: record.summary ?? "",
         agentDid: record.agentDid,

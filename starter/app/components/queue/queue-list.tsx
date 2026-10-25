@@ -8,18 +8,23 @@ import { Icon } from "../icons"
 import { Deadline } from "./deadline"
 import { REASON, URGENCY_GROUP } from "./labels"
 
-const ORDER: Urgency[] = ["now", "today", "soon", "watch"]
+const ORDER: Urgency[] = ["now", "soon", "today", "watch"]
 
 export function QueueList({ items, snapshotAt, zone }: { items: QueueItem[]; snapshotAt: string; zone: string }) {
   const router = useRouter()
   const rows = useRef<(HTMLAnchorElement | null)[]>([])
   const [active, setActive] = useState(-1)
 
-  // Within a group, the earliest deadline first; items without one go last.
+  // Groups use the same thresholds as the colour bar, so position and colour always agree:
+  // due within 30 min, within 2 h, later today. Earliest deadline first; none goes last.
+  const bucket = (item: QueueItem): Urgency => {
+    const h = heat(item.decideBy, snapshotAt, item.urgency)
+    return h === "hot" ? "now" : h === "warm" ? "soon" : item.urgency === "watch" ? "watch" : "today"
+  }
   const groups = ORDER.map((urgency) => ({
     urgency,
     items: items
-      .filter((item) => item.urgency === urgency)
+      .filter((item) => bucket(item) === urgency)
       .sort((a, b) => (a.decideBy ?? "9999").localeCompare(b.decideBy ?? "9999")),
   })).filter((group) => group.items.length > 0)
   const flat = groups.flatMap((group) => group.items)
@@ -69,6 +74,7 @@ export function QueueList({ items, snapshotAt, zone }: { items: QueueItem[]; sna
                     <div className="queue-row-main">
                       <div className="queue-row-top">
                         {reason && <span className={`chip tone-${reason.tone}`}><Icon name={reason.icon} size={12} />{reason.label}</span>}
+                        {item.alsoToApprove ? <span className="chip chip-quiet">+{item.alsoToApprove} to approve</span> : null}
                         {untouched && <span className="chip">Not looked at yet</span>}
                         <span className="queue-row-car">{item.car}</span>
                         <span className="queue-row-ref mono">{item.orderReference}</span>
@@ -96,8 +102,8 @@ export function QueueList({ items, snapshotAt, zone }: { items: QueueItem[]; sna
 }
 
 /** The colour bar follows the deadline, so "in 10 min" and "in 2 h" never look the same. */
-function heat(decideBy: string | undefined, snapshotAt: string): "hot" | "warm" | "calm" {
-  if (!decideBy) return "calm"
+function heat(decideBy: string | undefined, snapshotAt: string, urgency?: Urgency): "hot" | "warm" | "calm" {
+  if (!decideBy) return urgency === "now" ? "hot" : "calm"
   const minutes = (Date.parse(decideBy) - Date.parse(snapshotAt)) / 60000
   return minutes <= 30 ? "hot" : minutes <= 120 ? "warm" : "calm"
 }

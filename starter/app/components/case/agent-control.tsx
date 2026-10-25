@@ -6,7 +6,7 @@ import { Icon } from "../icons"
 
 // Start the road agent on this order, and keep the page fresh while it works so its
 // steps, the driver call and its proposal appear as they happen.
-export function AgentControl({ orderId, running, hasRun, primary = false }: { orderId: string; running: boolean; hasRun: boolean; primary?: boolean }) {
+export function AgentControl({ orderId, running, hasRun, primary = false, quiet = false }: { orderId: string; running: boolean; hasRun: boolean; primary?: boolean; quiet?: boolean }) {
   const router = useRouter()
   const [starting, setStarting] = useState(false)
   const [error, setError] = useState("")
@@ -35,6 +35,15 @@ export function AgentControl({ orderId, running, hasRun, primary = false }: { or
       <p className="agent-bar is-running" aria-live="polite">
         <span className="agent-pulse state-working" aria-hidden="true" />
         The agent is working on this order. Its steps appear below as it goes; it rings the driver's phone if the driver app is open.
+      </p>
+    )
+  }
+  // A closed case: going back to work is the next step, so starting the agent again is a quiet link.
+  if (quiet) {
+    return (
+      <p className="agent-bar is-quiet">
+        <button type="button" className="btn-link-quiet" onClick={start}>Ask the agent to look at this order again</button>
+        {error && <span className="agent-bar-error">{error}</span>}
       </p>
     )
   }

@@ -255,7 +255,7 @@ function DecidedCard({ proposal, decision, delivery, onUndo, done = [] }: { prop
           </div>
         )
         : <p className="next-step"><b>What happens next.</b> {next}</p>}
-      {delivery === "sent" && <p className="decided-back"><Link href="/">Back to Needs you</Link></p>}
+      {delivery === "sent" && <div className="decision-actions"><Link href="/" className="btn btn-primary">Back to Needs you</Link></div>}
       {delivery === "local" && <p className="decided-local">Demo mode: this proposal is sample data, so the decision is only kept on this page.</p>}
       {delivery === "local" && onUndo && (
         <div className="decision-actions">

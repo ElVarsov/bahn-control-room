@@ -34,8 +34,10 @@ that is eight out of about a hundred."
 ### 0:15–0:40 · One glance, one question (queue)
 **A:** "Every card is a question, not an alert. 'Call the customer for the Bentley's recovery
 decision?' It has a deadline, 'in 15 min', and one line on what the agent already did. The tag
-says what it takes: 'Approve here' is one click, 'Call needed' means you phone someone. Red means
-due within half an hour. Below, 'On watch': things the agents are waiting on, nothing for you to do."
+says what it takes: 'Call needed' here means you phone someone" *(point at CD-420322)*, "'Approve
+here' is one click" *(point at CD-420299)*. "Cards are grouped by how soon you must decide, and red
+means within half an hour. Below, 'On watch': things the agents are waiting on. If an answer does
+not come, the agent brings the order back up here."
 
 *Hover the CD-420322 card, then scroll once to On watch. Open CD-420322.*
 
@@ -65,8 +67,8 @@ ferry plus a hotel night, €490. Now, After, and what happens next."
 "The button says what you commit to: 'Approve and book, €490'." *Click it.*
 
 "Because the records show an earlier booking attempt failed, it checks with the provider first,
-then books the ferry and the hotel, each with its own reference, and tells the driver. Approved by
-you, at 12:00. The facts that are no longer true move under 'Before your yes'. And behind this
+then books the ferry and the hotel, each with its own reference, and tells the driver."
+*Zoom for 2 s on "Approved by you at 12:00".* "A person made this call, and the record says so. The facts that are no longer true move under 'Before your yes'. And behind this
 button, a second request for the same yes is refused; our eval checks every run for it."
 *Point at the five rows, then the facts panel. Click **Back to Needs you**: the queue is down to 7.*
 
@@ -99,7 +101,7 @@ twice booked twice. We fixed it and wrote a check that fails that exact trace."
 go back, so we were right, and we kept it." *Screen: the "Judge round 4" paragraph in the ai-log.*
 
 **A:** "We also threw away what looked impressive but wasn't true: a risk dashboard, a map and KPI
-tiles with made-up numbers. Thirteen checks run over every committed agent run, and a self-test
+tiles with made-up numbers. Fourteen checks run over every committed agent run, and a self-test
 plants one violation per check to prove each one can fail."
 *Screen: `python starter/scripts/eval_agent.py --self-test` ending in "caught", 2 s.*
 
@@ -109,7 +111,7 @@ That's the Car Delivery Control Room."
 ## Numbers to say (check before recording)
 
 - Needs you: 8 · running quietly: 83 (top of the queue page).
-- Eval: `python starter/scripts/eval_agent.py` → all runs pass 13 checks;
-  `--self-test` → 13/13 caught.
+- Eval: `python starter/scripts/eval_agent.py` → all runs pass 14 checks;
+  `--self-test` → 15/15 caught.
 - Judges: average score from round 1 to round 10 (see `docs/ai-log/ignacio.md`).
 - After approving CD-420299 the queue shows 7.

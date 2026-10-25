@@ -24,6 +24,7 @@ What it checks, per run:
   pending_surfaces   A run that leaves a proposal waiting ends as "needs a person", never
                      "waiting for a reply" or "nothing needs a person".
   strength_honest    No verified fact predicts the future ("will", "likely"): that is an estimate.
+  source_matches     A fact's source names the dataset table its record really lives in.
   once_per_yes       One yes carries out its change once: nothing booked twice, no cost or
                      provider check repeated for the same approval.
   customer_clock     What a customer reads (a message or a call brief) uses their own clock, never
@@ -50,6 +51,21 @@ READ_TOOLS = {"read_order", "read_conversation", "read_open_issues", "read_track
 
 
 _DATASET_IDS = None
+
+
+_ID_TABLE = None
+
+
+def id_tables():
+    """Which dataset table each record id lives in (from the .jsonl file name)."""
+    global _ID_TABLE
+    if _ID_TABLE is None:
+        _ID_TABLE = {}
+        for path in (ROOT / "dataset" / "data").glob("*.jsonl"):
+            for line in path.read_text(encoding="utf-8").splitlines():
+                if line.strip():
+                    _ID_TABLE[json.loads(line).get("id")] = path.stem
+    return _ID_TABLE
 
 
 def dataset_ids():
@@ -174,6 +190,17 @@ def check(trace):
         f"{f['id']}: verified but forecasts (\"{next(w for w in forecast_words if w in ' ' + f.get('text', '').lower() + ' ').strip()}\")"
         for f in facts if f.get("strength") == "verified" and any(w in " " + f.get("text", "").lower() + " " for w in forecast_words)
     ]
+    # source_matches: a source names the table its record really lives in, so "travel
+    # reservations" never labels a quote from travel_options.
+    tables = id_tables()
+    norm = lambda t: str(t or "").lower().replace(" ", "_").strip()
+    results["source_matches"] = [
+        f"{f['id']}: cites {src['recordId']} as {src.get('table')}, but it is in {tables[src['recordId']]}"
+        for f in facts for src in f.get("sources", [])
+        # A general name ("tracking", "conversation") is fine; naming a different real table is not.
+        if src.get("recordId") in tables and norm(src.get("table")) in set(tables.values()) and norm(src.get("table")) != tables[src["recordId"]]
+    ]
+
     # once_per_yes: one yes carries out its change once. No item booked twice, no cost recorded
     # twice, no second provider check for the same approval.
     executed = [p for p in proposals if p.get("status") == "executed"]
@@ -227,6 +254,7 @@ def self_test():
         ("strength_honest", lambda t: t["facts"].append({"id": "h", "text": "The delivery will be missed.", "strength": "verified", "sources": [{"kind": "system", "label": "Promise", "at": "2026-10-21T07:00:00Z", "recordId": "win-x7c8722a53360a2ad"}]})),
         ("pending_surfaces", lambda t: (t["proposals"].append({"id": "q", "action": "approve_cost", "status": "pending"}), t.update(outcome="waiting_reply"))),
         ("once_per_yes", lambda t: (t["proposals"].append({"id": "d", "action": "book_travel", "status": "executed", "decision": {"verdict": "approve", "decidedBy": "You"}}), [steps(t).append({"kind": "tool_result", "tool": "book_travel", "summary": f"Ferry booked: 24 Oct 15:00. Reference VCL-{r} (fictional)."}) for r in ("AAAAA", "BBBBB")])),
+        ("source_matches", lambda t: t["facts"].append({"id": "s", "text": "Nothing is booked.", "strength": "verified", "sources": [{"kind": "system", "label": "Travel reservations", "at": "2026-10-21T07:00:00Z", "table": "travel_reservations", "recordId": "travel-xf29ed1732d895f37"}]})),
         ("customer_clock", lambda t: (steps(t).insert(0, {"kind": "tool_result", "tool": "read_order", "summary": "Audi A6 for Dealer GmbH, Munich → Hamburg."}), [s.update(summary="") for s in steps(t)[1:] if s.get("tool") == "read_order"], t["proposals"].append({"id": "c", "action": "message_customer", "status": "pending", "draftMessage": {"to": "Dealer GmbH", "body": "We deliver 13:00-17:00 Helsinki time."}}))),
         ("fictional_only", lambda t: (t["proposals"].append({"id": "b", "action": "book_travel", "status": "executed", "decision": {"verdict": "approve", "decidedBy": "You"}}), steps(t).append({"kind": "tool_result", "tool": "book_travel", "summary": "Booked ref ABC123."}))),
     ]

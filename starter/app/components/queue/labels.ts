@@ -4,9 +4,9 @@ import type { AgentState, FactStrength, QueueReason, SourceKind, Urgency } from 
 import type { Tone } from "@/lib/present/types"
 
 export const URGENCY_GROUP: Record<Urgency, string> = {
-  now: "Right now",
-  today: "Today",
-  soon: "Soon",
+  now: "Within 30 minutes",
+  today: "Later today",
+  soon: "Within 2 hours",
   watch: "Keeping an eye on",
 }
 

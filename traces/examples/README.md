@@ -16,7 +16,7 @@ Kept from the first build session (24 Oct, Opus 5.5 via OpenRouter, about $0.25 
 | `run-mvmmb8xb0yn.json` | CD-420322 red warning light | Read the stale tracking, phoned the driver (simulated), marked the location unknown, handed the dealer call to a person with a call brief. The operator logged the dealer's answer and the agent told the driver. |
 | `run-mvmmdu0s1jg.json` | CD-420299 | Proposal approved in the control room; booking carried out with a fictional reference. |
 | `rejected/run-mvn3ijhi2y3-double-booked.json` | CD-420299 | **Our bug, caught by the judges (25 Oct, round 7).** Approving the same proposal twice carried it out twice: two ferries, two hotels, two cost steps. Every check passed it. Fixed with a guard (a decided proposal is never carried out again; the API answers 409) and a new check, `once_per_yes`, which fails this trace. |
-| `run-mvn3ijhi2y3-approved.json` | CD-420299 | The same approval after the fix, approved twice on purpose: the second request was refused. One provider check, one ferry and one hotel, each with its own fictional reference, the driver told both. |
+| `run-mvnnw4vluxa-approved.json` | CD-420299 | A later run of the same case (rerun 25 Oct so every fact cites its real table), approved after the fix, approved twice on purpose: the second request was refused. One provider check, one ferry and one hotel, each with its own fictional reference, the driver told both. |
 
 Run one yourself with the app running: `cd starter && npm run agent -- CD-420322`.
 
