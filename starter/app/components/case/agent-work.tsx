@@ -1,4 +1,5 @@
 import type { AgentRun, TraceStep } from "@/lib/contracts"
+import { withoutIds } from "@/lib/present/ids"
 import { fmtClock, fmtLong } from "@/lib/present/time"
 import { Icon } from "../icons"
 
@@ -30,18 +31,28 @@ const STOP_TITLE: Record<string, string> = {
   error: "Stopped with a problem",
 }
 
-type Line = { at: string; icon: string; title: string; detail?: string; kind: "check" | "contact" | "thought" | "stop" | "proposal" }
+type Line = { afterYes?: boolean; at: string; icon: string; title: string; detail?: string; notes?: string[]; kind: "check" | "contact" | "thought" | "stop" | "proposal" }
 
 // Turn a raw trace into a short story: what the agent checked (free), who it contacted, and why it stopped.
 function toLines(steps: TraceStep[]): Line[] {
   const lines: Line[] = []
+  let stopped = false
   for (const step of steps) {
+    // Anything after the agent handed over happened later, once a person decided.
+    if (stopped && step.kind !== "stop") { const before = lines.length; pushStep(step); lines.slice(before).forEach((l) => { l.afterYes = true }); continue }
+    if (step.kind === "stop") stopped = true
+    pushStep(step)
+  }
+  return lines
+
+  function pushStep(step: TraceStep) {
     switch (step.kind) {
       case "tool_result":
-        lines.push({ at: step.at, icon: "check", title: toolWords(step.tool), detail: step.summary, kind: "check" })
+        lines.push({ at: step.at, icon: "check", title: toolWords(step.tool), detail: step.summary && withoutIds(step.summary), kind: "check" })
         break
       case "call":
-        lines.push({ at: step.at, icon: "phone", title: step.status === "completed" ? "Phoned the driver" : `Tried to phone the driver (${step.status.replace("_", " ")})`, detail: step.summary, kind: "contact" })
+        // A simulated driver is a stand-in for the demo; never let it read as a real call.
+        lines.push({ at: step.at, icon: "phone", title: /^simulated/i.test(step.summary ?? "") ? "Simulated driver call (demo stand-in, not a real person)" : step.status === "completed" ? "Phoned the driver" : `Tried to phone the driver (${step.status.replace("_", " ")})`, detail: step.summary, kind: "contact" })
         break
       case "message_out":
         lines.push({ at: step.at, icon: "message", title: `Wrote to ${step.toName}`, detail: step.body, kind: "contact" })
@@ -50,9 +61,12 @@ function toLines(steps: TraceStep[]): Line[] {
         lines.push({ at: step.at, icon: "message", title: `${step.fromName} replied${step.simulated ? " (simulated)" : ""}`, detail: step.body, kind: "contact" })
         break
       case "tool_call":
-        // What the agent wrote down for you: the facts in "What we know" appear here as it noted them.
+        // Noted facts already sit in "What we know": fold them into one line, open on tap.
         if (step.tool === "note_fact" && step.input && typeof step.input === "object" && "text" in step.input) {
-          lines.push({ at: step.at, icon: "file", title: "Noted", detail: String((step.input as { text: unknown }).text), kind: "check" })
+          const text = String((step.input as { text: unknown }).text)
+          const folded = lines.find((l) => l.notes)
+          if (folded) { folded.notes!.push(text); folded.at = step.at }
+          else lines.push({ at: step.at, icon: "file", title: "Noted", notes: [text], kind: "check" })
         }
         break
       case "thought":
@@ -65,7 +79,6 @@ function toLines(steps: TraceStep[]): Line[] {
         break
     }
   }
-  return lines
 }
 
 /** "+0 s", "+42 s", "+1 min 05 s" since the run started: a run takes seconds, so clock times say nothing. */
@@ -77,7 +90,7 @@ function elapsed(at: string, start: string): string {
 function runSummary(run: AgentRun): string {
   const checks = run.steps.filter((s) => s.kind === "tool_result").length
   const calls = run.steps.filter((s) => s.kind === "call").length
-  const last = run.steps.at(-1)?.at ?? run.startedAt
+  const last = run.steps.find((s) => s.kind === "stop")?.at ?? run.steps.at(-1)?.at ?? run.startedAt
   const secs = Math.max(1, Math.round((Date.parse(last) - Date.parse(run.startedAt)) / 1000))
   const took = secs < 60 ? `${secs} s` : `${Math.round(secs / 60)} min`
   return `${checks} ${checks === 1 ? "check" : "checks"}${calls ? `, ${calls} driver ${calls === 1 ? "call" : "calls"}` : ""}, took ${took}`
@@ -101,8 +114,14 @@ export function AgentWork({ runs, zone }: { runs: AgentRun[]; snapshotAt: string
               <li key={index} className={`agent-step kind-${line.kind}`}>
                 <span className="agent-step-icon"><Icon name={line.icon} size={13} /></span>
                 <div>
-                  <p className="agent-step-title">{line.title}<time dateTime={line.at} title={fmtLong(line.at)}>{elapsed(line.at, run.startedAt)}</time></p>
+                  <p className="agent-step-title">{line.notes ? `Noted ${line.notes.length} ${line.notes.length === 1 ? "fact" : "facts"}` : line.title}<time dateTime={line.at} title={fmtLong(line.at)}>{line.afterYes ? "later" : elapsed(line.at, run.startedAt)}</time></p>
                   {line.detail && <p className="agent-step-detail">{line.detail}</p>}
+                  {line.notes && (
+                    <details className="agent-step-notes">
+                      <summary>They are listed under What we know, with their sources. Show them here</summary>
+                      <ul>{line.notes.map((n, i) => <li key={i}>{n}</li>)}</ul>
+                    </details>
+                  )}
                 </div>
               </li>
             ))}

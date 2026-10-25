@@ -1,0 +1,385 @@
+{
+  "run": {
+    "id": "run-mvndep2b6sd",
+    "orderId": "ord-00322",
+    "agentId": "road-agent",
+    "trigger": "Seed run for the demo",
+    "state": "needs_person",
+    "startedAt": "2026-10-25T05:11:45.251Z",
+    "steps": [
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:11:48.233Z",
+        "tool": "read_order",
+        "input": {
+          "order": "CD-420322"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T05:11:48.233Z",
+        "tool": "read_order",
+        "summary": "Bentley Continental GT for Marvellin Motorhandel, Munich → Hamburg. Driver Kasper Kovelund (in progress)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:11:48.233Z",
+        "tool": "read_conversation",
+        "input": {
+          "order": "CD-420322"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T05:11:48.234Z",
+        "tool": "read_conversation",
+        "summary": "8 recent messages. Latest from Kasper Kovelund: “I will wait here. Please tell me who is collecting the car before anyone moves it.”"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:11:48.234Z",
+        "tool": "read_open_issues",
+        "input": {
+          "order": "CD-420322"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T05:11:48.234Z",
+        "tool": "read_open_issues",
+        "summary": "2 open alerts (No recent driver-app position; check before changing a promise.), 1 incident, 1 open task."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:11:48.234Z",
+        "tool": "read_tracking",
+        "input": {
+          "order": "CD-420322"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T05:11:48.234Z",
+        "tool": "read_tracking",
+        "summary": "Last driver-app position 4 h ago (stale), 233 km to go."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:11:48.234Z",
+        "tool": "read_travel",
+        "input": {
+          "order": "CD-420322"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T05:11:48.234Z",
+        "tool": "read_travel",
+        "summary": "no bookings; no quote or capacity checks (not bookings)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:11:55.102Z",
+        "tool": "call_driver",
+        "input": {
+          "order": "CD-420322",
+          "purpose": "Bahn operations checking on you and the stopped Bentley so the owner's recovery decision can be arranged; nobody is asking you to drive.",
+          "questions": [
+            "Are you still safe, and is the car still parked with the engine off?",
+            "What is the exact name of the service area, the motorway and direction, or can you send a location pin now?",
+            "Have you sent the dashboard warning photo yet?",
+            "Do you have the keys with you, and can you stay with the car until a collector is named?"
+          ]
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "call",
+        "at": "2026-10-25T05:12:02.464Z",
+        "callId": "sim-mvndf2cg",
+        "status": "completed",
+        "summary": "Simulated call Kasper Kovelund. Yes, I am still safe at the service-area car park, and the Bentley is parked with the engine off. I have not given the exact name or direction yet, so I will send you a location pin from the app now. Not yet."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:12:15.575Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The driver says they are still safe at a service-area car park with the Bentley parked and the engine off, and will stay with it until told who is collecting.",
+          "strength": "reported",
+          "source_kind": "driver",
+          "source_label": "Driver call",
+          "source_actor": "Kasper Kovelund",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_record_id": "sim-mvndf2cg"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:12:15.575Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "Exact stop location is unknown: no service-area name or pin yet (the driver says a pin is coming now), and the last app position is 4 h old, about 233 km before Hamburg.",
+          "strength": "unknown",
+          "source_kind": "system",
+          "source_label": "Driver-app tracking",
+          "source_at": "2026-10-21T05:00:00Z",
+          "source_record_id": "track-x4ec652df41547497",
+          "source_table": "tracking"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:12:15.575Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The dashboard warning photo has not been sent yet; the driver says it comes right after the pin. Nobody has diagnosed the red warning.",
+          "strength": "reported",
+          "source_kind": "driver",
+          "source_label": "Driver call",
+          "source_actor": "Kasper Kovelund",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_record_id": "sim-mvndf2cg"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:12:15.575Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The customer asked us to keep the car stopped and is checking with their service contact whether it needs roadside help or collection. No answer yet.",
+          "strength": "reported",
+          "source_kind": "customer",
+          "source_label": "Customer email",
+          "source_actor": "Marvellin Motorhandel",
+          "source_at": "2026-10-21T08:40:00Z",
+          "source_record_id": "msg-x61cd4aae96d91cff"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:12:15.575Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The delivery promise of 21 Oct 13:00–17:00 will almost certainly be missed while the car is stopped about 233 km out with no recovery plan.",
+          "strength": "estimate",
+          "source_kind": "agent",
+          "source_label": "Delivery promise",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_record_id": "win-x7c8722a53360a2ad"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:12:15.575Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "No recovery, tow or travel is booked or quoted.",
+          "strength": "verified",
+          "source_kind": "system",
+          "source_label": "Travel records",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_table": "travel_reservations"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:12:23.254Z",
+        "tool": "propose",
+        "input": {
+          "action": "handover_to_person",
+          "title": "Call Marvellin Motorhandel for their service decision: roadside help, collection, or safe custody",
+          "rationale": "The shift lead wants a person to call the customer, and the recovery decision is due at 12:15. The car is stopped with an undiagnosed red warning and the driver is waiting to be told who is collecting it.",
+          "changes": [
+            {
+              "label": "Recovery decision",
+              "before": "Waiting on the customer's service contact; nothing booked",
+              "after": "Customer's choice recorded: roadside help, collection by a named company, or safe custody"
+            },
+            {
+              "label": "Delivery promise",
+              "before": "21 Oct 13:00–17:00, Hamburg",
+              "after": "Unchanged for now; a new estimate follows once recovery is agreed"
+            }
+          ],
+          "draft_message": {
+            "to": "Marvellin Motorhandel",
+            "channel": "phone",
+            "body": "Call brief: the Bentley Continental GT on CD-420322 stopped this morning after a red dashboard warning and reduced acceleration. The driver, Kasper Kovelund, is safe at a service-area car park with the engine off and is staying with the car. The exact location pin and the warning photo are on their way from the driver; we have no diagnosis. Ask: (1) roadside help, collection, or safe custody? (2) Who is the named collector or service company, and when will they arrive? (3) Do they cover the cost, or should Bahn arrange it? Say the delivery today (13:00–17:00 Helsinki time) will be missed and that a new estimate comes once recovery is agreed. Do not agree to anyone driving the car."
+          },
+          "what_happens_next": "Once you approve, a person calls the customer with this brief. I keep the driver stopped and pass on the pin and photo when they arrive.",
+          "what_happens_after": "The customer's recovery choice is recorded. The driver is told who is collecting the car, and a separate proposal then replans the driver and the delivery date."
+        },
+        "cost": "needs_approval"
+      },
+      {
+        "kind": "proposal",
+        "at": "2026-10-25T05:12:23.254Z",
+        "proposalId": "run-mvndep2b6sd-p1"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:12:26.581Z",
+        "tool": "finish",
+        "input": {
+          "outcome": "needs_person",
+          "headline": "Call the customer for the Bentley's recovery decision?",
+          "summary": "The Bentley is stopped with a red warning and the driver is safe. With no recovery plan, the car stays stuck and today's delivery is missed.",
+          "agent_did": "Read the records, phoned the driver, noted 6 facts, drafted a call brief for the customer.",
+          "urgency": "now",
+          "decide_within_minutes": 15
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "stop",
+        "at": "2026-10-25T05:12:26.581Z",
+        "reason": "needs_person",
+        "summary": "The Bentley is stopped with a red warning and the driver is safe. With no recovery plan, the car stays stuck and today's delivery is missed."
+      }
+    ]
+  },
+  "orderId": "ord-00322",
+  "orderReference": "CD-420322",
+  "car": "Bentley Continental GT",
+  "route": "Munich → Hamburg",
+  "customer": "Marvellin Motorhandel",
+  "proposals": [
+    {
+      "id": "run-mvndep2b6sd-p1",
+      "orderId": "ord-00322",
+      "action": "handover_to_person",
+      "title": "Call Marvellin Motorhandel for their service decision: roadside help, collection, or safe custody",
+      "rationale": "The shift lead wants a person to call the customer, and the recovery decision is due at 12:15. The car is stopped with an undiagnosed red warning and the driver is waiting to be told who is collecting it.",
+      "changes": [
+        {
+          "label": "Recovery decision",
+          "before": "Waiting on the customer's service contact; nothing booked",
+          "after": "Customer's choice recorded: roadside help, collection by a named company, or safe custody"
+        },
+        {
+          "label": "Delivery promise",
+          "before": "21 Oct 13:00–17:00, Hamburg",
+          "after": "Unchanged for now; a new estimate follows once recovery is agreed"
+        }
+      ],
+      "draftMessage": {
+        "to": "Marvellin Motorhandel",
+        "channel": "phone",
+        "body": "Call brief: the Bentley Continental GT on CD-420322 stopped this morning after a red dashboard warning and reduced acceleration. The driver, Kasper Kovelund, is safe at a service-area car park with the engine off and is staying with the car. The exact location pin and the warning photo are on their way from the driver; we have no diagnosis. Ask: (1) roadside help, collection, or safe custody? (2) Who is the named collector or service company, and when will they arrive? (3) Do they cover the cost, or should Bahn arrange it? Say the delivery today (13:00–17:00 Helsinki time) will be missed and that a new estimate comes once recovery is agreed. Do not agree to anyone driving the car."
+      },
+      "evidence": [],
+      "status": "pending",
+      "createdAt": "2026-10-25T05:12:23.254Z",
+      "createdBy": "road-agent",
+      "whatHappensNext": "Once you approve, a person calls the customer with this brief. I keep the driver stopped and pass on the pin and photo when they arrive.",
+      "whatHappensAfter": "The customer's recovery choice is recorded. The driver is told who is collecting the car, and a separate proposal then replans the driver and the delivery date."
+    }
+  ],
+  "facts": [
+    {
+      "id": "run-mvndep2b6sd-f1",
+      "text": "The driver says they are still safe at a service-area car park with the Bentley parked and the engine off, and will stay with it until told who is collecting.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "driver",
+          "label": "Driver call",
+          "actorName": "Kasper Kovelund",
+          "at": "2026-10-21T09:00:00Z",
+          "recordId": "sim-mvndf2cg"
+        }
+      ]
+    },
+    {
+      "id": "run-mvndep2b6sd-f2",
+      "text": "Exact stop location is unknown: no service-area name or pin yet (the driver says a pin is coming now), and the last app position is 4 h old, about 233 km before Hamburg.",
+      "strength": "unknown",
+      "sources": [
+        {
+          "kind": "system",
+          "label": "Driver-app tracking",
+          "at": "2026-10-21T05:00:00Z",
+          "table": "tracking",
+          "recordId": "track-x4ec652df41547497"
+        }
+      ]
+    },
+    {
+      "id": "run-mvndep2b6sd-f3",
+      "text": "The dashboard warning photo has not been sent yet; the driver says it comes right after the pin. Nobody has diagnosed the red warning.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "driver",
+          "label": "Driver call",
+          "actorName": "Kasper Kovelund",
+          "at": "2026-10-21T09:00:00Z",
+          "recordId": "sim-mvndf2cg"
+        }
+      ]
+    },
+    {
+      "id": "run-mvndep2b6sd-f4",
+      "text": "The customer asked us to keep the car stopped and is checking with their service contact whether it needs roadside help or collection. No answer yet.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "customer",
+          "label": "Customer email",
+          "actorName": "Marvellin Motorhandel",
+          "at": "2026-10-21T08:40:00Z",
+          "recordId": "msg-x61cd4aae96d91cff"
+        }
+      ]
+    },
+    {
+      "id": "run-mvndep2b6sd-f5",
+      "text": "The delivery promise of 21 Oct 13:00–17:00 will almost certainly be missed while the car is stopped about 233 km out with no recovery plan.",
+      "strength": "estimate",
+      "sources": [
+        {
+          "kind": "agent",
+          "label": "Delivery promise",
+          "at": "2026-10-21T09:00:00Z",
+          "recordId": "win-x7c8722a53360a2ad"
+        }
+      ]
+    },
+    {
+      "id": "run-mvndep2b6sd-f6",
+      "text": "No recovery, tow or travel is booked or quoted.",
+      "strength": "verified",
+      "sources": [
+        {
+          "kind": "system",
+          "label": "Travel records",
+          "at": "2026-10-21T09:00:00Z",
+          "table": "travel_reservations"
+        }
+      ]
+    }
+  ],
+  "model": "anthropic/claude-opus-5.5",
+  "usage": {
+    "inputTokens": 41894,
+    "outputTokens": 3402
+  },
+  "outcome": "needs_person",
+  "headline": "Call the customer for the Bentley's recovery decision?",
+  "summary": "The Bentley is stopped with a red warning and the driver is safe. With no recovery plan, the car stays stuck and today's delivery is missed.",
+  "agentDid": "Read the records, phoned the driver, noted 6 facts, drafted a call brief for the customer.",
+  "urgency": "now",
+  "decideBy": "2026-10-21T09:15:00.000Z"
+}

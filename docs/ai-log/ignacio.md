@@ -121,3 +121,12 @@ invented percentages. We removed all of it.
   runs. A new eval check, `strength_honest`, fails "verified" facts that predict the future; it
   caught one in our own seed. Sample "agents are working" items with no run behind them were removed,
   and forecasts are labelled as the monitor watching, not as agent work.
+
+## Judge round 5 (avg 4.09)
+All four judges flagged the same regression from round 4: the "Noted" timeline steps repeated the
+facts panel word for word. Folded them into one line. T1 caught that the simulated driver invented a
+service-area name that then read as a real fact; we now give the simulator its booked travel, forbid
+invented details, and label every simulated call and its facts as demo stand-ins. Reran 322, 449
+and 399 (399 twice: the first rerun named the decision in the headline but still only proposed the
+holding message, so the rule was tightened to require proposing the decision itself). Added
+not-found/error/loading pages and a decided-state card showing what the agent did after the yes.

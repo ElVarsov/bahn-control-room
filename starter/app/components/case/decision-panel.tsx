@@ -2,7 +2,8 @@
 
 import { useRouter } from "next/navigation"
 import { useState } from "react"
-import type { Change, Decision, Proposal } from "@/lib/contracts"
+import { withoutIds } from "@/lib/present/ids"
+import type { AgentRun, Change, Decision, Proposal } from "@/lib/contracts"
 import { Icon } from "../icons"
 
 type Mode = "idle" | "editing" | "instructing" | "logging"
@@ -15,13 +16,6 @@ const CLOSED_STATUS: Record<string, string> = {
 }
 
 /** Record ids belong in the sources, not in what a person reads: "€387 (quote travel-x29…)" → "€387 quote". */
-function withoutIds(text: string): string {
-  return text
-    .replace(/\s*\((?:quote|record|ref|id)?\s*[a-z]+-[a-z0-9]{4,}\)/gi, (m) => (/quote/i.test(m) ? " quote" : ""))
-    .replace(/\s*(?:quote|record)\s+[a-z]+-[a-z0-9]{4,}/gi, (m) => (/quote/i.test(m) ? " quote" : ""))
-    .replace(/\b(?:travel|hotel|win|msg|track|agent|quote)-[a-z0-9]{4,}\b/gi, "")
-    .replace(/\s{2,}/g, " ").replace(/\s+([,.)])/g, "$1").trim()
-}
 
 const WHO = "You" // until there is sign-in, the person at the screen
 
@@ -38,7 +32,17 @@ async function sendDecision(proposalId: string, decision: Decision): Promise<"se
   }
 }
 
-export function DecisionPanel({ proposals }: { proposals: Proposal[] }) {
+// Steps that only ever run after a person's yes: what the agent actually did with it.
+const AFTER_YES = new Set(["check_booking_outcome", "book_travel", "change_date", "approve_cost", "resolve_alert"])
+
+function doneAfterYes(runs: AgentRun[]): string[] {
+  return runs.flatMap((run) => run.steps).flatMap((step) =>
+    step.kind === "tool_result" && AFTER_YES.has(step.tool) ? [withoutIds(step.summary ?? "")]
+      : step.kind === "message_out" && step.body.startsWith("Update from Bahn") ? [`Sent the driver: ${step.body.replace(/^Update from Bahn:\s*/, "")}`]
+      : [])
+}
+
+export function DecisionPanel({ proposals, runs = [] }: { proposals: Proposal[]; runs?: AgentRun[] }) {
   const open = proposals.filter((proposal) => proposal.status === "pending")
   // The most recent decision stays visible as a confirmation; older ones go to the history.
   const lastDecided = [...proposals].reverse().find((proposal) => proposal.status !== "pending" && proposal.decision)
@@ -46,7 +50,7 @@ export function DecisionPanel({ proposals }: { proposals: Proposal[] }) {
   return (
     <>
       {open.map((proposal) => <ProposalCard key={proposal.id} proposal={proposal} />)}
-      {lastDecided?.decision && <DecidedCard proposal={lastDecided} decision={lastDecided.decision} delivery="sent" />}
+      {lastDecided?.decision && <DecidedCard proposal={lastDecided} decision={lastDecided.decision} delivery="sent" done={doneAfterYes(runs)} />}
       {closed.length > 0 && (
         <details className="decision-history">
           <summary><Icon name="chevron" size={12} /> Earlier proposals on this order ({closed.length})</summary>
@@ -174,11 +178,14 @@ function ProposalCard({ proposal }: { proposal: Proposal }) {
 
 /** A call brief is read while dialling: numbered questions on their own lines, warnings apart. */
 function CallBrief({ text }: { text: string }) {
-  const parts = text.split(/\s(?=\d[).]\s)/)
+  const parts = text.split(/\s(?=\(?\d[).]\s)/)
   const intro = parts[0].replace(/\s*Ask:?\s*$/i, "")
-  const asks = parts.slice(1).map((p) => p.replace(/^\d[).]\s*/, ""))
+  const asks = parts.slice(1).map((p) => p.replace(/^\(?\d[).]\s*/, ""))
   const sentences = (asks.length ? asks.pop() ?? "" : "").split(/(?<=[.!?])\s+/)
-  const lastAsk = sentences.filter((x) => !/^(do not|don't|never)\b/i.test(x)).join(" ")
+  const plain = sentences.filter((x) => !/^(do not|don't|never)\b/i.test(x))
+  const lastQ = plain.findLastIndex((x) => x.endsWith("?"))
+  const lastAsk = (lastQ >= 0 ? plain.slice(0, lastQ + 1) : plain).join(" ")
+  const outro = lastQ >= 0 ? plain.slice(lastQ + 1).join(" ") : ""
   const warnings = [...(asks.length || lastAsk ? [] : intro.split(/(?<=[.!?])\s+/)), ...sentences].filter((x) => /^(do not|don't|never)\b/i.test(x))
   const allAsks = lastAsk ? [...asks, lastAsk] : asks
   const introText = intro.split(/(?<=[.!?])\s+/).filter((x) => !/^(do not|don't|never)\b/i.test(x)).join(" ")
@@ -186,6 +193,7 @@ function CallBrief({ text }: { text: string }) {
     <div className="draft-body brief">
       {introText && <p>{introText}</p>}
       {allAsks.length > 0 && <ol>{allAsks.map((a, i) => <li key={i}>{a}</li>)}</ol>}
+      {outro && <p>{outro}</p>}
       {warnings.map((w, i) => <p key={i} className="brief-warning">{w}</p>)}
     </div>
   )
@@ -197,7 +205,7 @@ const VERDICT: Record<Decision["verdict"], { title: string; tone: string }> = {
   reject: { title: "Rejected", tone: "neutral" },
 }
 
-function DecidedCard({ proposal, decision, delivery, onUndo }: { proposal: Proposal; decision: Decision; delivery: "sent" | "local"; onUndo?: () => void }) {
+function DecidedCard({ proposal, decision, delivery, onUndo, done = [] }: { proposal: Proposal; decision: Decision; delivery: "sent" | "local"; onUndo?: () => void; done?: string[] }) {
   const handover = proposal.action === "handover_to_person"
   const verdict = decision.verdict === "approve" && handover ? { title: "Answer logged", tone: "ok" } : VERDICT[decision.verdict]
   const next = decision.verdict === "reject"
@@ -210,7 +218,14 @@ function DecidedCard({ proposal, decision, delivery, onUndo }: { proposal: Propo
       <p className="decision-eyebrow"><Icon name="check" size={13} /> {verdict.title} by {decision.decidedBy}</p>
       <h2 className="decision-title">{proposal.title}</h2>
       {decision.note && <p className="decided-note">“{decision.note}”</p>}
-      <p className="next-step"><b>What happens next.</b> {next}</p>
+      {done.length > 0
+        ? (
+          <div className="next-step">
+            <b>What the agent did after your yes.</b>
+            <ul className="done-list">{done.map((line, i) => <li key={i}><Icon name="check" size={12} /> {line}</li>)}</ul>
+          </div>
+        )
+        : <p className="next-step"><b>What happens next.</b> {next}</p>}
       {delivery === "local" && <p className="decided-local">Demo mode: this proposal is sample data, so the decision is only kept on this page.</p>}
       {delivery === "local" && onUndo && (
         <div className="decision-actions">

@@ -6,7 +6,7 @@ import type { CallResult, CallTurn } from "@/lib/contracts"
 import { callDriver, isDriverOnline } from "@/lib/voice"
 import { complete, MODEL } from "./model"
 import { actorName, forOrder, SNAPSHOT_AT, type Row } from "./dataset"
-import { assignedDriver, carOf, routeOf } from "./tools"
+import { assignedDriver, carOf, readTravel, routeOf } from "./tools"
 
 export type DriverMode = "auto" | "phone" | "simulated"
 
@@ -32,8 +32,10 @@ async function simulatedCall(order: Row, driver: Row, purpose: string, questions
     .filter((m) => m.author_id === driver.id)
     .map((m) => `[${m.authored_at}] ${m.body}`)
     .join("\n") || "(No messages from this driver on record.)"
-  const system = `You play ${driver.display_name}, a freelance car delivery driver, answering a short phone call from Bahn's AI assistant. Stay consistent with what you have written before. If you do not know something, say so. Answer each question in one or two plain sentences. This is a simulation for a demo; everything is fictional.`
+  const system = `You play ${driver.display_name}, a freelance car delivery driver, answering a short phone call from Bahn's AI assistant. Stay consistent with what you have written before and with the travel Bahn booked for you. Never name a place, time or detail that is not in what you have written or in your booked travel: if asked where you are and you have not said, say you will send a location pin from the app. If you do not know something, say so. Answer each question in one or two plain sentences. This is a simulation for a demo; everything is fictional.`
   const prompt = `Your job: ${carOf(order)}, order ${order.reference}, ${routeOf(order)}.
+Travel Bahn booked or quoted for you (times are UTC):
+${JSON.stringify(readTravel(order).booked)}
 What you have written to Bahn so far:
 ${theirMessages}
 

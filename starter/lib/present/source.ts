@@ -4,7 +4,7 @@
 // Pages never read either directly.
 
 import "server-only"
-import type { CaseView, Fact, QueueItem, QueueResponse, SourceKind, TimelineEntry } from "@/lib/contracts"
+import type { AgentRun, CaseView, Fact, QueueItem, QueueResponse, SourceKind, TimelineEntry } from "@/lib/contracts"
 import { actorName, forOrder } from "@/lib/agent/dataset"
 import { evaluateJourney, scanJourneys } from "@/lib/agent/monitor"
 import { allRuns, latestRunFor, type RunRecord } from "@/lib/agent/runs"
@@ -171,7 +171,7 @@ function agentCase(orderId: string, record: RunRecord): CaseView {
     orderId,
     orderReference: record.orderReference,
     headline: record.headline ?? record.summary ?? "The agent is working on this order.",
-    facts: [...runs].reverse().flatMap((r) => r.facts),
+    facts: [...runs].reverse().flatMap((r) => simulatedSources(r.facts, r.run)),
     proposals: runs.flatMap((r) => r.proposals),
     runs: runs.map((r) => onSnapshotClock(r.run)),
     timeline: [...datasetTimeline(orderId), ...outgoing],
@@ -266,3 +266,15 @@ export async function getCase(orderId: string): Promise<{ view: CaseView; item: 
 export const SNAPSHOT_AT = queueFixture.snapshotAt
 /** Bahn's operations desk works in Finnish time; customer-facing times keep their own zone. */
 export const OPS_ZONE = "Europe/Helsinki"
+
+/** Facts heard on a simulated driver call say so: the stand-in driver is not a source of truth. */
+function simulatedSources(facts: Fact[], run: AgentRun): Fact[] {
+  const simulated = run.steps.some((s) => s.kind === "call" && /^simulated/i.test(s.summary ?? ""))
+  if (!simulated) return facts
+  return facts.map((fact) => ({
+    ...fact,
+    sources: fact.sources.map((source) => source.kind === "driver" && /call|phone|said|told/i.test(source.label)
+      ? { ...source, label: "Simulated driver call (demo)" }
+      : source),
+  }))
+}

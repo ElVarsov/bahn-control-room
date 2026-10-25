@@ -6,7 +6,7 @@ import { SOURCE_KIND, STRENGTH } from "../queue/labels"
 export function FactsPanel({ facts, zone }: { facts: Fact[]; zone: string }) {
   return (
     <section className="facts-panel" aria-labelledby="facts-title">
-      <h2 id="facts-title" className="case-section-title">What we know</h2>
+      <h2 id="facts-title" className="case-section-title">What we know<span className="facts-zone">Times in Helsinki time</span></h2>
       <ul className="fact-list">
         {facts.map((fact) => {
           const strength = STRENGTH[fact.strength]

@@ -2,6 +2,7 @@ import type { Metadata } from "next"
 import Link from "next/link"
 import { redirect } from "next/navigation"
 import { latestRunFor } from "@/lib/agent/runs"
+import { carOf, resolveOrder } from "@/lib/agent/tools"
 import { getCase, OPS_ZONE, SNAPSHOT_AT } from "@/lib/present/source"
 import { AppFrame } from "../../components/app-frame"
 import { AgentControl } from "../../components/case/agent-control"
@@ -47,7 +48,7 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
             {item?.stage && <span className="chip">{item.stage}</span>}
             {item?.decideBy && <Deadline at={item.decideBy} snapshotAt={SNAPSHOT_AT} zone={OPS_ZONE} />}
           </div>
-          <h1 className="case-car">{item?.car ?? view.orderReference}</h1>
+          <h1 className="case-car">{item?.car ?? carName(view.orderReference)}</h1>
           <div className="chips">
             <span className="chip-fact mono">{view.orderReference}</span>
             {item?.route && <span className="chip-fact"><Icon name="arrow" size={13} />{item.route}</span>}
@@ -63,7 +64,7 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
           <div className="case-main">
             {item?.reason === "driver_report" && <DriverReportCard item={item} />}
             {view.proposals.length > 0
-              ? <DecisionPanel proposals={view.proposals} />
+              ? <DecisionPanel proposals={view.proposals} runs={view.runs} />
               : item && item.reason !== "driver_report" && (
                 <section className="decision decision-lite">
                   <p className="decision-eyebrow"><Icon name="bot" size={13} /> Not looked at yet</p>
@@ -85,4 +86,9 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
       </main>
     </AppFrame>
   )
+}
+
+// A case that has left the queue still shows the car, not just its number.
+function carName(reference: string): string {
+  try { return carOf(resolveOrder(reference)) } catch { return reference }
 }

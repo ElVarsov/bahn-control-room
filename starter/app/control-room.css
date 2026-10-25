@@ -292,7 +292,7 @@ kbd {
 .queue-row-headline, .queue-row-why, .queue-row-agent span {
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
 }
-.queue-row-agent span { -webkit-line-clamp: 1; }
+.queue-row-agent span { -webkit-line-clamp: 2; }
 .agent-run-trigger { flex-wrap: wrap; }
 .agent-run-meta { margin-left: auto; font-size: 12px; color: var(--muted); }
 
@@ -308,3 +308,20 @@ kbd {
 @media (max-width: 480px) {
   .queue-row-agent { display: none; }
 }
+
+/* Folded "Noted N facts" step */
+.agent-step-notes summary { cursor: pointer; font-size: 12.5px; color: var(--muted); }
+.agent-step-notes ul { margin: 6px 0 0 16px; padding: 0; list-style: disc; display: grid; gap: 3px; font-size: 13px; color: var(--brown); }
+.facts-zone { font-size: 12px; font-weight: 400; color: var(--muted); margin-left: 8px; }
+
+/* Loading skeleton */
+.loading-note { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+.skeleton { border-radius: var(--radius-lg); background: var(--canvas); margin-bottom: 14px; animation: skeleton-pulse 1.4s ease-in-out infinite; }
+.skeleton-head { height: 72px; }
+.skeleton-card { height: 220px; }
+.skeleton-card.short { height: 120px; }
+@keyframes skeleton-pulse { 50% { opacity: .55; } }
+@media (prefers-reduced-motion: reduce) { .skeleton { animation: none; } }
+.done-list { margin: 6px 0 0; padding: 0; list-style: none; display: grid; gap: 4px; }
+.done-list li { display: flex; gap: 6px; align-items: flex-start; }
+.done-list .icon { margin-top: 3px; color: var(--green); flex: none; }
