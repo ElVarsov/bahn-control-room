@@ -13,8 +13,8 @@ export const URGENCY_GROUP: Record<Urgency, string> = {
 export const URGENCY_TONE: Record<Urgency, Tone> = { now: "danger", today: "warn", soon: "neutral", watch: "neutral" }
 
 export const REASON: Record<QueueReason, { label: string; tone: Tone; icon: string }> = {
-  decision: { label: "Needs your yes", tone: "accent", icon: "proposal" },
-  handover: { label: "Your call", tone: "neutral", icon: "phone" },
+  decision: { label: "Approve here", tone: "accent", icon: "check" },
+  handover: { label: "Call needed", tone: "neutral", icon: "phone" },
   forecast: { label: "Forecast", tone: "warn", icon: "trend" },
   driver_report: { label: "Driver called in", tone: "accent", icon: "phone" },
 }

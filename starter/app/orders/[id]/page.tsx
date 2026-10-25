@@ -39,7 +39,7 @@ export default async function CasePage({ params }: { params: Promise<{ id: strin
     <AppFrame section="queue" snapshotAt={SNAPSHOT_AT}>
       <main className="page case-page">
         <nav className="crumbs" aria-label="Breadcrumb">
-          <Link href="/">Needs you</Link><span>/</span><span className="mono">{view.orderReference}</span>
+          {item ? <Link href="/">Needs you</Link> : <Link href="/board">All orders</Link>}<span>/</span><span className="mono">{view.orderReference}</span>
         </nav>
 
         <header className="case-head">

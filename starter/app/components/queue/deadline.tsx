@@ -5,10 +5,12 @@ export function Deadline({ at, snapshotAt, zone, compact = false }: { at?: strin
   if (!at) return <span className="deadline deadline-none">No deadline</span>
   const rel = relativeTo(at, snapshotAt)
   const overdue = !!rel?.past
-  const soon = !!rel && !rel.past && rel.minutes <= 60
+  // Red only when it is truly close (30 min or overdue), amber within two hours, calm after that.
+  const urgent = !!rel && !rel.past && rel.minutes <= 30
+  const soon = !!rel && !rel.past && rel.minutes > 30 && rel.minutes <= 120
   const text = !rel ? "" : rel.text === "now" ? "due now" : overdue ? `${rel.text.replace(" ago", "")} overdue` : rel.text
   return (
-    <time className={`deadline${overdue ? " overdue" : soon ? " soon" : ""}`} dateTime={at} title={`Decide by ${fmtLong(at)}`}>
+    <time className={`deadline${overdue || urgent ? " overdue" : soon ? " soon" : ""}`} dateTime={at} title={`Decide by ${fmtLong(at)}`}>
       <span className="deadline-rel">{text}</span>
       {!compact && <span className="deadline-clock">by {fmtClock(at, zone)}</span>}
     </time>

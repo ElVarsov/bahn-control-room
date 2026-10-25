@@ -33,8 +33,9 @@ that is eight out of about a hundred."
 
 ### 0:15–0:40 · One glance, one question (queue)
 **A:** "Every card is a question, not an alert. 'Call the customer for the Bentley's recovery
-decision?' It has a deadline, 'in 15 min', and one line on what the agent already did. Below,
-'On watch': things the agents are waiting on, with nothing for you to do."
+decision?' It has a deadline, 'in 15 min', and one line on what the agent already did. The tag
+says what it takes: 'Approve here' is one click, 'Call needed' means you phone someone. Red means
+due within half an hour. Below, 'On watch': things the agents are waiting on, nothing for you to do."
 
 *Hover the CD-420322 card, then scroll once to On watch. Open CD-420322.*
 
@@ -53,19 +54,21 @@ the customer with numbered questions and what not to agree to. Every fact with i
 'Reported' for what the driver said, 'Not known' for the exact location, because a driver's word
 is not a location fix. Tap a source and you see the record it came from."
 
-*Tap one source in What we know. Scroll the timeline: "5 checks, 1 driver call, took 41 s".*
+*Tap one source in What we know. Point at the run line, e.g. "5 checks, 1 driver call, took 41 s"
+(the live numbers will differ slightly).*
 
 ### 1:20–1:50 · A person says yes, and sees what happened (case 299)
 **A:** "Bookings, dates, costs and customer messages always wait for a person." *Open CD-420299.*
 "The overnight ferry is sold out. The agent checked sailings and hotels and proposes the next-day
 ferry plus a hotel night, €490. Now, After, and what happens next."
 
-*Click **Approve**.*
+"The button says what you commit to: 'Approve and book, €490'." *Click it.*
 
-"Because an earlier booking attempt failed, it checks with the provider first, then books the
-ferry and the hotel, each with its own reference, and tells the driver. The facts that are no
-longer true move under 'Before your yes'. Click Approve twice and the second click is refused:
-one yes, one booking." *Point at the decided card and the facts panel.*
+"Because the records show an earlier booking attempt failed, it checks with the provider first,
+then books the ferry and the hotel, each with its own reference, and tells the driver. Approved by
+you, at 12:00. The facts that are no longer true move under 'Before your yes'. And behind this
+button, a second request for the same yes is refused; our eval checks every run for it."
+*Point at the five rows, then the facts panel. Click **Back to Needs you**: the queue is down to 7.*
 
 ### 1:50–2:05 · The driver calls in (phone)
 **B** taps **Call Bahn** on the phone: "Hi, it's Kasper on the Bentley. I've sent the pin, and the
@@ -78,22 +81,27 @@ lands in Needs you as 'Driver called in' within seconds. What the driver said co
 *(Do not script anything the case has not decided yet, such as a tow arriving: the owner has
 not chosen recovery, and the agent would rightly treat it as a conflict.)*
 
-### 2:05–2:45 · How we built it (README / ai-log / judge screenshots)
+### 2:05–2:45 · How we built it (every claim gets a screen)
 **A:** "Two of us built this in parallel with Claude Code, one on the screens and one on the
-agent, joined only by a shared contract file."
+agent, joined only by a shared contract file." *Screen: `starter/lib/contracts/index.ts`, 2 s.*
 
-**B:** "We didn't take the first answer. We set up four AI judges, two from the business side and
-two from engineering, scoring Bahn's own rubric over ten rounds with fresh screenshots each time.
-They caught real problems. The simulated driver once invented a service-area name that showed up
-as a fact; now it is grounded in its booked travel and every simulated call says so. And in round
-seven they caught a double booking in our own screenshot: approving twice booked twice. We fixed
-it and added a check that fails that exact trace. When a judge
-told us an arrival time was wrong, we checked: 25 October is the night clocks go back, so we were
-right, and we kept it."
+**B:** "We didn't take the first answer. Four AI judges, two from the business side and two from
+engineering, scored Bahn's own rubric over ten rounds with fresh screenshots each time."
+*Screen: the round-1 queue screenshot next to today's (from `docs/ai-log/ignacio.md` scores).*
 
-**A:** "We also threw things away: a risk dashboard, a map and KPI tiles that showed made-up
-numbers. And the agent's safety rules are tested: an eval runs thirteen checks over every
-committed agent run, and a self-test plants one violation per check to prove each one can fail."
+"They caught real problems. In round seven, a double booking in our own screenshot: approving
+twice booked twice. We fixed it and wrote a check that fails that exact trace."
+*Screen: terminal running
+`python starter/scripts/eval_agent.py traces/examples/rejected/run-mvn3ijhi2y3-double-booked.json`
+→ "once_per_yes: 'ferry' booked 2 times", 3 s.*
+
+"And when a judge told us an arrival time was wrong, we checked: 25 October is the night clocks
+go back, so we were right, and we kept it." *Screen: the "Judge round 4" paragraph in the ai-log.*
+
+**A:** "We also threw away what looked impressive but wasn't true: a risk dashboard, a map and KPI
+tiles with made-up numbers. Thirteen checks run over every committed agent run, and a self-test
+plants one violation per check to prove each one can fail."
+*Screen: `python starter/scripts/eval_agent.py --self-test` ending in "caught", 2 s.*
 
 **A:** "Agents do the legwork, people make the calls, and every fact shows where it came from.
 That's the Car Delivery Control Room."
@@ -104,3 +112,4 @@ That's the Car Delivery Control Room."
 - Eval: `python starter/scripts/eval_agent.py` → all runs pass 13 checks;
   `--self-test` → 13/13 caught.
 - Judges: average score from round 1 to round 10 (see `docs/ai-log/ignacio.md`).
+- After approving CD-420299 the queue shows 7.

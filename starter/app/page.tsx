@@ -41,7 +41,12 @@ export default async function NeedsYou() {
               <p>Agents are working on {working} {working === 1 ? "order" : "orders"} and {queue.quiet.count} are running quietly. New decisions appear here on their own.</p>
             </section>
           )
-          : <QueueList items={queue.needsPerson} snapshotAt={queue.snapshotAt} zone={OPS_ZONE} />}
+          : (
+            <>
+              <p className="queue-legend"><b>Approve here</b>: one click on this screen · <b>Call needed</b>: you phone someone, then log the answer</p>
+              <QueueList items={queue.needsPerson} snapshotAt={queue.snapshotAt} zone={OPS_ZONE} />
+            </>
+          )}
 
         {working > 0 && <AgentsWorking items={queue.agentsWorking ?? []} snapshotAt={queue.snapshotAt} />}
 

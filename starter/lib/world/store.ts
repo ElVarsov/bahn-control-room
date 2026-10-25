@@ -696,10 +696,12 @@ class WorldStore {
     }
   }
 
-  public recordDecision(proposalId: string, decision: Decision): Proposal | null {
+  public recordDecision(proposalId: string, decision: Decision): { proposal: Proposal; alreadyDecided?: boolean } | null {
     this.ensureLoaded()
     const proposal = this.proposals.get(proposalId)
     if (!proposal) return null
+    // One yes, one action, on this path too.
+    if (proposal.status !== "pending") return { proposal, alreadyDecided: true }
 
     proposal.decision = decision
     proposal.status = decision.verdict === "approve" ? "approved" : decision.verdict === "edit" ? "edited_and_approved" : "rejected"
@@ -718,7 +720,7 @@ class WorldStore {
       })
     }
 
-    return proposal
+    return { proposal }
   }
 
   public getAttachments() {

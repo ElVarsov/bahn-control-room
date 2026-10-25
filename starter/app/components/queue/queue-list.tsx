@@ -62,7 +62,7 @@ export function QueueList({ items, snapshotAt, zone }: { items: QueueItem[]; sna
                 <li key={item.id}>
                   <Link
                     href={`/orders/${item.orderId}`}
-                    className={`queue-row urgency-${item.urgency}${item.reason === "forecast" ? " is-forecast" : ""}`}
+                    className={`queue-row urgency-${item.urgency} heat-${heat(item.decideBy, snapshotAt)}${item.reason === "forecast" ? " is-forecast" : ""}`}
                     ref={(element) => { rows.current[i] = element }}
                     onFocus={() => setActive(i)}
                   >
@@ -93,4 +93,11 @@ export function QueueList({ items, snapshotAt, zone }: { items: QueueItem[]; sna
       ))}
     </div>
   )
+}
+
+/** The colour bar follows the deadline, so "in 10 min" and "in 2 h" never look the same. */
+function heat(decideBy: string | undefined, snapshotAt: string): "hot" | "warm" | "calm" {
+  if (!decideBy) return "calm"
+  const minutes = (Date.parse(decideBy) - Date.parse(snapshotAt)) / 60000
+  return minutes <= 30 ? "hot" : minutes <= 120 ? "warm" : "calm"
 }

@@ -217,6 +217,7 @@ def self_test():
     cases = [
         ("customer_lock", lambda t: steps(t).append({"kind": "message_out", "to": "customer", "toName": "Dealer", "channel": "email", "body": "Your car is late."})),
         ("yes_before_change", lambda t: steps(t).append({"kind": "tool_result", "tool": "book_travel", "summary": "Booked (fictional)."})),
+        ("yes_before_change", lambda t: (t["proposals"].append({"id": "dial", "action": "book_travel", "status": "executed", "decision": {"verdict": "approve", "decidedBy": "Autonomy dial"}}), steps(t).append({"kind": "tool_result", "tool": "book_travel", "summary": "Ferry booked: x. Reference VCL-DIALX (fictional)."}))),
         ("cheap_first", lambda t: steps(t).insert(0, {"kind": "tool_call", "tool": "propose", "input": {}, "cost": "needs_approval"})),
         ("quote_not_booking", lambda t: t["facts"].append({"id": "x", "text": "Ferry booked.", "strength": "verified", "sources": [{"kind": "provider", "label": "Ferry quote", "at": "2026-10-21T07:00:00Z", "table": "travel_options"}]})),
         ("facts_sourced", lambda t: t["facts"].append({"id": "y", "text": "Something.", "strength": "reported", "sources": []})),

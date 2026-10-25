@@ -44,7 +44,7 @@ function toLines(steps: TraceStep[]): Line[] {
       const done = lines.find((l) => l.afterYes)
       const count = step.kind === "tool_result" || step.kind === "message_out" ? 1 : 0
       if (done) done.notes!.push(...Array(count).fill(""))
-      else if (count) lines.push({ at: step.at, icon: "check", title: "Carried out after the decision", detail: "Each step is listed in the decision card above.", notes: [""], afterYes: true, kind: "check" })
+      else if (count) lines.push({ at: step.at, icon: "check", title: "Carried out after a person decided", detail: "Each step, with its reference, is in the decision card above.", notes: [""], afterYes: true, kind: "check" })
       continue
     }
     if (step.kind === "stop") stopped = true

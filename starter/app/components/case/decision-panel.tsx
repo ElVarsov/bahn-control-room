@@ -1,8 +1,10 @@
 "use client"
 
+import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useRef, useState } from "react"
 import { withoutIds } from "@/lib/present/ids"
+import { fmtClock } from "@/lib/present/time"
 import type { AgentRun, Change, Decision, Proposal } from "@/lib/contracts"
 import { Icon } from "../icons"
 
@@ -37,9 +39,16 @@ async function sendDecision(proposalId: string, decision: Decision): Promise<"se
 function shortDone(line: string): string {
   const booked = line.match(/^(.+?) booked: .*Reference (\S+) \(fictional/i)
   if (booked) return `${booked[1]} booked · ${booked[2]}`
-  if (/^Checked the earlier failed attempt/i.test(line)) return "Checked the earlier attempt first: nothing was booked, so nothing is booked twice"
+  if (/^Checked the earlier failed attempt/i.test(line)) return "Checked the earlier failed attempt first (simulated provider check): nothing was booked, so nothing is booked twice"
   if (/^Sent the driver/i.test(line)) return `Driver told: ${line.replace(/^Sent the driver:\s*booked for you,\s*/i, "").replace(/\.\s*Details are in the app\.?$/i, "")}`
   return line.replace(/\s*\(fictional, nothing real was bought\)/i, "")
+}
+
+/** "Approve and book · €490": the button says what it commits to. */
+function approveLabel(proposal: Proposal): string {
+  const cost = proposal.title.match(/€\s?[\d.,]+/)?.[0] ?? proposal.changes.find((c) => /cost|total|price/i.test(c.label))?.after.match(/€\s?[\d.,]+/)?.[0]
+  const verb = { book_travel: "Approve and book", change_date: "Approve the new date", approve_cost: "Approve the cost", message_customer: "Approve and send", resolve_alert: "Approve and close" }[proposal.action as string] ?? "Approve"
+  return cost ? `${verb} · ${cost.replace(/[.,]$/, "")}` : verb
 }
 
 // Steps that only ever run after a person's yes: what the agent actually did with it.
@@ -79,6 +88,7 @@ function ProposalCard({ proposal }: { proposal: Proposal }) {
   const [note, setNote] = useState("")
   const [decided, setDecided] = useState<{ decision: Decision; delivery: "sent" | "local" } | null>(null)
   const [busy, setBusy] = useState(false)
+  const [confirmReject, setConfirmReject] = useState(false)
   const router = useRouter()
 
   const inFlight = useRef(false)
@@ -177,9 +187,10 @@ function ProposalCard({ proposal }: { proposal: Proposal }) {
             </>
           ) : (
             <>
-              <button type="button" className="btn btn-primary" onClick={() => void decide("approve")} disabled={busy}><Icon name="check" size={14} /> Approve</button>
+              <button type="button" className="btn btn-primary" onClick={() => void decide("approve")} disabled={busy}><Icon name="check" size={14} /> {approveLabel(proposal)}</button>
               <button type="button" className="btn btn-secondary" onClick={() => setMode("editing")} disabled={busy}>Change it</button>
-              <button type="button" className="btn btn-ghost" onClick={() => void decide("reject")} disabled={busy}>Reject</button>
+              {/* Reject is one click from Approve, so it asks once more before it drops the plan. */}
+              <button type="button" className={`btn ${confirmReject ? "btn-danger" : "btn-ghost"}`} onClick={() => { if (confirmReject) void decide("reject"); else { setConfirmReject(true); setTimeout(() => setConfirmReject(false), 5000) } }} disabled={busy}>{confirmReject ? "Yes, reject it" : "Reject"}</button>
               <button type="button" className="btn btn-link" onClick={() => setMode("instructing")} disabled={busy}>Tell the agent something else</button>
             </>
           )}
@@ -228,7 +239,7 @@ function DecidedCard({ proposal, decision, delivery, onUndo, done = [] }: { prop
       : proposal.whatHappensAfter ?? proposal.whatHappensNext
   return (
     <section className={`decision decided tone-${verdict.tone}`} aria-live="polite">
-      <p className="decision-eyebrow"><Icon name="check" size={13} /> {verdict.title} by {decision.decidedBy === WHO ? "you" : decision.decidedBy}</p>
+      <p className="decision-eyebrow"><Icon name="check" size={13} /> {verdict.title} by {decision.decidedBy === WHO ? "you" : decision.decidedBy}{delivery === "sent" && decision.decidedAt ? ` at ${fmtClock(decision.decidedAt, "Europe/Helsinki")}` : ""}</p>
       <h2 className="decision-title">{proposal.title}</h2>
       {decision.note && <p className="decided-note">“{decision.note}”</p>}
       {done.length > 0
@@ -244,6 +255,7 @@ function DecidedCard({ proposal, decision, delivery, onUndo, done = [] }: { prop
           </div>
         )
         : <p className="next-step"><b>What happens next.</b> {next}</p>}
+      {delivery === "sent" && <p className="decided-back"><Link href="/">Back to Needs you</Link></p>}
       {delivery === "local" && <p className="decided-local">Demo mode: this proposal is sample data, so the decision is only kept on this page.</p>}
       {delivery === "local" && onUndo && (
         <div className="decision-actions">

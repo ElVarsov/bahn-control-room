@@ -333,3 +333,14 @@ kbd {
 .done-details { margin-top: 6px; }
 .done-details summary { cursor: pointer; font-size: 12.5px; color: var(--muted); }
 .done-details ul { margin: 6px 0 0 16px; padding: 0; list-style: disc; display: grid; gap: 3px; font-size: 13px; color: var(--brown); }
+.btn-danger { background: var(--red-bg); color: var(--red-ink); border-color: transparent; }
+.decided-back { margin-top: 10px; font-size: 13px; }
+.decided-back a { color: var(--teal-ink); text-decoration: underline; text-underline-offset: 2px; }
+
+/* The bar follows the deadline: red within 30 min, amber within 2 h, calm after that */
+.queue-row.heat-hot::before { background: var(--red); }
+.queue-row.heat-warm::before { background: var(--orange); }
+.queue-row.heat-calm::before { background: var(--line-strong, #d9d2c3); }
+.queue-row-why { -webkit-line-clamp: 3 !important; }
+.queue-legend { margin: -4px 0 14px; font-size: 12.5px; color: var(--muted); }
+.queue-legend b { font-weight: 600; color: var(--brown); }

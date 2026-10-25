@@ -157,3 +157,12 @@ screenshots in one server session and did not look closely; all twelve checks pa
 Fixed at the cause (a decided proposal is never carried out again, the API answers 409, the button
 ignores a second click), added `once_per_yes` to the eval, and committed the double-booked trace as
 a rejected example that the new check fails. Lesson: a screenshot is evidence too; read it like a trace.
+
+## Judge round 8 (avg 4.24)
+Back up after the fix. Technical judges pushed further on the yes gate: the approver's name came
+from the browser, so the eval's "a person approved" test trusted a client string. The server now
+stamps who and when and refuses dial claims, with a self-test case. The store's second decision
+path got the same once-only guard, and the double-booking check now reads the FAILED attempt from
+the records instead of matching fact wording. Business judges asked for the button to state the
+cost, a second click on Reject, deadline-driven colour (red only within 30 minutes) and a demo
+script that never claims on camera what the screen does not show.

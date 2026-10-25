@@ -4,7 +4,7 @@
 // reads them first. Real providers and customers are never contacted.
 
 import type { Decision, Proposal } from "@/lib/contracts"
-import { SNAPSHOT_AT } from "./dataset"
+import { forOrder, SNAPSHOT_AT } from "./dataset"
 import { startRun } from "./loop"
 import { addStep, findProposal, writeTrace, type RunRecord } from "./runs"
 
@@ -59,7 +59,9 @@ export function execute(record: RunRecord, proposal: Proposal, decision: Decisio
     case "book_travel": {
       // Never book twice: if an earlier attempt on this order failed without a reference,
       // ask the provider first (simulated) and only then book.
-      const earlierFailed = record.facts.some((f) => /fail|timed out|no reference|unverified/i.test(f.text) && /book/i.test(f.text))
+      // From the records (an earlier attempt that failed), not from how a fact happens to be worded.
+      const earlierFailed = forOrder("agent_proposals", record.orderId).some((r) => r.status === "FAILED")
+        || record.facts.some((f) => /fail|timed out|no reference|unverified/i.test(f.text) && /book/i.test(f.text))
       if (earlierFailed) step("check_booking_outcome", "Checked the earlier failed attempt with the provider: no reservation exists, so this cannot double-book (simulated check).")
       // One plain line per item, each with its own fictional reference.
       const refs: string[] = []
