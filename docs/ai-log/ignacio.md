@@ -138,3 +138,14 @@ invented details, and label every simulated call and its facts as demo stand-ins
 and 399 (399 twice: the first rerun named the decision in the headline but still only proposed the
 holding message, so the rule was tightened to require proposing the decision itself). Added
 not-found/error/loading pages and a decided-state card showing what the agent did after the yes.
+
+## Judge round 6 (avg 4.09)
+The new "decided" view exposed contradictions: after approving the ferry, What we know still said
+"nothing is booked", the headline was still a question, and the result was one semicolon dump shown
+twice. Bookings now produce one line per item with their own fictional references, a verified
+booking fact, and the overtaken facts folded under "Before your yes". Judges also caught "seed run
+for the demo" (our own CLI trigger) on ops screens and a Hamburg customer brief in Helsinki time;
+reran three cases with real triggers and added an eval check, customer_clock, which failed the old
+322 seed before the rerun. The eval then caught our own change: logging the approved total as a
+cost step looked like a cost change without a yes. We allowed it only when the approved proposal
+listed that cost, rather than dropping the check.
