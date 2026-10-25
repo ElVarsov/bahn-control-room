@@ -103,8 +103,8 @@ twice, and it still books once." *Terminal:*
 *Terminal:* `python starter/scripts/eval_agent.py traces/examples/rejected/run-mvno42zlb5g-wrong-time.json`
 *→ "times_match: says 27 Oct 14:00-16:00; the record says 13:00-15:00".*
 
-**A:** "Agents do the legwork, people make the calls, and every fact shows where it came from.
-That's the Bahn control room."
+**A:** "We cut a map and KPI tiles that looked good but weren't true. Agents do the legwork,
+people make the calls, and every fact shows where it came from. That's the Bahn control room."
 
 ## Numbers on screen (check right before the main take)
 
