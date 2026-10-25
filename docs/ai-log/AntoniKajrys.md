@@ -20,3 +20,5 @@
   1. Customer Lock validation (0 unapproved customer messages).
   2. Cheap work executed first (reads, driver chats, and quotes queried before spending).
   3. Quantified decision proposals with calculated cost deltas (€) and delivery delay deltas (hours).
+
+> Correction (Sun 25 Oct): the harness described above printed PASS without testing anything. It was replaced by real guardrail checks over agent traces; see `starter/scripts/eval_agent.py`.

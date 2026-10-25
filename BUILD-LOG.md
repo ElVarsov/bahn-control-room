@@ -13,7 +13,7 @@ Instead of using AI to generate boilerplate admin tables or conversational fluff
 Our workflow followed three distinct phases:
 1. **Data Archaeology First**: We pointed the agent at Bahn's 100 synthetic orders, 19 alerts, 14 proposals, and 58 attachments to uncover every embedded edge case and trap before writing a single line of interface code.
 2. **The Rejected First Draft (Taste Iteration)**: We rejected the starter's 7-lane Kanban board and 9-column database table. We forced the agent to build an exception-only Decision Queue and a 4-Block Decision Card tailored to ops specialists under pressure.
-3. **Eval-Driven Guardrail Hardening**: We built an automated 10-order test harness (`starter/scripts/eval_agent.py`) to verify that the agent never violates the "Customer Lock" rule or treats unconfirmed quotes as reservations.
+3. **Eval-Driven Guardrail Hardening**: `starter/scripts/eval_agent.py` checks 8 guardrails (customer lock, a person's yes before bookings/dates/costs, cheap work first, quotes never verified, sourced facts, clean stops, decisions before effects, fictional bookings) against real agent traces, and `--self-test` plants one violation per rule to prove each check can fail. Our first version only printed PASS without checking anything; we caught that in review and replaced it.
 
 ---
 
@@ -87,8 +87,9 @@ This violated the primary rule of the hackathon:
 2. **Visual Guardrail Badge**:
    - On every decision card, a green badge marks auto-executable actions (`● Auto-Executable: Driver & Yard`), and an amber lock badge marks customer actions (`🔒 Customer Lock: Human Send Required`).
 3. **The Eval Harness (`starter/scripts/eval_agent.py`)**:
-   - We created an automated test script running 10 test scenarios.
-   - Every run validates that 0 unapproved customer messages are emitted and all quotes are strictly labeled with `"quote"` strength (never `"verified"`).
+   - Reads every agent trace in `traces/` and checks 8 guardrails on what the agent actually did.
+   - `--self-test` breaks a real trace once per rule; all 8 violations are caught.
+   - Correction: the first version printed PASS for 10 cases without testing anything. We threw it away.
 
 ---
 
@@ -127,3 +128,9 @@ We built the **Explainable Cascade Risk Engine** (`starter/lib/cascade-risk.ts`)
      - **Block 2: What the Agent Already Checked**: Timestamped checklist of free lookups and cross-checks completed before human interruption.
      - **Block 3: Cascade-Safe Decision Cards**: Selectable candidate cards comparing Upfront Cost vs. Cascade Risk Avoided with operator plain-English override.
      - **Block 4: Execution Preview**: Downstream action preview with green `Auto-Executes` badges and amber `🔒 Customer Guardrail: Draft Queued for Sign-Off` badges.
+
+## Corrections (Sun 25 Oct, 03:30)
+- The "4-Block Decision Card" with priced options, the lock badges and the cascade risk engine described
+  above were removed from the product: the cascade engine showed pre-written agent activity and invented
+  percentages as if the agent had produced them. The case page now shows only what the agent really did.
+- The fleet map was removed: the packet has no coordinates, so its positions and counts were invented.

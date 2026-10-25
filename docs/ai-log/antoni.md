@@ -23,7 +23,7 @@ Built:
   3. The Decision with priced options (+€ cost delta, +h delay delta).
   4. What Happens Next with dry-run action preview.
 - Autonomy Dial (`/settings`): Explicit toggles for driver queries (allowed autonomously) vs customer contact (permanently locked).
-- Test harness (`eval_agent.py`): 10/10 test cases verified with 0 Customer Lock violations and strict fact strength tagging (`quote` vs `verified`).
+- Test harness (`eval_agent.py`): the first version printed PASS without checking anything. Replaced on Sunday with real checks over agent traces (8 guardrails, with a self-test that proves each check can fail).
 
 ## Zero-Hang Dataset Fallback & Database Probe
 
