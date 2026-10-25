@@ -23,6 +23,8 @@ export type RunRecord = {
   decideBy?: string
   model: string
   usage: { inputTokens: number; outputTokens: number }
+  /** Ids of mock quotes (hotels) the run received, so facts can cite them. */
+  quoteIds?: string[]
 }
 
 function getTracesDir(): string {

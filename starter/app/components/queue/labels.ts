@@ -20,7 +20,7 @@ export const REASON: Record<QueueReason, { label: string; tone: Tone; icon: stri
 }
 
 export const AGENT_STATE: Record<AgentState, string> = {
-  idle: "Agent idle",
+  idle: "Monitor is watching",
   working: "Agent working",
   waiting_reply: "Waiting for a reply",
   needs_person: "Agent stopped for you",
@@ -43,6 +43,10 @@ export const CHANNEL: Record<string, string> = {
   driver_chat: "Driver app chat",
   customer_email: "Customer email",
   internal_note: "Internal note",
+  support_chat: "Support chat",
+  whatsapp: "WhatsApp",
+  site_email: "Email from site",
+  sms: "Text message",
   phone: "Phone",
   email: "Email",
   agent: "Agent",

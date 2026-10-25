@@ -34,7 +34,7 @@ How you work:
 4. Decide what a person must decide. Anything that books travel, changes a pickup or delivery date, costs money, messages a customer, or needs a call to a customer becomes ONE propose call with exact before and after values and, for messages, the exact text. Never pretend something is booked or agreed.
 5. Stop with finish. If the facts line up and nothing needs a person, say so (outcome facts_line_up). If you are waiting on someone, outcome waiting_reply. Otherwise needs_person.
 
-Style: plain words an operations person reads in a second. Give times in the local time of the place they happen (for example "23 Oct 22:00 Berlin time"), not UTC. Refer to drivers and contacts by name or as "the driver"; use "they" if you need a pronoun and never guess gender from a name. No codes like FERRY_SOLD_OUT in text for people. Times with their zone where it matters. Keep the whole job under about ten tool calls. One proposal per run unless two are truly independent.`
+Style: plain words an operations person reads in a second. Write every time in Helsinki time, the operations desk's clock, with no zone label (for example "24 Oct 15:00"); never UTC, "local", Berlin or Copenhagen time. Refer to drivers and contacts by name or as "the driver"; use "they" if you need a pronoun and never guess gender from a name. No codes like FERRY_SOLD_OUT in text for people. Mark a fact verified only when a record proves it as it stands now; anything about what will or is likely to happen is an estimate. Keep the whole job under about ten tool calls. One proposal per run unless two are truly independent.`
 
 export type StartOptions = { order: string; trigger: string; driverMode?: DriverMode }
 
@@ -82,6 +82,21 @@ export function startRun({ order: ref, trigger, driverMode = "auto" }: StartOpti
 }
 
 const now = () => new Date().toISOString()
+
+/** "no incidents", "1 open alert", "3 open alerts". */
+function count(n: number, noun: string): string {
+  if (n === 0) return `no ${noun}s`
+  return `${n} ${noun}${n === 1 ? "" : "s"}`
+}
+
+/** Shorten at a sentence or word boundary, never mid-word. */
+function clip(text: string, max: number): string {
+  if (text.length <= max) return text
+  const cut = text.slice(0, max)
+  const sentence = cut.lastIndexOf(". ")
+  if (sentence > max * 0.6) return cut.slice(0, sentence + 1)
+  return `${cut.slice(0, cut.lastIndexOf(" "))}…`
+}
 
 async function work(record: RunRecord, order: Row, driverMode: DriverMode) {
   const messages: Anthropic.Beta.BetaMessageParam[] = [{
@@ -162,12 +177,12 @@ async function runTool(record: RunRecord, order: Row, name: string, input: Recor
     case "read_conversation": {
       const list = readConversation(target())
       const last = list.at(-1)
-      return result(name, list.length ? `${list.length} recent messages. Latest from ${last?.from.split(": ")[1]}: “${String(last?.text).slice(0, 110)}”` : "No messages on this order.", list)
+      return result(name, list.length ? `${count(list.length, "recent message")}. Latest from ${last?.from.split(": ")[1]}: “${clip(String(last?.text), 140)}”` : "No messages on this order.", list)
     }
     case "read_open_issues": {
       const issues = readOpenIssues(target())
       const openAlerts = issues.alerts.filter((a) => a.status !== "RESOLVED" && a.status !== "DISMISSED")
-      return result(name, `${openAlerts.length} open alert(s)${openAlerts[0] ? ` (${openAlerts[0].summary})` : ""}, ${issues.incidents.length} incident(s), ${issues.open_work.length} open work item(s).`, issues)
+      return result(name, `${count(openAlerts.length, "open alert")}${openAlerts[0] ? ` (${openAlerts[0].summary})` : ""}, ${count(issues.incidents.length, "incident")}, ${count(issues.open_work.length, "open task")}.`, issues)
     }
     case "read_tracking": {
       const t = readTracking(target())
@@ -176,7 +191,7 @@ async function runTool(record: RunRecord, order: Row, name: string, input: Recor
     }
     case "read_travel": {
       const t = readTravel(target())
-      return result(name, `${t.booked.length} booked, ${t.quotes_and_checks_not_booked.length} quote(s) or capacity check(s) that are not bookings.`, t)
+      return result(name, `${count(t.booked.length, "booking")}; ${count(t.quotes_and_checks_not_booked.length, "quote or capacity check")} (not bookings).`, t)
     }
     case "search_ferries": {
       const f = searchFerries(String(input.from_terminal), String(input.to_terminal), String(input.earliest_departure))
@@ -185,6 +200,7 @@ async function runTool(record: RunRecord, order: Row, name: string, input: Recor
     }
     case "search_hotels": {
       const h = searchHotels(String(input.near), String(input.night))
+      record.quoteIds = [...(record.quoteIds ?? []), ...h.hotels.map((x) => x.quote_id)]
       return result(name, `${h.hotels.length} hotels near ${h.near}, from € ${Math.min(...h.hotels.map((x) => x.price_eur))} (quotes).`, h)
     }
     case "call_driver": {
@@ -199,7 +215,7 @@ async function runTool(record: RunRecord, order: Row, name: string, input: Recor
       addStep(record, {
         kind: "call", at: now(), callId: call.callId, status: call.status,
         summary: call.status === "completed"
-          ? `${call.simulated ? "Simulated call" : "Phoned"} ${call.driverName}${call.scripted ? " (scripted backup answered, AI unavailable)" : ""}. ${heard.slice(0, 260)}`
+          ? `${call.simulated ? "Simulated call" : "Phoned"} ${call.driverName}${call.scripted ? " (scripted backup answered, AI unavailable)" : ""}. ${clip(heard, 260)}`
           : `${call.simulated ? "Simulated call to" : "Phoned"} ${call.driverName}: ${call.status.replace("_", " ")}.`,
       })
       // Facts heard on a real call are reported by the driver; keep them with the run.

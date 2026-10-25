@@ -23,6 +23,13 @@ function toolWords(tool: string): string {
   return TOOL_WORDS[tool] ?? tool.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase())
 }
 
+const STOP_TITLE: Record<string, string> = {
+  needs_person: "Handed to you",
+  waiting_reply: "Waiting for a reply",
+  facts_line_up: "Nothing needs a person",
+  error: "Stopped with a problem",
+}
+
 type Line = { at: string; icon: string; title: string; detail?: string; kind: "check" | "contact" | "thought" | "stop" | "proposal" }
 
 // Turn a raw trace into a short story: what the agent checked (free), who it contacted, and why it stopped.
@@ -43,10 +50,10 @@ function toLines(steps: TraceStep[]): Line[] {
         lines.push({ at: step.at, icon: "message", title: `${step.fromName} replied${step.simulated ? " (simulated)" : ""}`, detail: step.body, kind: "contact" })
         break
       case "thought":
-        lines.push({ at: step.at, icon: "note", title: "Why it stopped here", detail: step.text, kind: "thought" })
+        lines.push({ at: step.at, icon: "note", title: "Agent's note", detail: step.text, kind: "thought" })
         break
       case "stop":
-        lines.push({ at: step.at, icon: step.reason === "needs_person" ? "flag" : "check", title: step.summary, kind: "stop" })
+        lines.push({ at: step.at, icon: step.reason === "needs_person" ? "flag" : "check", title: STOP_TITLE[step.reason] ?? "Stopped", kind: "stop" })
         break
       default:
         break

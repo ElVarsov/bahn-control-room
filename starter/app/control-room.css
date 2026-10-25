@@ -287,3 +287,9 @@ kbd {
   .sidebar { flex-wrap: wrap; row-gap: 4px; overflow-x: visible; }
   .sidebar-nav, .nav-group { flex-wrap: wrap; }
 }
+
+/* Queue cards stay scannable: two lines each, the full text is on the case page */
+.queue-row-headline, .queue-row-why, .queue-row-agent span {
+  display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
+}
+.queue-row-agent span { -webkit-line-clamp: 1; }

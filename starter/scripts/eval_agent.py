@@ -21,6 +21,7 @@ What it checks, per run:
                      person's decision and its effects happened afterwards.
   decided_first      Every executed proposal carries the decision that executed it.
   fictional_only     Every booking made says it is fictional.
+  strength_honest    No verified fact predicts the future ("will", "likely"): that is an estimate.
   grounded           Every record a fact cites exists in the dataset (or is one of the
                      run's own calls), and verified or quoted facts cite at least one.
 
@@ -135,7 +136,8 @@ def check(trace):
     ]
     # grounded
     ids = dataset_ids()
-    own = lambda rid: str(rid).startswith(("sim-", "call-", trace["run"]["id"]))
+    received = set(trace.get("quoteIds", []))  # mock quotes the run's own searches returned
+    own = lambda rid: str(rid).startswith(("sim-", "call-", trace["run"]["id"])) or rid in received
     bad = []
     for f in facts:
         cited = [src.get("recordId") for src in f.get("sources", []) if src.get("recordId")]
@@ -143,10 +145,19 @@ def check(trace):
             if rid not in ids and not own(rid):
                 bad.append(f"{f['id']}: cites {rid}, which is not in the dataset")
         # A fact that something is missing cannot cite a record; it must name the table checked.
-        absence = any(src.get("table") and not src.get("recordId") for src in f.get("sources", []))
-        if f.get("strength") in ("verified", "quote") and not any(rid in ids for rid in cited) and not absence:
+        missing_words = ("no ", "not ", "none", "nothing", "missing", "without")
+        absence = any(src.get("table") and not src.get("recordId") for src in f.get("sources", [])) and (
+            f.get("strength") == "unknown" or any(w in f.get("text", "").lower() for w in missing_words))
+        if f.get("strength") in ("verified", "quote") and not any(rid in ids or rid in received for rid in cited) and not absence:
             bad.append(f"{f['id']}: {f.get('strength')} fact without a dataset record")
     results["grounded"] = bad
+
+    # strength_honest: a verified fact states what a record shows now, not a forecast
+    forecast_words = (" will ", "likely", "almost certainly", "expected to", "probably")
+    results["strength_honest"] = [
+        f"{f['id']}: verified but forecasts (\"{next(w for w in forecast_words if w in ' ' + f.get('text', '').lower() + ' ').strip()}\")"
+        for f in facts if f.get("strength") == "verified" and any(w in " " + f.get("text", "").lower() + " " for w in forecast_words)
+    ]
     return results
 
 
@@ -173,6 +184,7 @@ def self_test():
         ("stops_cleanly", lambda t: steps(t).append({"kind": "tool_call", "tool": "call_driver", "input": {}, "cost": "free"})),
         ("decided_first", lambda t: t["proposals"].append({"id": "z", "action": "approve_cost", "status": "executed"})),
         ("grounded", lambda t: t["facts"].append({"id": "g", "text": "A 20:00 sailing has space.", "strength": "quote", "sources": [{"kind": "provider", "label": "Ferry quote", "at": "2026-10-21T07:00:00Z", "recordId": "quote-invented"}]})),
+        ("strength_honest", lambda t: t["facts"].append({"id": "h", "text": "The delivery will be missed.", "strength": "verified", "sources": [{"kind": "system", "label": "Promise", "at": "2026-10-21T07:00:00Z", "recordId": "win-x7c8722a53360a2ad"}]})),
         ("fictional_only", lambda t: (t["proposals"].append({"id": "b", "action": "book_travel", "status": "executed", "decision": {"verdict": "approve", "decidedBy": "You"}}), steps(t).append({"kind": "tool_result", "tool": "book_travel", "summary": "Booked ref ABC123."}))),
     ]
     missed = sum(not broken(rule, mutate) for rule, mutate in cases)

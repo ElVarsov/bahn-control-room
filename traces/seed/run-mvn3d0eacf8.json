@@ -1,0 +1,301 @@
+{
+  "run": {
+    "id": "run-mvn3d0eacf8",
+    "orderId": "ord-00399",
+    "agentId": "road-agent",
+    "trigger": "Operations asked the agent to work this case",
+    "state": "needs_person",
+    "startedAt": "2026-10-25T00:30:30.466Z",
+    "steps": [
+      {
+        "kind": "thought",
+        "at": "2026-10-25T00:30:33.753Z",
+        "text": "Reading the records first."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:30:33.753Z",
+        "tool": "read_order",
+        "input": {
+          "order": "CD-420399"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:30:33.753Z",
+        "tool": "read_order",
+        "summary": "Ferrari 296 GTB for Merovik Premiumfahrzeuge, Leipzig → Cologne. Driver Freya Marvellen (assigned)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:30:33.753Z",
+        "tool": "read_conversation",
+        "input": {
+          "order": "CD-420399"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:30:33.753Z",
+        "tool": "read_conversation",
+        "summary": "4 recent messages. Latest from Driver marketplace: “Keep the accepted assignment on CD-420399 while we check replacement capacity. Please prepare a buyer update that says collection timing is…”"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:30:33.753Z",
+        "tool": "read_open_issues",
+        "input": {
+          "order": "CD-420399"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:30:33.753Z",
+        "tool": "read_open_issues",
+        "summary": "1 open alert (Assigned driver reports they cannot reach the selected Leipzig pickup after their current duty. Human review needed.), no incidents, 1 open task."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:30:33.753Z",
+        "tool": "read_tracking",
+        "input": {
+          "order": "CD-420399"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:30:33.753Z",
+        "tool": "read_tracking",
+        "summary": "No tracking on record."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:30:33.753Z",
+        "tool": "read_travel",
+        "input": {
+          "order": "CD-420399"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:30:33.753Z",
+        "tool": "read_travel",
+        "summary": "no bookings; no quote or capacity checks (not bookings)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:30:46.470Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The driver, Freya Marvellen, says they need rest after their current job and cannot travel before 22 Oct 13:00. The Leipzig pickup slot is 22 Oct 12:00–13:00, so they cannot make it. They said this in chat and again by phone to Driver travel.",
+          "strength": "reported",
+          "source_kind": "driver",
+          "source_label": "Driver chat",
+          "source_actor": "Freya Marvellen",
+          "source_at": "2026-10-21T08:14:00Z",
+          "source_record_id": "msg-x3bdbe64dcd0bd46e",
+          "source_table": "messages"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:30:46.470Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "No travel is booked or quoted for the driver to get to Leipzig.",
+          "strength": "verified",
+          "source_kind": "system",
+          "source_label": "Travel records",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_table": "travel_reservations"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:30:46.470Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "There is no tracking on this order. Where the driver is now is known only from their message (\"heading toward Hamburg\").",
+          "strength": "unknown",
+          "source_kind": "system",
+          "source_label": "Tracking",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_table": "tracking_positions"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:30:46.470Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The delivery promise is Cologne, 23 Oct 14:00–16:00. No new pickup slot has been agreed. The Leipzig pickup contact (Lena Alderfield) and site access have not been confirmed.",
+          "strength": "verified",
+          "source_kind": "system",
+          "source_label": "Delivery promise",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_record_id": "win-x35e61b692ad83995",
+          "source_table": "order_windows"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:30:53.239Z",
+        "tool": "propose",
+        "input": {
+          "action": "message_customer",
+          "title": "Tell Merovik Premiumfahrzeuge that the Leipzig collection time is under review",
+          "rationale": "The driver cannot make the 22 Oct 12:00–13:00 pickup, and Driver marketplace is still looking for a replacement. Operations asked for a buyer update that says the timing is under review, with no new slot and no mention of the driver's other job.",
+          "changes": [
+            {
+              "label": "Customer informed about pickup timing",
+              "before": "Not informed",
+              "after": "Told the collection timing is under review; no new slot offered"
+            }
+          ],
+          "draft_message": {
+            "to": "Merovik Premiumfahrzeuge",
+            "channel": "email",
+            "body": "Hello,\n\nAn update on your Ferrari 296 GTB (order CD-420399, Leipzig to Cologne): we are reviewing the timing of the Leipzig collection booked for 22 Oct. We are working to keep the booked slot and will confirm as soon as possible, and before collection day. If the time needs to change, we will contact you first and nothing will change without your agreement.\n\nKind regards,\nBahn Operations"
+          },
+          "what_happens_next": "If you approve, this exact message goes to Merovik Premiumfahrzeuge. The pickup slot, the delivery promise and the assignment all stay as they are.",
+          "what_happens_after": "The customer knows the collection timing is under review. Driver marketplace keeps looking for a replacement for the current slot. If none is found, a slot change goes to the customer for approval."
+        },
+        "cost": "needs_approval"
+      },
+      {
+        "kind": "proposal",
+        "at": "2026-10-25T00:30:53.239Z",
+        "proposalId": "run-mvn3d0eacf8-p1"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:30:56.604Z",
+        "tool": "finish",
+        "input": {
+          "outcome": "needs_person",
+          "headline": "Send the customer an update that collection timing is under review?",
+          "summary": "The driver can't reach the Leipzig pickup in time. Without a replacement driver or a slot the customer agrees to, the collection is missed.",
+          "agent_did": "Read the order, messages, alerts, tracking and travel; drafted the customer update.",
+          "urgency": "now",
+          "decide_within_minutes": 30
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "stop",
+        "at": "2026-10-25T00:30:56.604Z",
+        "reason": "needs_person",
+        "summary": "The driver can't reach the Leipzig pickup in time. Without a replacement driver or a slot the customer agrees to, the collection is missed."
+      }
+    ]
+  },
+  "orderId": "ord-00399",
+  "orderReference": "CD-420399",
+  "car": "Ferrari 296 GTB",
+  "route": "Leipzig → Cologne",
+  "customer": "Merovik Premiumfahrzeuge",
+  "proposals": [
+    {
+      "id": "run-mvn3d0eacf8-p1",
+      "orderId": "ord-00399",
+      "action": "message_customer",
+      "title": "Tell Merovik Premiumfahrzeuge that the Leipzig collection time is under review",
+      "rationale": "The driver cannot make the 22 Oct 12:00–13:00 pickup, and Driver marketplace is still looking for a replacement. Operations asked for a buyer update that says the timing is under review, with no new slot and no mention of the driver's other job.",
+      "changes": [
+        {
+          "label": "Customer informed about pickup timing",
+          "before": "Not informed",
+          "after": "Told the collection timing is under review; no new slot offered"
+        }
+      ],
+      "draftMessage": {
+        "to": "Merovik Premiumfahrzeuge",
+        "channel": "email",
+        "body": "Hello,\n\nAn update on your Ferrari 296 GTB (order CD-420399, Leipzig to Cologne): we are reviewing the timing of the Leipzig collection booked for 22 Oct. We are working to keep the booked slot and will confirm as soon as possible, and before collection day. If the time needs to change, we will contact you first and nothing will change without your agreement.\n\nKind regards,\nBahn Operations"
+      },
+      "evidence": [],
+      "status": "pending",
+      "createdAt": "2026-10-25T00:30:53.239Z",
+      "createdBy": "road-agent",
+      "whatHappensNext": "If you approve, this exact message goes to Merovik Premiumfahrzeuge. The pickup slot, the delivery promise and the assignment all stay as they are.",
+      "whatHappensAfter": "The customer knows the collection timing is under review. Driver marketplace keeps looking for a replacement for the current slot. If none is found, a slot change goes to the customer for approval."
+    }
+  ],
+  "facts": [
+    {
+      "id": "run-mvn3d0eacf8-f1",
+      "text": "The driver, Freya Marvellen, says they need rest after their current job and cannot travel before 22 Oct 13:00. The Leipzig pickup slot is 22 Oct 12:00–13:00, so they cannot make it. They said this in chat and again by phone to Driver travel.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "driver",
+          "label": "Driver chat",
+          "actorName": "Freya Marvellen",
+          "at": "2026-10-21T08:14:00Z",
+          "table": "messages",
+          "recordId": "msg-x3bdbe64dcd0bd46e"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn3d0eacf8-f2",
+      "text": "No travel is booked or quoted for the driver to get to Leipzig.",
+      "strength": "verified",
+      "sources": [
+        {
+          "kind": "system",
+          "label": "Travel records",
+          "at": "2026-10-21T09:00:00Z",
+          "table": "travel_reservations"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn3d0eacf8-f3",
+      "text": "There is no tracking on this order. Where the driver is now is known only from their message (\"heading toward Hamburg\").",
+      "strength": "unknown",
+      "sources": [
+        {
+          "kind": "system",
+          "label": "Tracking",
+          "at": "2026-10-21T09:00:00Z",
+          "table": "tracking_positions"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn3d0eacf8-f4",
+      "text": "The delivery promise is Cologne, 23 Oct 14:00–16:00. No new pickup slot has been agreed. The Leipzig pickup contact (Lena Alderfield) and site access have not been confirmed.",
+      "strength": "verified",
+      "sources": [
+        {
+          "kind": "system",
+          "label": "Delivery promise",
+          "at": "2026-10-21T09:00:00Z",
+          "table": "order_windows",
+          "recordId": "win-x35e61b692ad83995"
+        }
+      ]
+    }
+  ],
+  "model": "anthropic/claude-opus-5.5",
+  "usage": {
+    "inputTokens": 25913,
+    "outputTokens": 2598
+  },
+  "outcome": "needs_person",
+  "headline": "Send the customer an update that collection timing is under review?",
+  "summary": "The driver can't reach the Leipzig pickup in time. Without a replacement driver or a slot the customer agrees to, the collection is missed.",
+  "agentDid": "Read the order, messages, alerts, tracking and travel; drafted the customer update.",
+  "urgency": "now",
+  "decideBy": "2026-10-21T09:30:00.000Z"
+}

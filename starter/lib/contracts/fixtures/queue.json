@@ -175,73 +175,7 @@
       "updatedAt": "2026-10-21T07:44:00Z"
     }
   ],
-  "agentsWorking": [
-    {
-      "id": "w-516",
-      "orderId": "ord-00516",
-      "orderReference": "CD-420516",
-      "car": "Volvo V60",
-      "route": "Helsinki → Helsinki",
-      "stage": "Being prepared",
-      "headline": "Waiting for stock control to say who has the keys",
-      "why": "Reception has no keys and the side gate is not a release desk.",
-      "urgency": "watch",
-      "agentState": "waiting_reply",
-      "updatedAt": "2026-10-21T08:30:00Z"
-    },
-    {
-      "id": "w-347",
-      "orderId": "ord-00347",
-      "orderReference": "CD-420347",
-      "car": "Mercedes-Benz EQE",
-      "route": "Hamburg → Aarhus",
-      "stage": "On the driver market",
-      "headline": "Checking with the yard where the car and keys are; offer held from booking",
-      "why": "Branch and yard records disagree.",
-      "urgency": "watch",
-      "agentState": "working",
-      "updatedAt": "2026-10-21T08:50:00Z"
-    },
-    {
-      "id": "w-154",
-      "orderId": "ord-00154",
-      "orderReference": "CD-420154",
-      "car": "Audi Q8 e-tron",
-      "route": "Marseille → Lahti",
-      "stage": "Driver booked",
-      "headline": "Rechecking ferry space and the driver's travel, as approved at 07:30",
-      "why": "The earliest crossing was sold out.",
-      "urgency": "watch",
-      "agentState": "working",
-      "updatedAt": "2026-10-21T08:55:00Z"
-    },
-    {
-      "id": "w-164",
-      "orderId": "ord-00164",
-      "orderReference": "CD-420164",
-      "car": "BMW M4",
-      "route": "Tampere → Helsinki",
-      "stage": "Delivered",
-      "headline": "Asked the driver to upload the signed handover",
-      "why": "Delivery photos are in, the signed record is missing.",
-      "urgency": "watch",
-      "agentState": "waiting_reply",
-      "updatedAt": "2026-10-21T07:10:00Z"
-    },
-    {
-      "id": "w-194",
-      "orderId": "ord-00194",
-      "orderReference": "CD-420194",
-      "car": "Volvo V60",
-      "route": "Lyon → Vantaa",
-      "stage": "Delivered",
-      "headline": "Billing is comparing the order reference with the invoice",
-      "why": "The customer asked about an invoice reference.",
-      "urgency": "watch",
-      "agentState": "waiting_reply",
-      "updatedAt": "2026-10-21T06:30:00Z"
-    }
-  ],
+  "agentsWorking": [],
   "quiet": {
     "count": 85,
     "sample": [

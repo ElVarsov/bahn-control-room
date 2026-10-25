@@ -75,7 +75,8 @@ function journeyForecastItems(existingOrders: Set<string>): { needsPerson: Queue
       updatedAt: SNAPSHOT_AT,
       reason: "forecast",
       agentDid: "The journey monitor compared the latest driver-app data with the delivery promise and any booked ferry.",
-      agentState: "working",
+      // A forecast is the monitor's estimate; no agent has worked it yet.
+      agentState: "idle",
     }
     if (f.needsIntervention) {
       needsPerson.push({
@@ -145,6 +146,15 @@ function datasetTimeline(orderId: string): TimelineEntry[] {
   }))
 }
 
+/** Agent runs record the real clock; the world is frozen at the snapshot. Show each run as
+ *  starting at the snapshot's "now", keeping the real gaps between its steps. */
+function onSnapshotClock(run: RunRecord["run"]): RunRecord["run"] {
+  const start = Date.parse(run.startedAt)
+  const base = Date.parse(SNAPSHOT_AT)
+  const shift = (at: string) => new Date(base + Math.max(0, Date.parse(at) - start)).toISOString()
+  return { ...run, startedAt: SNAPSHOT_AT, steps: run.steps.map((step) => ({ ...step, at: shift(step.at) })) }
+}
+
 function agentCase(orderId: string, record: RunRecord): CaseView {
   const runs = allRuns().filter((r) => r.orderId === orderId)
   const outgoing: TimelineEntry[] = runs.flatMap((r) => r.run.steps.flatMap((step, index) => step.kind === "message_out" ? [{
@@ -161,7 +171,7 @@ function agentCase(orderId: string, record: RunRecord): CaseView {
     headline: record.headline ?? record.summary ?? "The agent is working on this order.",
     facts: [...runs].reverse().flatMap((r) => r.facts),
     proposals: runs.flatMap((r) => r.proposals),
-    runs: runs.map((r) => r.run),
+    runs: runs.map((r) => onSnapshotClock(r.run)),
     timeline: [...datasetTimeline(orderId), ...outgoing],
   }
 }

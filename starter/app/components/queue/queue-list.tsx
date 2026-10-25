@@ -56,7 +56,7 @@ export function QueueList({ items, snapshotAt, zone }: { items: QueueItem[]; sna
               index += 1
               const i = index
               // Nothing to say yes to until the agent has worked the order.
-              const untouched = item.agentState === "idle"
+              const untouched = item.agentState === "idle" && item.reason !== "forecast"
               const reason = untouched ? null : item.reason ? REASON[item.reason] : null
               return (
                 <li key={item.id}>

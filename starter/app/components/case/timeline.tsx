@@ -20,7 +20,7 @@ export function Timeline({ entries, zone }: { entries: TimelineEntry[]; zone: st
                 <div className="timeline-body">
                   <p className="timeline-who">
                     <b>{entry.actor.name}</b>
-                    <span>{SOURCE_KIND[entry.actor.kind]} · {CHANNEL[entry.channel] ?? entry.channel}</span>
+                    <span>{SOURCE_KIND[entry.actor.kind]} · {CHANNEL[entry.channel] ?? entry.channel.replace(/_/g, " ").replace(/^\w/, (c) => c.toUpperCase())}</span>
                     {entry.visibility === "internal" && <span className="chip">Only Bahn sees this</span>}
                   </p>
                   <p className="timeline-text">{entry.text}</p>

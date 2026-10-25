@@ -113,3 +113,11 @@ invented percentages. We removed all of it.
   agent on those eight orders. Parallel runs hit OpenRouter's 20-requests-a-minute limit, so the
   client now retries with backoff. The "Ask the driver" dial row did nothing; it now really decides
   whether the agent may phone. Fact sources open on tap, not only on hover.
+- **Round 3 (avg 3.74):** showing real agent output raised trust but cost taste: 5–7-line summaries,
+  five time zones on one screen, steps stamped with the real 03:20 clock under 11:58 messages, the
+  first thought labelled "Why it stopped here", and "1 open alert(s)". We fixed the display (snapshot
+  clock, labels, plurals, word-boundary cuts, two-line cards) and the cause: the agent now writes a
+  12-word headline, a one-sentence summary and every time in Helsinki time, and we reran all ten seed
+  runs. A new eval check, `strength_honest`, fails "verified" facts that predict the future; it
+  caught one in our own seed. Sample "agents are working" items with no run behind them were removed,
+  and forecasts are labelled as the monitor watching, not as agent work.

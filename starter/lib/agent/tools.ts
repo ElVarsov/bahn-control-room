@@ -131,9 +131,9 @@ export const TOOLS: Tool[] = [
       type: "object",
       properties: {
         outcome: { type: "string", enum: ["needs_person", "facts_line_up", "waiting_reply"] },
-        headline: { type: "string", description: "For the operator's queue: the decision or situation in one short sentence or question." },
-        summary: { type: "string", description: "One or two sentences: what you found and what is open." },
-        agent_did: { type: "string", description: "One line: the cheap work you did, e.g. 'Phoned the driver, checked 3 sailings and the promise.'" },
+        headline: { type: "string", description: "For the queue: the decision in 12 words or fewer, as a question if a person must choose. No times, no lists. E.g. 'Book the next ferry and a hotel night (€490)?'" },
+        summary: { type: "string", description: "One sentence, under 160 characters: what is wrong and what happens if nobody acts. Details belong in facts, not here." },
+        agent_did: { type: "string", description: "Under 100 characters: the cheap work you did, e.g. 'Phoned the driver, checked 3 sailings and the promise.'" },
         urgency: { type: "string", enum: ["now", "today", "soon", "watch"] },
         decide_within_minutes: { type: "number", description: "Minutes from now until waiting stops being free." },
       },
@@ -284,7 +284,7 @@ export function searchHotels(near: string, night: string) {
   const names = ["Harbour Rest", "Terminal Inn", "Nordlicht Hotel", "Kaiview Rooms"]
   return {
     near, night, checked_at: SNAPSHOT_AT,
-    hotels: [0, 1, 2].map((i) => ({ name: `${names[(s + i) % names.length]} (fictional)`, minutes_to_terminal: 5 + ((s >> i) % 12), price_eur: 79 + ((s >> (i + 2)) % 6) * 12, free_cancellation: i !== 2 })),
+    hotels: [0, 1, 2].map((i) => ({ quote_id: `hotel-${((s >> i) % 100000).toString(36)}`, name: `${names[(s + i) % names.length]} (fictional)`, minutes_to_terminal: 5 + ((s >> i) % 12), price_eur: 79 + ((s >> (i + 2)) % 6) * 12, free_cancellation: i !== 2 })),
     note: "Quotes only. Nothing is reserved.",
   }
 }

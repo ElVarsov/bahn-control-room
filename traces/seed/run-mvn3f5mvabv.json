@@ -1,0 +1,309 @@
+{
+  "run": {
+    "id": "run-mvn3f5mvabv",
+    "orderId": "ord-00603",
+    "agentId": "road-agent",
+    "trigger": "Operations asked the agent to work this case",
+    "state": "waiting_reply",
+    "startedAt": "2026-10-25T00:32:10.567Z",
+    "steps": [
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:32:13.817Z",
+        "tool": "read_order",
+        "input": {
+          "order": "CD-420603"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:32:13.817Z",
+        "tool": "read_order",
+        "summary": "Volkswagen Golf for Torvamelio Ajoneuvot, Munich → Lahti. Driver Charlotte Benvik (in progress)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:32:13.817Z",
+        "tool": "read_conversation",
+        "input": {
+          "order": "CD-420603"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:32:13.817Z",
+        "tool": "read_conversation",
+        "summary": "5 recent messages. Latest from Driver travel: “Carrier desk took our request to move this car to a later crossing, but has not confirmed a slot or fare. Keep the original booking active.”"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:32:13.817Z",
+        "tool": "read_open_issues",
+        "input": {
+          "order": "CD-420603"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:32:13.817Z",
+        "tool": "read_open_issues",
+        "summary": "1 open alert (Review ferry cutoff for CD-420603; source is a conversation, not a verified outcome.), no incidents, no open tasks."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:32:13.817Z",
+        "tool": "read_tracking",
+        "input": {
+          "order": "CD-420603"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:32:13.817Z",
+        "tool": "read_tracking",
+        "summary": "Last driver-app position 54 min ago (coarse), 1772 km to go."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:32:13.817Z",
+        "tool": "read_travel",
+        "input": {
+          "order": "CD-420603"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:32:13.817Z",
+        "tool": "read_travel",
+        "summary": "1 booking; no quote or capacity checks (not bookings)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:32:21.598Z",
+        "tool": "call_driver",
+        "input": {
+          "order": "CD-420603",
+          "purpose": "Checking where you are in the terminal queue for today's ferry with the Golf on CD-420603.",
+          "questions": [
+            "Are you and the car safe and still in the queue?",
+            "Roughly how far are you from check-in, and when do you expect to reach it?",
+            "Has terminal staff told you the check-in closing time for the 17:00 sailing?",
+            "If you miss it, could you take a later sailing tonight or tomorrow?"
+          ]
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "call",
+        "at": "2026-10-25T00:32:26.824Z",
+        "callId": "sim-mvn3fi6g",
+        "status": "completed",
+        "summary": "Simulated call Charlotte Benvik. Yes, the car and I are safe and still in the same queue; I have not turned toward another terminal. I can't give a reliable distance or time because the queue has barely moved and I can't see how far ahead check-in is."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:32:26.824Z",
+        "tool": "search_ferries",
+        "input": {
+          "from_terminal": "West Baltic Vehicle Terminal",
+          "to_terminal": "South Finland Vehicle Terminal",
+          "earliest_departure": "2026-10-21T14:00:00Z"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:32:26.824Z",
+        "tool": "search_ferries",
+        "summary": "6 sailings checked, 5 with vehicle space (quotes, not booked)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:32:43.004Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The driver is safe and still in the queue with the car (phoned 21 Oct 12:00). They cannot tell how far check-in is, and staff have not given the check-in closing time for the 17:00 sailing.",
+          "strength": "reported",
+          "source_kind": "driver",
+          "source_label": "Driver call",
+          "source_actor": "Charlotte Benvik",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_record_id": "sim-mvn3fi6g"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:32:43.004Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "Booked ferry WBV-FERRY-00603 leaves 21 Oct 17:00 and arrives 22 Oct 23:00. Check-in and boarding are not confirmed, and the check-in deadline is not on record.",
+          "strength": "verified",
+          "source_kind": "system",
+          "source_label": "Travel booking",
+          "source_table": "travel_reservations",
+          "source_record_id": "res-x1082202e8d139d61",
+          "source_at": "2026-10-21T09:00:00Z"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:32:43.004Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "If the booked sailing is missed, the next sailing with car space is 24 Oct 15:00, arriving 25 Oct 19:00, €387. The 24 Oct 01:00 sailing is sold out. Either way the car misses the delivery promise of 23 Oct 13:00–15:00 by about two days. These are quotes from 21 Oct 10:00, not bookings.",
+          "strength": "quote",
+          "source_kind": "provider",
+          "source_label": "Ferry quote",
+          "source_actor": "Vela Coast Lines",
+          "source_record_id": "travel-xf29ed1732d895f37",
+          "source_at": "2026-10-21T07:00:00Z"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:32:43.004Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "Driver travel asked the carrier desk to move the car to a later crossing. No slot or fare is confirmed yet. Their instruction: keep the original booking, don't tell the driver to turn away, don't change the customer's promise.",
+          "strength": "reported",
+          "source_kind": "operator",
+          "source_label": "Internal note",
+          "source_actor": "Driver travel",
+          "source_record_id": "msg-x7074c5c677e14192",
+          "source_at": "2026-10-21T08:43:00Z"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:32:43.004Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The app's arrival estimate is 23 Oct 12:24, just before the promise window. This assumes the booked sailing and is based on a rough position from 54 min ago.",
+          "strength": "estimate",
+          "source_kind": "system",
+          "source_label": "Driver app ETA",
+          "source_record_id": "track-x3fe486c5847cfc53",
+          "source_at": "2026-10-21T08:06:00Z"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:32:46.901Z",
+        "tool": "finish",
+        "input": {
+          "outcome": "waiting_reply",
+          "headline": "Waiting on the carrier desk: will the Golf make today's ferry?",
+          "summary": "Driver stuck in the terminal queue and may miss the 17:00 ferry; the next free sailing makes delivery about two days late.",
+          "agent_did": "Read records, phoned the driver, checked later sailings, noted 5 facts.",
+          "urgency": "now",
+          "decide_within_minutes": 120
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "stop",
+        "at": "2026-10-25T00:32:46.901Z",
+        "reason": "waiting_reply",
+        "summary": "Driver stuck in the terminal queue and may miss the 17:00 ferry; the next free sailing makes delivery about two days late."
+      }
+    ]
+  },
+  "orderId": "ord-00603",
+  "orderReference": "CD-420603",
+  "car": "Volkswagen Golf",
+  "route": "Munich → Lahti",
+  "customer": "Torvamelio Ajoneuvot",
+  "proposals": [],
+  "facts": [
+    {
+      "id": "run-mvn3f5mvabv-f1",
+      "text": "The driver is safe and still in the queue with the car (phoned 21 Oct 12:00). They cannot tell how far check-in is, and staff have not given the check-in closing time for the 17:00 sailing.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "driver",
+          "label": "Driver call",
+          "actorName": "Charlotte Benvik",
+          "at": "2026-10-21T09:00:00Z",
+          "recordId": "sim-mvn3fi6g"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn3f5mvabv-f2",
+      "text": "Booked ferry WBV-FERRY-00603 leaves 21 Oct 17:00 and arrives 22 Oct 23:00. Check-in and boarding are not confirmed, and the check-in deadline is not on record.",
+      "strength": "verified",
+      "sources": [
+        {
+          "kind": "system",
+          "label": "Travel booking",
+          "at": "2026-10-21T09:00:00Z",
+          "table": "travel_reservations",
+          "recordId": "res-x1082202e8d139d61"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn3f5mvabv-f3",
+      "text": "If the booked sailing is missed, the next sailing with car space is 24 Oct 15:00, arriving 25 Oct 19:00, €387. The 24 Oct 01:00 sailing is sold out. Either way the car misses the delivery promise of 23 Oct 13:00–15:00 by about two days. These are quotes from 21 Oct 10:00, not bookings.",
+      "strength": "quote",
+      "sources": [
+        {
+          "kind": "provider",
+          "label": "Ferry quote",
+          "actorName": "Vela Coast Lines",
+          "at": "2026-10-21T07:00:00Z",
+          "recordId": "travel-xf29ed1732d895f37"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn3f5mvabv-f4",
+      "text": "Driver travel asked the carrier desk to move the car to a later crossing. No slot or fare is confirmed yet. Their instruction: keep the original booking, don't tell the driver to turn away, don't change the customer's promise.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "operator",
+          "label": "Internal note",
+          "actorName": "Driver travel",
+          "at": "2026-10-21T08:43:00Z",
+          "recordId": "msg-x7074c5c677e14192"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn3f5mvabv-f5",
+      "text": "The app's arrival estimate is 23 Oct 12:24, just before the promise window. This assumes the booked sailing and is based on a rough position from 54 min ago.",
+      "strength": "estimate",
+      "sources": [
+        {
+          "kind": "system",
+          "label": "Driver app ETA",
+          "at": "2026-10-21T08:06:00Z",
+          "recordId": "track-x3fe486c5847cfc53"
+        }
+      ]
+    }
+  ],
+  "model": "anthropic/claude-opus-5.5",
+  "usage": {
+    "inputTokens": 29930,
+    "outputTokens": 3204
+  },
+  "outcome": "waiting_reply",
+  "headline": "Waiting on the carrier desk: will the Golf make today's ferry?",
+  "summary": "Driver stuck in the terminal queue and may miss the 17:00 ferry; the next free sailing makes delivery about two days late.",
+  "agentDid": "Read records, phoned the driver, checked later sailings, noted 5 facts.",
+  "urgency": "now",
+  "decideBy": "2026-10-21T11:00:00.000Z"
+}

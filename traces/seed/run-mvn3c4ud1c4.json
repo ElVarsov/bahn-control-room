@@ -1,0 +1,356 @@
+{
+  "run": {
+    "id": "run-mvn3c4ud1c4",
+    "orderId": "ord-00593",
+    "agentId": "road-agent",
+    "trigger": "Operations asked the agent to work this case",
+    "state": "needs_person",
+    "startedAt": "2026-10-25T00:29:49.573Z",
+    "steps": [
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:29:52.817Z",
+        "tool": "read_order",
+        "input": {
+          "order": "CD-420593"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:29:52.817Z",
+        "tool": "read_order",
+        "summary": "BMW M4 for Pellavaro Auto, Helsinki → Turku. Driver Yara Sivellin (assigned)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:29:52.817Z",
+        "tool": "read_conversation",
+        "input": {
+          "order": "CD-420593"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:29:52.817Z",
+        "tool": "read_conversation",
+        "summary": "7 recent messages. Latest from Yara Sivellin: “I can wait another 30 minutes. After that I need a new plan for my travel back.”"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:29:52.817Z",
+        "tool": "read_open_issues",
+        "input": {
+          "order": "CD-420593"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:29:52.817Z",
+        "tool": "read_open_issues",
+        "summary": "1 open alert (Driver is at the booked site; vehicle identity and release location remain unresolved.), 1 incident, no open tasks."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:29:52.817Z",
+        "tool": "read_tracking",
+        "input": {
+          "order": "CD-420593"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:29:52.817Z",
+        "tool": "read_tracking",
+        "summary": "No tracking on record."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:29:52.817Z",
+        "tool": "read_travel",
+        "input": {
+          "order": "CD-420593"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T00:29:52.817Z",
+        "tool": "read_travel",
+        "summary": "no bookings; no quote or capacity checks (not bookings)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:29:58.222Z",
+        "tool": "call_driver",
+        "input": {
+          "order": "CD-420593",
+          "purpose": "Checking in on the BMW M4 pickup at Velantora Helsinki that is on hold while the car's identity is confirmed.",
+          "questions": [
+            "Are you still at the Velantora site, or have you left?",
+            "Has the desk shown or released any car to you since we last spoke?",
+            "If the car is confirmed later today or tomorrow, could you come back for it?",
+            "Do you need travel home arranged, and if so from where to where?"
+          ]
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "call",
+        "at": "2026-10-25T00:30:04.482Z",
+        "callId": "sim-mvn3cgci",
+        "status": "completed",
+        "summary": "Simulated call Yara Sivellin. I'm still at the Velantora Helsinki site, but my 30 minutes of extra waiting is nearly up. No, the desk hasn't shown or released any car to me, and they still can't find the BMW M4 on their handover list."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:30:17.799Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "Driver Yara Sivellin is still at Velantora Helsinki at 12:00. No car has been shown or released, and the BMW M4 is still not on the desk's handover list.",
+          "strength": "reported",
+          "source_kind": "driver",
+          "source_label": "Driver call",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_actor": "Yara Sivellin",
+          "source_record_id": "sim-mvn3cgci"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:30:17.799Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The site sees a similar stock reference but will not hand it over without confirmation. The customer asked us not to substitute a different car and said they were calling their stock team at 10:39. They have not replied since.",
+          "strength": "reported",
+          "source_kind": "customer",
+          "source_label": "Customer email",
+          "source_at": "2026-10-21T07:39:00Z",
+          "source_actor": "Pellavaro Auto",
+          "source_record_id": "msg-x5276d8f5eeec4ae5"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:30:17.799Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The driver could come back tomorrow if the car is confirmed and a pickup time is set in advance. They need travel from Velantora Helsinki back to Turku if pickup doesn't happen soon. Nothing is booked.",
+          "strength": "reported",
+          "source_kind": "driver",
+          "source_label": "Driver call",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_actor": "Yara Sivellin",
+          "source_record_id": "sim-mvn3cgci"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:30:17.800Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "No travel is booked or quoted for the driver.",
+          "strength": "verified",
+          "source_kind": "system",
+          "source_label": "Travel records",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_table": "travel_reservations"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:30:17.800Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The delivery promise is 26 Oct 12:00–17:00, set by the customer. A pickup retry tomorrow would still leave several days of slack (estimate).",
+          "strength": "estimate",
+          "source_kind": "customer",
+          "source_label": "Delivery promise",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_record_id": "win-xd2605d79aeafd442"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:30:25.274Z",
+        "tool": "propose",
+        "input": {
+          "action": "handover_to_person",
+          "title": "Call Pellavaro Auto now to confirm where the car is; release the driver if there's no answer",
+          "rationale": "The driver's extra waiting time is nearly up. The site won't release anything without confirmation, and the customer hasn't replied in 81 minutes. Only a call to the customer can settle where the car is and who can release it.",
+          "changes": [
+            {
+              "label": "Car location and release authority",
+              "before": "Not confirmed (customer last replied 10:39)",
+              "after": "Confirmed by Pellavaro Auto's stock team, or still unknown"
+            },
+            {
+              "label": "Driver",
+              "before": "Waiting at Velantora Helsinki",
+              "after": "Collects the confirmed car today, or is released with travel back to Turku and a retry tomorrow at a set time"
+            }
+          ],
+          "draft_message": {
+            "to": "Pellavaro Auto (stock team)",
+            "channel": "phone",
+            "body": "About CD-420593, BMW M4, plate DEMO-FI-MRF24B. Our driver has been at Velantora Helsinki since 10:03. The car isn't in the site's release list. They see a similar stock reference but won't hand it over without confirmation. We will not substitute a different car. Questions: 1) Which site physically holds this car (VIN)? 2) Who can authorise release, and can they tell the site now? 3) If it can't be done in the next few minutes, can we set a pickup time tomorrow? Delivery promise is unchanged: 26 Oct 12:00–17:00."
+          },
+          "what_happens_next": "A person phones Pellavaro Auto. If they confirm the car and release in the next few minutes, the driver collects it today. If not, the driver is released and someone books travel to Turku as a separate step.",
+          "what_happens_after": "Operations is calling Pellavaro Auto to confirm where the car is and who can release it. The driver is told the outcome straight away."
+        },
+        "cost": "needs_approval"
+      },
+      {
+        "kind": "proposal",
+        "at": "2026-10-25T00:30:25.274Z",
+        "proposalId": "run-mvn3c4ud1c4-p1"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T00:30:28.653Z",
+        "tool": "finish",
+        "input": {
+          "outcome": "needs_person",
+          "headline": "Call the customer to locate the car, or release the driver?",
+          "summary": "The site can't find the BMW M4 and the customer has been silent for 81 minutes. The driver's waiting time ends now; without a call, the trip is wasted.",
+          "agent_did": "Read all records, phoned the driver and drafted a call brief for the customer.",
+          "urgency": "now",
+          "decide_within_minutes": 10
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "stop",
+        "at": "2026-10-25T00:30:28.653Z",
+        "reason": "needs_person",
+        "summary": "The site can't find the BMW M4 and the customer has been silent for 81 minutes. The driver's waiting time ends now; without a call, the trip is wasted."
+      }
+    ]
+  },
+  "orderId": "ord-00593",
+  "orderReference": "CD-420593",
+  "car": "BMW M4",
+  "route": "Helsinki → Turku",
+  "customer": "Pellavaro Auto",
+  "proposals": [
+    {
+      "id": "run-mvn3c4ud1c4-p1",
+      "orderId": "ord-00593",
+      "action": "handover_to_person",
+      "title": "Call Pellavaro Auto now to confirm where the car is; release the driver if there's no answer",
+      "rationale": "The driver's extra waiting time is nearly up. The site won't release anything without confirmation, and the customer hasn't replied in 81 minutes. Only a call to the customer can settle where the car is and who can release it.",
+      "changes": [
+        {
+          "label": "Car location and release authority",
+          "before": "Not confirmed (customer last replied 10:39)",
+          "after": "Confirmed by Pellavaro Auto's stock team, or still unknown"
+        },
+        {
+          "label": "Driver",
+          "before": "Waiting at Velantora Helsinki",
+          "after": "Collects the confirmed car today, or is released with travel back to Turku and a retry tomorrow at a set time"
+        }
+      ],
+      "draftMessage": {
+        "to": "Pellavaro Auto (stock team)",
+        "channel": "phone",
+        "body": "About CD-420593, BMW M4, plate DEMO-FI-MRF24B. Our driver has been at Velantora Helsinki since 10:03. The car isn't in the site's release list. They see a similar stock reference but won't hand it over without confirmation. We will not substitute a different car. Questions: 1) Which site physically holds this car (VIN)? 2) Who can authorise release, and can they tell the site now? 3) If it can't be done in the next few minutes, can we set a pickup time tomorrow? Delivery promise is unchanged: 26 Oct 12:00–17:00."
+      },
+      "evidence": [],
+      "status": "pending",
+      "createdAt": "2026-10-25T00:30:25.274Z",
+      "createdBy": "road-agent",
+      "whatHappensNext": "A person phones Pellavaro Auto. If they confirm the car and release in the next few minutes, the driver collects it today. If not, the driver is released and someone books travel to Turku as a separate step.",
+      "whatHappensAfter": "Operations is calling Pellavaro Auto to confirm where the car is and who can release it. The driver is told the outcome straight away."
+    }
+  ],
+  "facts": [
+    {
+      "id": "run-mvn3c4ud1c4-f1",
+      "text": "Driver Yara Sivellin is still at Velantora Helsinki at 12:00. No car has been shown or released, and the BMW M4 is still not on the desk's handover list.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "driver",
+          "label": "Driver call",
+          "actorName": "Yara Sivellin",
+          "at": "2026-10-21T09:00:00Z",
+          "recordId": "sim-mvn3cgci"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn3c4ud1c4-f2",
+      "text": "The site sees a similar stock reference but will not hand it over without confirmation. The customer asked us not to substitute a different car and said they were calling their stock team at 10:39. They have not replied since.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "customer",
+          "label": "Customer email",
+          "actorName": "Pellavaro Auto",
+          "at": "2026-10-21T07:39:00Z",
+          "recordId": "msg-x5276d8f5eeec4ae5"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn3c4ud1c4-f3",
+      "text": "The driver could come back tomorrow if the car is confirmed and a pickup time is set in advance. They need travel from Velantora Helsinki back to Turku if pickup doesn't happen soon. Nothing is booked.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "driver",
+          "label": "Driver call",
+          "actorName": "Yara Sivellin",
+          "at": "2026-10-21T09:00:00Z",
+          "recordId": "sim-mvn3cgci"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn3c4ud1c4-f4",
+      "text": "No travel is booked or quoted for the driver.",
+      "strength": "verified",
+      "sources": [
+        {
+          "kind": "system",
+          "label": "Travel records",
+          "at": "2026-10-21T09:00:00Z",
+          "table": "travel_reservations"
+        }
+      ]
+    },
+    {
+      "id": "run-mvn3c4ud1c4-f5",
+      "text": "The delivery promise is 26 Oct 12:00–17:00, set by the customer. A pickup retry tomorrow would still leave several days of slack (estimate).",
+      "strength": "estimate",
+      "sources": [
+        {
+          "kind": "customer",
+          "label": "Delivery promise",
+          "at": "2026-10-21T09:00:00Z",
+          "recordId": "win-xd2605d79aeafd442"
+        }
+      ]
+    }
+  ],
+  "model": "anthropic/claude-opus-5.5",
+  "usage": {
+    "inputTokens": 36570,
+    "outputTokens": 3241
+  },
+  "outcome": "needs_person",
+  "headline": "Call the customer to locate the car, or release the driver?",
+  "summary": "The site can't find the BMW M4 and the customer has been silent for 81 minutes. The driver's waiting time ends now; without a call, the trip is wasted.",
+  "agentDid": "Read all records, phoned the driver and drafted a call brief for the customer.",
+  "urgency": "now",
+  "decideBy": "2026-10-21T09:10:00.000Z"
+}

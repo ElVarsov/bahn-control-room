@@ -8,8 +8,8 @@ export function AgentsWorking({ items, snapshotAt }: { items: QueueItem[]; snaps
   return (
     <section className="agents-working" aria-labelledby="agents-working-title">
       <h2 id="agents-working-title" className="queue-group-title">
-        Agents are on it<span className="num">{items.length}</span>
-        <span className="queue-group-note">No action needed. They come back here if they need you.</span>
+        On watch<span className="num">{items.length}</span>
+        <span className="queue-group-note">Agents are waiting on a reply or the monitor is watching. No action needed; they come back here if they need you.</span>
       </h2>
       <ul className="working-rows">
         {items.map((item) => (
