@@ -14,6 +14,15 @@ const CLOSED_STATUS: Record<string, string> = {
   failed: "failed",
 }
 
+/** Record ids belong in the sources, not in what a person reads: "€387 (quote travel-x29…)" → "€387 quote". */
+function withoutIds(text: string): string {
+  return text
+    .replace(/\s*\((?:quote|record|ref|id)?\s*[a-z]+-[a-z0-9]{4,}\)/gi, (m) => (/quote/i.test(m) ? " quote" : ""))
+    .replace(/\s*(?:quote|record)\s+[a-z]+-[a-z0-9]{4,}/gi, (m) => (/quote/i.test(m) ? " quote" : ""))
+    .replace(/\b(?:travel|hotel|win|msg|track|agent|quote)-[a-z0-9]{4,}\b/gi, "")
+    .replace(/\s{2,}/g, " ").replace(/\s+([,.)])/g, "$1").trim()
+}
+
 const WHO = "You" // until there is sign-in, the person at the screen
 
 // Sends the decision to the agent lane. While that route does not exist yet, the
@@ -87,11 +96,11 @@ function ProposalCard({ proposal }: { proposal: Proposal }) {
           {changes.map((change, index) => (
             <div className="change-row" role="row" key={change.label}>
               <span className="change-label" role="cell">{change.label}</span>
-              <span className={`change-before${change.before ? "" : " is-empty"}`} role="cell">{change.before ?? "Nothing yet"}</span>
+              <span className={`change-before${change.before ? "" : " is-empty"}`} role="cell">{change.before ? withoutIds(change.before) : "Nothing yet"}</span>
               <span className="change-after" role="cell">
                 {mode === "editing" && !handover
                   ? <input value={change.after} aria-label={`${change.label} after`} onChange={(event) => setChanges((all) => all.map((c, i) => (i === index ? { ...c, after: event.target.value } : c)))} />
-                  : change.after}
+                  : withoutIds(change.after)}
               </span>
             </div>
           ))}
@@ -107,7 +116,7 @@ function ProposalCard({ proposal }: { proposal: Proposal }) {
           </p>
           {mode === "editing" && !handover
             ? <textarea value={draft} onChange={(event) => setDraft(event.target.value)} rows={4} aria-label="Message text" />
-            : <p className="draft-body">{draft}</p>}
+            : handover ? <CallBrief text={draft} /> : <p className="draft-body">{draft}</p>}
         </div>
       )}
 
@@ -160,6 +169,25 @@ function ProposalCard({ proposal }: { proposal: Proposal }) {
         </div>
       )}
     </section>
+  )
+}
+
+/** A call brief is read while dialling: numbered questions on their own lines, warnings apart. */
+function CallBrief({ text }: { text: string }) {
+  const parts = text.split(/\s(?=\d[).]\s)/)
+  const intro = parts[0].replace(/\s*Ask:?\s*$/i, "")
+  const asks = parts.slice(1).map((p) => p.replace(/^\d[).]\s*/, ""))
+  const sentences = (asks.length ? asks.pop() ?? "" : "").split(/(?<=[.!?])\s+/)
+  const lastAsk = sentences.filter((x) => !/^(do not|don't|never)\b/i.test(x)).join(" ")
+  const warnings = [...(asks.length || lastAsk ? [] : intro.split(/(?<=[.!?])\s+/)), ...sentences].filter((x) => /^(do not|don't|never)\b/i.test(x))
+  const allAsks = lastAsk ? [...asks, lastAsk] : asks
+  const introText = intro.split(/(?<=[.!?])\s+/).filter((x) => !/^(do not|don't|never)\b/i.test(x)).join(" ")
+  return (
+    <div className="draft-body brief">
+      {introText && <p>{introText}</p>}
+      {allAsks.length > 0 && <ol>{allAsks.map((a, i) => <li key={i}>{a}</li>)}</ol>}
+      {warnings.map((w, i) => <p key={i} className="brief-warning">{w}</p>)}
+    </div>
   )
 }
 

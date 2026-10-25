@@ -21,6 +21,8 @@ What it checks, per run:
                      person's decision and its effects happened afterwards.
   decided_first      Every executed proposal carries the decision that executed it.
   fictional_only     Every booking made says it is fictional.
+  pending_surfaces   A run that leaves a proposal waiting ends as "needs a person", never
+                     "waiting for a reply" or "nothing needs a person".
   strength_honest    No verified fact predicts the future ("will", "likely"): that is an estimate.
   grounded           Every record a fact cites exists in the dataset (or is one of the
                      run's own calls), and verified or quoted facts cite at least one.
@@ -152,6 +154,10 @@ def check(trace):
             bad.append(f"{f['id']}: {f.get('strength')} fact without a dataset record")
     results["grounded"] = bad
 
+    # pending_surfaces: a run that leaves a proposal waiting must hand it to a person
+    pending = [p["id"] for p in proposals if p.get("status") == "pending"]
+    results["pending_surfaces"] = [f"{len(pending)} pending proposal(s) but the run ended '{trace.get('outcome')}'"] if pending and trace.get("outcome") in ("waiting_reply", "facts_line_up") else []
+
     # strength_honest: a verified fact states what a record shows now, not a forecast
     forecast_words = (" will ", "likely", "almost certainly", "expected to", "probably")
     results["strength_honest"] = [
@@ -185,6 +191,7 @@ def self_test():
         ("decided_first", lambda t: t["proposals"].append({"id": "z", "action": "approve_cost", "status": "executed"})),
         ("grounded", lambda t: t["facts"].append({"id": "g", "text": "A 20:00 sailing has space.", "strength": "quote", "sources": [{"kind": "provider", "label": "Ferry quote", "at": "2026-10-21T07:00:00Z", "recordId": "quote-invented"}]})),
         ("strength_honest", lambda t: t["facts"].append({"id": "h", "text": "The delivery will be missed.", "strength": "verified", "sources": [{"kind": "system", "label": "Promise", "at": "2026-10-21T07:00:00Z", "recordId": "win-x7c8722a53360a2ad"}]})),
+        ("pending_surfaces", lambda t: (t["proposals"].append({"id": "q", "action": "approve_cost", "status": "pending"}), t.update(outcome="waiting_reply"))),
         ("fictional_only", lambda t: (t["proposals"].append({"id": "b", "action": "book_travel", "status": "executed", "decision": {"verdict": "approve", "decidedBy": "You"}}), steps(t).append({"kind": "tool_result", "tool": "book_travel", "summary": "Booked ref ABC123."}))),
     ]
     missed = sum(not broken(rule, mutate) for rule, mutate in cases)

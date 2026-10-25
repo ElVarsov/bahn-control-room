@@ -3,6 +3,7 @@
 // Every result carries record ids so facts can point back to their source.
 
 import type Anthropic from "@anthropic-ai/sdk"
+import { fmtDateTime } from "@/lib/present/time"
 import { SNAPSHOT_AT, actorName, byId, findOrder, forOrder, minutesBeforeSnapshot, rows, type Row } from "./dataset"
 
 type Tool = Anthropic.Beta.BetaTool
@@ -105,7 +106,7 @@ export const TOOLS: Tool[] = [
           type: "array",
           items: {
             type: "object",
-            properties: { label: { type: "string" }, before: { type: "string" }, after: { type: "string" } },
+            properties: { label: { type: "string" }, before: { type: "string" }, after: { type: "string", description: "Plain words a person reads, e.g. '24 Oct 15:00, vehicle slot, €387 quote'. No record ids here; cite them with note_fact." } },
             required: ["label", "before", "after"],
             additionalProperties: false,
           },
@@ -144,6 +145,9 @@ export const TOOLS: Tool[] = [
 ]
 
 // --- read tools ---------------------------------------------------------------
+
+/** Times already in Helsinki time (the desk's clock, DST included), so the agent never converts. */
+const hki = (iso: unknown) => typeof iso === "string" ? fmtDateTime(iso, "Europe/Helsinki", false) : null
 
 const ago = (iso: unknown) => {
   const m = minutesBeforeSnapshot(iso)
@@ -228,11 +232,13 @@ export function readTravel(order: Row) {
   return {
     booked: forOrder("travel_reservations", order.id).map((r) => ({
       kind: r.kind, status: r.status, reference: r.booking_reference ?? null, departure: r.departure_at, arrival: r.expected_arrival_at,
+      departure_helsinki: hki(r.departure_at), arrival_helsinki: hki(r.expected_arrival_at),
       from: r.origin_terminal ?? r.from_city ?? null, to: r.destination_terminal ?? r.to_city ?? null,
       check_in: r.check_in_confirmation ?? null, boarding: r.boarding_confirmation ?? null, record: r.id,
     })),
     quotes_and_checks_not_booked: forOrder("travel_options", order.id).map((o) => ({
       kind: o.kind, status: o.status, provider: o.provider, from: o.from_city, to: o.to_city, departure: o.departure_at, arrival: o.arrival_at,
+      departure_helsinki: hki(o.departure_at), arrival_helsinki: hki(o.arrival_at),
       check_in_cutoff: o.check_in_cutoff_at ?? null, price_eur: typeof o.quote_cents === "number" ? o.quote_cents / 100 : null,
       note: o.capacity_note ?? null, checked: o.checked_at, checked_age: ago(o.checked_at), record: o.id,
     })),
@@ -254,7 +260,7 @@ export function searchFerries(from: string, to: string, earliest: string) {
 
   // The dataset holds a shared timetable of checked sailings across orders. Use it as the
   // source of truth: one entry per departure, and "sold out" wins if any check said so.
-  const known = new Map<string, { departure: string; arrival: string; check_in_cutoff: string | null; vehicle_space: string; price_eur: number | null; quote_id: string; checked_at: string }>()
+  const known = new Map<string, { departure: string; departure_helsinki: string | null; arrival: string; arrival_helsinki: string | null; check_in_cutoff: string | null; vehicle_space: string; price_eur: number | null; quote_id: string; checked_at: string }>()
   for (const option of rows("travel_options")) {
     if (option.kind !== "FERRY" || !matches(option.from_city, from) || !matches(option.to_city, to)) continue
     const departure = String(option.departure_at)
@@ -264,6 +270,8 @@ export function searchFerries(from: string, to: string, earliest: string) {
     if (existing && existing.vehicle_space === "SOLD_OUT") continue
     known.set(departure, {
       departure,
+      departure_helsinki: hki(departure),
+      arrival_helsinki: hki(option.arrival_at),
       arrival: String(option.arrival_at),
       check_in_cutoff: (option.check_in_cutoff_at as string) ?? null,
       vehicle_space: soldOut ? "SOLD_OUT" : "AVAILABLE",

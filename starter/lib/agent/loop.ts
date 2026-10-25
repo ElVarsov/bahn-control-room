@@ -34,7 +34,7 @@ How you work:
 4. Decide what a person must decide. Anything that books travel, changes a pickup or delivery date, costs money, messages a customer, or needs a call to a customer becomes ONE propose call with exact before and after values and, for messages, the exact text. Never pretend something is booked or agreed.
 5. Stop with finish. If the facts line up and nothing needs a person, say so (outcome facts_line_up). If you are waiting on someone, outcome waiting_reply. Otherwise needs_person.
 
-Style: plain words an operations person reads in a second. Write every time in Helsinki time, the operations desk's clock, with no zone label (for example "24 Oct 15:00"); never UTC, "local", Berlin or Copenhagen time. Refer to drivers and contacts by name or as "the driver"; use "they" if you need a pronoun and never guess gender from a name. No codes like FERRY_SOLD_OUT in text for people. Mark a fact verified only when a record proves it as it stands now; anything about what will or is likely to happen is an estimate. Keep the whole job under about ten tool calls. One proposal per run unless two are truly independent.`
+Style: plain words an operations person reads in a second. Write every time in Helsinki time, the operations desk's clock, with no zone label (for example "24 Oct 15:00"); never UTC, "local", Berlin or Copenhagen time. Refer to drivers and contacts by name or as "the driver"; use "they" if you need a pronoun and never guess gender from a name. No codes like FERRY_SOLD_OUT in text for people. Mark a fact verified only when a record proves it as it stands now; anything about what will or is likely to happen is an estimate. One fact, one kind of evidence: keep what a record shows apart from what someone said. Keep the whole job under about ten tool calls. One proposal per run unless two are truly independent.`
 
 export type StartOptions = { order: string; trigger: string; driverMode?: DriverMode }
 
@@ -156,6 +156,8 @@ async function work(record: RunRecord, order: Row, driverMode: DriverMode) {
     record.headline ??= record.proposals[0]?.title ?? "The agent stopped without a summary."
     addStep(record, { kind: "stop", at: now(), reason: record.proposals.length ? "needs_person" : "facts_line_up", summary: "Stopped after the turn limit." })
   }
+  // A pending proposal always needs a person, whatever outcome the model chose.
+  if (record.proposals.some((p) => p.status === "pending") && record.outcome !== "error") record.outcome = "needs_person"
   record.run.state = record.outcome === "waiting_reply" ? "waiting_reply" : record.outcome === "facts_line_up" ? "done" : "needs_person"
   writeTrace(record)
 }

@@ -106,10 +106,12 @@ function agentItems(): { needsPerson: QueueItem[]; working: QueueItem[]; orders:
       car: record.car, route: record.route, customer: record.customer, updatedAt: SNAPSHOT_AT,
     }
     const state = record.run.state
+    // Anything a person must approve belongs in "Needs you", whatever state the run ended in.
+    const hasPending = record.proposals.some((p) => p.status === "pending")
     if (state === "working") {
       const last = [...record.run.steps].reverse().find((step) => step.kind === "tool_result" || step.kind === "call")
       working.push({ ...base, headline: "The agent is working on this order", why: (last && "summary" in last ? last.summary : undefined) ?? "Reading the records.", urgency: "watch", agentState: "working" })
-    } else if (state === "needs_person") {
+    } else if (state === "needs_person" || hasPending) {
       const pending = record.proposals.filter((p) => p.status === "pending")
       needsPerson.push({
         ...base,

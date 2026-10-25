@@ -1,0 +1,358 @@
+{
+  "run": {
+    "id": "run-mvnd65qxpf5",
+    "orderId": "ord-00449",
+    "agentId": "road-agent",
+    "trigger": "Operations asked the agent to work this case",
+    "state": "needs_person",
+    "startedAt": "2026-10-25T05:05:06.969Z",
+    "steps": [
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:05:10.309Z",
+        "tool": "read_order",
+        "input": {
+          "order": "CD-420449"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T05:05:10.310Z",
+        "tool": "read_order",
+        "summary": "Toyota Corolla for Vandellora Biler, Hamburg → Odense. Driver Carl Birkelane (assigned)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:05:10.310Z",
+        "tool": "read_conversation",
+        "input": {
+          "order": "CD-420449"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T05:05:10.310Z",
+        "tool": "read_conversation",
+        "summary": "6 recent messages. Latest from Support desk: “Thanks for updating us. The assignment remains active while we prepare a backup and wait for your definite answer.”"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:05:10.310Z",
+        "tool": "read_open_issues",
+        "input": {
+          "order": "CD-420449"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T05:05:10.310Z",
+        "tool": "read_open_issues",
+        "summary": "1 open alert (Review illness risk for CD-420449; source is a conversation, not a verified outcome.), no incidents, 1 open task."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:05:10.310Z",
+        "tool": "read_tracking",
+        "input": {
+          "order": "CD-420449"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T05:05:10.310Z",
+        "tool": "read_tracking",
+        "summary": "No tracking on record."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:05:10.310Z",
+        "tool": "read_travel",
+        "input": {
+          "order": "CD-420449"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T05:05:10.312Z",
+        "tool": "read_travel",
+        "summary": "3 bookings; 3 quote or capacity checks (not bookings)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:05:17.062Z",
+        "tool": "call_driver",
+        "input": {
+          "order": "CD-420449",
+          "purpose": "Checking how you are and whether you can take the Hamburg to Odense Corolla, since your train from Aalborg leaves in about four hours.",
+          "questions": [
+            "How are you feeling now, and are you safe?",
+            "Can you give a definite yes or no on driving this job tomorrow?",
+            "If not definite now, by what time today can you decide?",
+            "Will you be on the Aalborg train this afternoon?"
+          ]
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "call",
+        "at": "2026-10-25T05:05:24.371Z",
+        "callId": "sim-mvnd6j6b",
+        "status": "completed",
+        "summary": "Simulated call Carl Birkelane. I'm still unwell but safe at home, and I don't need any medical help right now. No, I can't give a definite yes or no yet because I'm still unsure whether I'll be well enough to drive safely."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:05:30.891Z",
+        "tool": "call_driver",
+        "input": {
+          "order": "CD-420449",
+          "purpose": "Correction from my last call: your Aalborg train leaves at 13:25 Helsinki time, about one hour 25 minutes from now, not four hours.",
+          "questions": [
+            "Can you give us your firm yes or no by 13:00 Helsinki time instead?",
+            "If you are not sure by then, is it fine for us to send a backup driver and release you from this job?"
+          ]
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "call",
+        "at": "2026-10-25T05:05:35.182Z",
+        "callId": "sim-mvnd6rim",
+        "status": "completed",
+        "summary": "Simulated call Carl Birkelane. Yes, I can give you a firm yes or no by 13:00 Helsinki time. I'm not sure what Aalborg train you mean, though, since my job is CD-420449 from Hamburg to Odense. Yes, if I'm still unsure by 13:00, please send a backup driver and release me from this job."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:05:46.048Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "Carl Birkelane says they are still unwell but safe at home, need no medical help, and cannot yet say if they can drive. They promised a firm yes or no by 21 Oct 13:00. If still unsure then, they agreed we send a backup and release them.",
+          "strength": "reported",
+          "source_kind": "driver",
+          "source_label": "Driver phone call",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_actor": "Carl Birkelane",
+          "source_record_id": "sim-mvnd6rim"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:05:46.048Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "Positioning travel is booked: train Aalborg to Copenhagen 21 Oct 13:25, flight Copenhagen to Hamburg 21 Oct 19:45 arriving 21:00, hotel 21 Oct night. Boarding and check-in are not confirmed. When asked, the driver said they did not know about any Aalborg train, so it is unknown if the driver knows this plan or if it is even theirs.",
+          "strength": "unknown",
+          "source_kind": "system",
+          "source_label": "Travel bookings vs driver call",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_table": "travel_reservations",
+          "source_record_id": "res-x0320cdf029cd4c96"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:05:46.048Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "Pickup slot in Hamburg is 22 Oct 10:00–13:00; delivery promise to the customer in Odense is 23 Oct 11:00–16:00. Both endpoint contacts and access are unconfirmed. The only later flight quote (22 Oct 09:00 from Copenhagen) misses the pickup slot.",
+          "strength": "verified",
+          "source_kind": "system",
+          "source_label": "Order windows",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_record_id": "win-xfed72594364cea2a"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:05:46.048Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "A backup driver plan was approved earlier but has not been carried out yet. The current assignment is still active and has not been cancelled.",
+          "strength": "verified",
+          "source_kind": "system",
+          "source_label": "Earlier agent proposal",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_record_id": "agent-xf4800bb1b907cf89"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:05:53.723Z",
+        "tool": "propose",
+        "input": {
+          "action": "handover_to_person",
+          "title": "Line up the approved backup driver now; switch at 13:00 unless the driver says yes",
+          "rationale": "The driver is still unsure and will decide by 13:00. The booked train leaves at 13:25, and no later quote reaches the 22 Oct pickup, so the backup must be ready before 13:00. The driver also didn't know about the Aalborg train, so someone needs to check who the booked travel is for.",
+          "changes": [
+            {
+              "label": "Backup driver",
+              "before": "Approved, not yet carried out",
+              "after": "Backup found and on hold for pickup 22 Oct 10:00–13:00 in Hamburg, without double booking"
+            },
+            {
+              "label": "Current assignment",
+              "before": "Carl Birkelane, active",
+              "after": "Stays active until 13:00. Release only if the driver says no or is still unsure"
+            },
+            {
+              "label": "Booked train, flight and hotel",
+              "before": "Booked, driver says they don't know about the Aalborg train",
+              "after": "Operator checks who they are for. Cancel or move them to the backup if Carl Birkelane is released"
+            }
+          ],
+          "draft_message": {
+            "to": "Operations desk",
+            "channel": "internal",
+            "body": "CD-420449. Carl Birkelane is unwell but safe at home and will give a firm yes or no by 13:00. They agreed: if still unsure at 13:00, send a backup and release them. The booked train from Aalborg leaves at 13:25, but the driver said they didn't know about any Aalborg train, so check who the travel is for. The approved backup has not been carried out. Find a backup now who can reach Hamburg for pickup 22 Oct 10:00–13:00. Delivery promise is 23 Oct 11:00–16:00 in Odense. Both endpoint contacts are still unconfirmed."
+          },
+          "what_happens_next": "The operator finds a backup driver and puts them on hold, checks who the booked travel is for, and waits for Carl Birkelane's answer at 13:00.",
+          "what_happens_after": "At 13:00 either Carl Birkelane keeps the job and takes the 13:25 train, or the backup takes over and the travel is moved or cancelled."
+        },
+        "cost": "needs_approval"
+      },
+      {
+        "kind": "proposal",
+        "at": "2026-10-25T05:05:53.723Z",
+        "proposalId": "run-mvnd65qxpf5-p1"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T05:05:57.100Z",
+        "tool": "finish",
+        "input": {
+          "outcome": "needs_person",
+          "headline": "Line up the backup driver before the sick driver's 13:00 answer?",
+          "summary": "The sick driver will answer by 13:00, close to the 13:25 train. If no backup is ready by then, tomorrow's Hamburg pickup is at risk.",
+          "agent_did": "Read all records, phoned the driver twice, noted facts, handed backup decision over.",
+          "urgency": "now",
+          "decide_within_minutes": 60
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "stop",
+        "at": "2026-10-25T05:05:57.100Z",
+        "reason": "needs_person",
+        "summary": "The sick driver will answer by 13:00, close to the 13:25 train. If no backup is ready by then, tomorrow's Hamburg pickup is at risk."
+      }
+    ]
+  },
+  "orderId": "ord-00449",
+  "orderReference": "CD-420449",
+  "car": "Toyota Corolla",
+  "route": "Hamburg → Odense",
+  "customer": "Vandellora Biler",
+  "proposals": [
+    {
+      "id": "run-mvnd65qxpf5-p1",
+      "orderId": "ord-00449",
+      "action": "handover_to_person",
+      "title": "Line up the approved backup driver now; switch at 13:00 unless the driver says yes",
+      "rationale": "The driver is still unsure and will decide by 13:00. The booked train leaves at 13:25, and no later quote reaches the 22 Oct pickup, so the backup must be ready before 13:00. The driver also didn't know about the Aalborg train, so someone needs to check who the booked travel is for.",
+      "changes": [
+        {
+          "label": "Backup driver",
+          "before": "Approved, not yet carried out",
+          "after": "Backup found and on hold for pickup 22 Oct 10:00–13:00 in Hamburg, without double booking"
+        },
+        {
+          "label": "Current assignment",
+          "before": "Carl Birkelane, active",
+          "after": "Stays active until 13:00. Release only if the driver says no or is still unsure"
+        },
+        {
+          "label": "Booked train, flight and hotel",
+          "before": "Booked, driver says they don't know about the Aalborg train",
+          "after": "Operator checks who they are for. Cancel or move them to the backup if Carl Birkelane is released"
+        }
+      ],
+      "draftMessage": {
+        "to": "Operations desk",
+        "channel": "internal",
+        "body": "CD-420449. Carl Birkelane is unwell but safe at home and will give a firm yes or no by 13:00. They agreed: if still unsure at 13:00, send a backup and release them. The booked train from Aalborg leaves at 13:25, but the driver said they didn't know about any Aalborg train, so check who the travel is for. The approved backup has not been carried out. Find a backup now who can reach Hamburg for pickup 22 Oct 10:00–13:00. Delivery promise is 23 Oct 11:00–16:00 in Odense. Both endpoint contacts are still unconfirmed."
+      },
+      "evidence": [],
+      "status": "pending",
+      "createdAt": "2026-10-25T05:05:53.723Z",
+      "createdBy": "road-agent",
+      "whatHappensNext": "The operator finds a backup driver and puts them on hold, checks who the booked travel is for, and waits for Carl Birkelane's answer at 13:00.",
+      "whatHappensAfter": "At 13:00 either Carl Birkelane keeps the job and takes the 13:25 train, or the backup takes over and the travel is moved or cancelled."
+    }
+  ],
+  "facts": [
+    {
+      "id": "run-mvnd65qxpf5-f1",
+      "text": "Carl Birkelane says they are still unwell but safe at home, need no medical help, and cannot yet say if they can drive. They promised a firm yes or no by 21 Oct 13:00. If still unsure then, they agreed we send a backup and release them.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "driver",
+          "label": "Driver phone call",
+          "actorName": "Carl Birkelane",
+          "at": "2026-10-21T09:00:00Z",
+          "recordId": "sim-mvnd6rim"
+        }
+      ]
+    },
+    {
+      "id": "run-mvnd65qxpf5-f2",
+      "text": "Positioning travel is booked: train Aalborg to Copenhagen 21 Oct 13:25, flight Copenhagen to Hamburg 21 Oct 19:45 arriving 21:00, hotel 21 Oct night. Boarding and check-in are not confirmed. When asked, the driver said they did not know about any Aalborg train, so it is unknown if the driver knows this plan or if it is even theirs.",
+      "strength": "unknown",
+      "sources": [
+        {
+          "kind": "system",
+          "label": "Travel bookings vs driver call",
+          "at": "2026-10-21T09:00:00Z",
+          "table": "travel_reservations",
+          "recordId": "res-x0320cdf029cd4c96"
+        }
+      ]
+    },
+    {
+      "id": "run-mvnd65qxpf5-f3",
+      "text": "Pickup slot in Hamburg is 22 Oct 10:00–13:00; delivery promise to the customer in Odense is 23 Oct 11:00–16:00. Both endpoint contacts and access are unconfirmed. The only later flight quote (22 Oct 09:00 from Copenhagen) misses the pickup slot.",
+      "strength": "verified",
+      "sources": [
+        {
+          "kind": "system",
+          "label": "Order windows",
+          "at": "2026-10-21T09:00:00Z",
+          "recordId": "win-xfed72594364cea2a"
+        }
+      ]
+    },
+    {
+      "id": "run-mvnd65qxpf5-f4",
+      "text": "A backup driver plan was approved earlier but has not been carried out yet. The current assignment is still active and has not been cancelled.",
+      "strength": "verified",
+      "sources": [
+        {
+          "kind": "system",
+          "label": "Earlier agent proposal",
+          "at": "2026-10-21T09:00:00Z",
+          "recordId": "agent-xf4800bb1b907cf89"
+        }
+      ]
+    }
+  ],
+  "model": "anthropic/claude-opus-5.5",
+  "usage": {
+    "inputTokens": 51915,
+    "outputTokens": 3648
+  },
+  "outcome": "needs_person",
+  "headline": "Line up the backup driver before the sick driver's 13:00 answer?",
+  "summary": "The sick driver will answer by 13:00, close to the 13:25 train. If no backup is ready by then, tomorrow's Hamburg pickup is at risk.",
+  "agentDid": "Read all records, phoned the driver twice, noted facts, handed backup decision over.",
+  "urgency": "now",
+  "decideBy": "2026-10-21T10:00:00.000Z"
+}

@@ -293,3 +293,18 @@ kbd {
   display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden;
 }
 .queue-row-agent span { -webkit-line-clamp: 1; }
+.agent-run-trigger { flex-wrap: wrap; }
+.agent-run-meta { margin-left: auto; font-size: 12px; color: var(--muted); }
+
+/* Call brief: questions as a list, warnings apart */
+.brief p + ol, .brief ol + p { margin-top: 6px; }
+.brief ol { margin: 6px 0 0 18px; padding: 0; list-style: decimal; display: grid; gap: 3px; }
+.brief-warning { margin-top: 8px; padding: 6px 10px; border-radius: 8px; background: var(--orange-bg); color: var(--orange-ink); font-weight: 500; }
+
+@media (max-width: 760px) {
+  .queue-group-title { flex-wrap: wrap; }
+  .queue-group-note { flex-basis: 100%; margin-left: 0; }
+}
+@media (max-width: 480px) {
+  .queue-row-agent { display: none; }
+}
