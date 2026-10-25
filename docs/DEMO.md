@@ -68,8 +68,12 @@ ferry plus a hotel night, €490. Now, After, and what happens next."
 
 "Because the records show an earlier booking attempt failed, it checks with the provider first,
 then books the ferry and the hotel, each with its own reference, and tells the driver."
-*Zoom for 2 s on "Approved by you at 12:00".* "A person made this call, and the record says so. The facts that are no longer true move under 'Before your yes'. And behind this
-button, a second request for the same yes is refused; our eval checks every run for it."
+
+*Zoom for 2 s on "Approved by you at 12:00".*
+
+"A person made this call, and the record says so. The facts that are no longer true move under
+'Before your yes'. And behind this button, a second request for the same yes is refused; our
+eval checks every run for it."
 *Point at the five rows, then the facts panel. Click **Back to Needs you**: the queue is down to 7.*
 
 ### 1:50–2:05 · The driver calls in (phone)
@@ -95,13 +99,17 @@ engineering, scored Bahn's own rubric over ten rounds with fresh screenshots eac
 twice booked twice. We fixed it and wrote a check that fails that exact trace."
 *Screen: terminal running
 `python starter/scripts/eval_agent.py traces/examples/rejected/run-mvn3ijhi2y3-double-booked.json`
-→ "once_per_yes: 'ferry' booked 2 times", 3 s.*
+→ "once_per_yes: … booked 2 times", 3 s.*
 
-"And when a judge told us an arrival time was wrong, we checked: 25 October is the night clocks
-go back, so we were right, and we kept it." *Screen: the "Judge round 4" paragraph in the ai-log.*
+"And in the last round they caught us again: after the 25 October clock change, a rerun put the
+Leipzig delivery an hour late, and our notes called it a fix. The record said otherwise. Now the
+tools hand the agent converted times, and a check compares every time with the record."
+*Screen: terminal running
+`python starter/scripts/eval_agent.py traces/examples/rejected/run-mvno42zlb5g-wrong-time.json`
+→ "times_match: says 27 Oct 14:00-16:00; the record says 13:00-15:00", 3 s.*
 
 **A:** "We also threw away what looked impressive but wasn't true: a risk dashboard, a map and KPI
-tiles with made-up numbers. Fourteen checks run over every committed agent run, and a self-test
+tiles with made-up numbers. Fifteen checks run over every committed agent run, and a self-test
 plants one violation per check to prove each one can fail."
 *Screen: `python starter/scripts/eval_agent.py --self-test` ending in "caught", 2 s.*
 
@@ -111,7 +119,8 @@ That's the Car Delivery Control Room."
 ## Numbers to say (check before recording)
 
 - Needs you: 8 · running quietly: 83 (top of the queue page).
-- Eval: `python starter/scripts/eval_agent.py` → all runs pass 14 checks;
-  `--self-test` → 15/15 caught.
-- Judges: average score from round 1 to round 10 (see `docs/ai-log/ignacio.md`).
+- Eval: `python starter/scripts/eval_agent.py` → 14/14 runs pass all 15 checks;
+  `--self-test` → 16/16 caught.
+- Judges, average per round (out of 5): 3.44 · 3.70 · 3.74 · 4.00 · 4.09 · 4.09 · 3.74 · 4.24 ·
+  4.48 · 4.29. Say "from 3.4 to 4.5"; the dips are where they caught real bugs.
 - After approving CD-420299 the queue shows 7.

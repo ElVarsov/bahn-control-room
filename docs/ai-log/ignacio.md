@@ -173,5 +173,20 @@ Three judges caught the same mislabel: CD-420399 said "Approve here" while its r
 for a provenance check; our first version failed ten runs, but almost all on general names like
 "tracking". We narrowed it to the real error (naming a different real table), which left exactly
 the one mislabel the judge found, then fixed the cause: the loop now takes the table from the record
-id instead of the model. The CD-420299 rerun also quietly corrected a time the old seed had wrong
-(the 27 Oct promise after the clock change).
+id instead of the model. We also wrote that the CD-420299 rerun "corrected" the 27 Oct promise to 14:00-16:00.
+That was wrong, and it was our claim, not the model's: see round 10.
+
+## Judge round 10 (avg 4.29): the clock change, the other way round
+Three judges checked our round-9 claim against the record and found it backwards: the 27 Oct
+delivery window is 11:00-13:00 UTC, which is 13:00-15:00 in Helsinki after the 25 Oct clock
+change. The old seed was right; the rerun was wrong; we had called the regression a fix without
+looking at the record. Cause: read_order and read_tracking still handed the model raw UTC (the
+travel tools already converted), and the model added the summer offset. Fixed at the cause: those
+tools now give only converted times (Helsinki and local), and the prompt says never to convert.
+A new eval check, times_match, converts every window with zoneinfo and compares; it failed the
+bad CD-420299 run and found a second case we had not noticed (CD-420593, 26 Oct, same error).
+Our first version also flagged a flight time; we narrowed it to times the text names as the
+promise or slot. Stamping the real table (round 9) then exposed that a "sold out" capacity check
+had been marked verified; we kept quote_not_booking strict and taught the agent that a capacity
+check is a snapshot from when it was checked. Reran CD-420299 and CD-420593 once each; all
+committed runs pass 15 checks and the self-test catches 16 of 16. Then we froze the runs.

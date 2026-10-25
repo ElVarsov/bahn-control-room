@@ -34,7 +34,7 @@ How you work:
 4. Decide what a person must decide. Anything that books travel, changes a pickup or delivery date, costs money, messages a customer, or needs a call to a customer becomes ONE propose call with exact before and after values and, for messages, the exact text. Never pretend something is booked or agreed.
 5. Stop with finish. If the facts line up and nothing needs a person, say so (outcome facts_line_up). If you are waiting on someone, outcome waiting_reply. Otherwise needs_person.
 
-Style: plain words an operations person reads in a second. Write every time in Helsinki time, the operations desk's clock, with no zone label (for example "24 Oct 15:00"); never UTC, "local", Berlin or Copenhagen time. Refer to drivers and contacts by name or as "the driver"; use "they" if you need a pronoun and never guess gender from a name. No codes like FERRY_SOLD_OUT in text for people. Mark a fact verified only when a record proves it as it stands now; anything about what will or is likely to happen is an estimate. One fact, one kind of evidence: keep what a record shows apart from what someone said. When you write for a driver, a site or a customer (messages, and call briefs a person reads out to them), say times in their own local clock and name it, for example "12:00–16:00 your time" or "12:00–16:00 Hamburg time" (Denmark, Germany, Sweden, Norway, Poland and the Netherlands are one hour behind Helsinki; the UK two). When a person must decide something, the headline names that decision as a question and you propose it (handover_to_person when only a person can settle it, such as finding a replacement driver or agreeing a new slot); a holding message to the customer may go as a second proposal, never instead of the decision. In a call brief, write every warning as a full sentence a person can say out loud, with who and why ("Tell the driver not to use the gate alone; reception must escort them"). Keep the whole job under about ten tool calls. One proposal per run unless two are truly independent.`
+Style: plain words an operations person reads in a second. Write every time in Helsinki time, the operations desk's clock (the tools give it ready as *_helsinki and the local clock as *_local; copy those and never convert a UTC time yourself: Helsinki is UTC+3 until 25 Oct and UTC+2 from 25 Oct), with no zone label (for example "24 Oct 15:00"); never UTC, "local", Berlin or Copenhagen time. Refer to drivers and contacts by name or as "the driver"; use "they" if you need a pronoun and never guess gender from a name. No codes like FERRY_SOLD_OUT in text for people. Mark a fact verified only when a record proves it as it stands now (a quote or a capacity check, even "sold out", is a snapshot from when it was checked: mark it quote or reported and say how old it is); anything about what will or is likely to happen is an estimate. One fact, one kind of evidence: keep what a record shows apart from what someone said. When you write for a driver, a site or a customer (messages, and call briefs a person reads out to them), say times in their own local clock and name it, for example "12:00–16:00 your time" or "12:00–16:00 Hamburg time" (Denmark, Germany, Sweden, Norway, Poland and the Netherlands are one hour behind Helsinki; the UK two). When a person must decide something, the headline names that decision as a question and you propose it (handover_to_person when only a person can settle it, such as finding a replacement driver or agreeing a new slot); a holding message to the customer may go as a second proposal, never instead of the decision. In a call brief, write every warning as a full sentence a person can say out loud, with who and why ("Tell the driver not to use the gate alone; reception must escort them"). Keep the whole job under about ten tool calls. One proposal per run unless two are truly independent.`
 
 export type StartOptions = { order: string; trigger: string; driverMode?: DriverMode }
 
@@ -84,9 +84,9 @@ export function startRun({ order: ref, trigger, driverMode = "auto" }: StartOpti
 const now = () => new Date().toISOString()
 
 /** "no incidents", "1 open alert", "3 open alerts". */
-function count(n: number, noun: string): string {
-  if (n === 0) return `no ${noun}s`
-  return `${n} ${noun}${n === 1 ? "" : "s"}`
+function count(n: number, noun: string, plural = `${noun}s`): string {
+  if (n === 0) return `no ${plural}`
+  return `${n} ${n === 1 ? noun : plural}`
 }
 
 /** Shorten at a sentence or word boundary, never mid-word. */
@@ -193,7 +193,7 @@ async function runTool(record: RunRecord, order: Row, name: string, input: Recor
     }
     case "read_travel": {
       const t = readTravel(target())
-      return result(name, `${count(t.booked.length, "booking")}; ${count(t.quotes_and_checks_not_booked.length, "quote or capacity check")} (not bookings).`, t)
+      return result(name, `${count(t.booked.length, "booking")}; ${count(t.quotes_and_checks_not_booked.length, "quote or capacity check", "quotes or capacity checks")} (not bookings).`, t)
     }
     case "search_ferries": {
       const f = searchFerries(String(input.from_terminal), String(input.to_terminal), String(input.earliest_departure))

@@ -18,17 +18,21 @@ is in [`PARTICIPANT-BRIEF.md`](./PARTICIPANT-BRIEF.md).
 ## What is in it
 
 ### The control room (`starter/app`)
-- **Needs you (`/`)**: decisions grouped as *Right now / Today / Soon*, each with a
-  deadline ("in 15 min", "2 min overdue"), why it is here and what the agent already
-  did. Work the agents are doing alone sits in a calm *Agents are on it* list; the rest
-  is one line, *N orders running quietly*. Keys: `J`/`K` to move, `Enter` to open.
+- **Needs you (`/`)**: decisions grouped by how soon you must decide, *Within 30 minutes /
+  Within 2 hours / Later today*, with colour that follows the same deadline. Each card is a
+  question with what it takes (*Approve here*: one click; *Call needed*: you phone someone,
+  then log it), why it is here and what the agent already did. Work the agents are waiting
+  on sits in a calm *On watch* list; the rest is one line, *N orders running quietly*.
+  Keys: `J`/`K` to move, `Enter` to open.
 - **Case page (`/orders/[id]`)**: the decision first (what changes, *now → after*, the
   exact message a customer would get, *what happens next*), then *what the agent
   already did* as a short story, *what we know* with every fact marked **Verified /
   Reported / Estimate / Quote / Not known** and its source record, and *who said what*
-  with Bahn-only notes kept visibly apart. Approve, change, reject, or tell the agent
-  something else. **Ask the agent to work on this** starts the road agent on any order
-  and the page updates live while it works.
+  with Bahn-only notes kept visibly apart. The button says what it commits to
+  (*Approve and book · €490*); after the yes the card lists what the agent did, once
+  ("Approved by you at 12:00", one reference per booking) and leads *Back to Needs you*.
+  **Ask the agent to work on this** starts the road agent on any order and the page
+  updates live while it works.
 - **All orders (`/board`)**, **Inbox**, **Customers / Drivers / Places**: the starter's
   views, kept for depth.
 - **Autonomy dial (`/settings`)**: what the agent may do without asking (asking the driver
@@ -71,7 +75,8 @@ estimates. **Driver call-ins** start an agent run too.
 
 ## Run it from a fresh clone
 
-You need **Node.js 24+**. No database is needed for the control room, the agent or calls.
+You need **Node.js 20.9 or newer** (what Next.js 16 requires; we ran it on Node 22). No
+database is needed for the control room, the agent or calls.
 
 ```sh
 git clone https://github.com/ElVarsov/bahn-control-room.git
@@ -102,8 +107,9 @@ Then start it and open http://localhost:3000:
 npm run dev
 ```
 
-Without a key the pages work, the agent cannot run, and calls use the labelled
-scripted backup. A road-agent run costs about $0.25 on Opus 5.5.
+Without a key the pages work, the committed agent runs are shown, and **Approve** works
+(carrying out a decision needs no model call); only new agent runs need a key, and calls
+fall back to the labelled scripted backup. A road-agent run costs about $0.25–0.50 on Opus 5.5.
 
 > **Antivirus HTTPS scanning** (we hit this with Norton): if calls to Claude fail with a
 > certificate error, start the server with `NODE_USE_SYSTEM_CA=1`
@@ -152,6 +158,26 @@ Two people, each with a coding agent (Claude Code), working in parallel lanes ag
 shared typed contract (`starter/lib/contracts/index.ts`) with fixtures, so neither had to
 wait for the other. What we asked for, what we checked, what we threw away and where we
 did not take the first answer:
+
+**Four AI judges, ten rounds.** We had two business and two technical judge agents score
+the product against Bahn's own rubric (control room 40%, AI process 30%, taste 30%) each
+round, from fresh screenshots and a fresh read of the code, then fixed what they found.
+Average score by round: 3.44 · 3.70 · 3.74 · 4.00 · 4.09 · 4.09 · 3.74 · 4.24 · 4.48 · 4.29.
+The two dips are the useful part: in round 7 they found a double booking in our own
+screenshot, and in round 10 a delivery time we had "corrected" the wrong way. Both are
+now eval checks with the failing case kept.
+
+**Guardrail checks over real agent runs:**
+
+```sh
+python starter/scripts/eval_agent.py              # every committed run, 15 checks
+python starter/scripts/eval_agent.py --self-test  # plants one violation per check; all must be caught
+```
+
+They check, among others: no customer contact without a person's yes, no change without a
+yes (and never a yes claimed by the autonomy dial), quotes never shown as bookings, every
+fact cites a record from the table it really lives in, times match the records after the
+clock change, a pending yes always reaches a person, and one yes carries out once.
 
 - [`docs/ai-log/ignacio.md`](./docs/ai-log/ignacio.md), [`docs/ai-log/antoni.md`](./docs/ai-log/antoni.md), [`BUILD-LOG.md`](./BUILD-LOG.md)
 - [`traces/examples/`](./traces/examples/README.md): real agent runs, including the first one we rejected

@@ -1,0 +1,440 @@
+{
+  "run": {
+    "id": "run-mvnobwngypa",
+    "orderId": "ord-00299",
+    "agentId": "road-agent",
+    "trigger": "The overnight ferry sold out and the car has no crossing booked",
+    "state": "needs_person",
+    "startedAt": "2026-10-25T10:17:30.892Z",
+    "steps": [
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T10:17:35.477Z",
+        "tool": "read_order",
+        "input": {
+          "order": "CD-420299"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T10:17:35.478Z",
+        "tool": "read_order",
+        "summary": "BMW M4 for Kavellora Car House, Leipzig → Helsinki. Driver Camille Emberwick (assigned)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T10:17:35.478Z",
+        "tool": "read_conversation",
+        "input": {
+          "order": "CD-420299"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T10:17:35.478Z",
+        "tool": "read_conversation",
+        "summary": "7 recent messages. Latest from Driver travel: “No ferry booking, hotel booking or changed customer promise exists yet. Prepare a reviewable plan with the cost and ETA difference.”"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T10:17:35.478Z",
+        "tool": "read_open_issues",
+        "input": {
+          "order": "CD-420299"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T10:17:35.479Z",
+        "tool": "read_open_issues",
+        "summary": "1 open alert (Current crossing is unavailable; alternative and customer promise need a decision.), 1 incident, no open tasks."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T10:17:35.479Z",
+        "tool": "read_tracking",
+        "input": {
+          "order": "CD-420299"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T10:17:35.479Z",
+        "tool": "read_tracking",
+        "summary": "No tracking on record."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T10:17:35.479Z",
+        "tool": "read_travel",
+        "input": {
+          "order": "CD-420299"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T10:17:35.479Z",
+        "tool": "read_travel",
+        "summary": "no bookings; 2 quotes or capacity checks (not bookings)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T10:17:42.222Z",
+        "tool": "search_ferries",
+        "input": {
+          "from_terminal": "West Baltic terminal",
+          "to_terminal": "South Finland terminal",
+          "earliest_departure": "2026-10-23T18:00:00Z"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T10:17:42.224Z",
+        "tool": "search_ferries",
+        "summary": "6 sailings checked, 5 with vehicle space (quotes, not booked)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T10:17:42.224Z",
+        "tool": "search_hotels",
+        "input": {
+          "near": "West Baltic terminal",
+          "night": "2026-10-23"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_result",
+        "at": "2026-10-25T10:17:42.224Z",
+        "tool": "search_hotels",
+        "summary": "3 hotels near West Baltic terminal, from € 103 (quotes)."
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T10:18:00.150Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "No crossing or hotel is booked for this order. The travel record has only a sold-out check and quotes.",
+          "strength": "verified",
+          "source_kind": "system",
+          "source_label": "Travel reservations",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_table": "travel_reservations"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T10:18:00.150Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The overnight sailing (24 Oct 01:00) had no vehicle space when checked 2 h ago.",
+          "strength": "reported",
+          "source_kind": "provider",
+          "source_actor": "Vela Coast Lines",
+          "source_label": "Ferry capacity check",
+          "source_at": "2026-10-21T07:00:00Z",
+          "source_record_id": "travel-xc1d8163d5443a606"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T10:18:00.150Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "Next sailing: 24 Oct 15:00, arrives 25 Oct 18:00, check-in closes 24 Oct 13:00. Vehicle slot €387. Quote is 2 h old; not booked.",
+          "strength": "quote",
+          "source_kind": "provider",
+          "source_actor": "Vela Coast Lines",
+          "source_label": "Ferry quote",
+          "source_at": "2026-10-21T07:00:00Z",
+          "source_record_id": "travel-xf29ed1732d895f37"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T10:18:00.150Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "Taking the 24 Oct 15:00 sailing should still deliver inside the customer promise of 27 Oct 13:00–15:00, about 1.5 days early. No date change looks needed.",
+          "strength": "estimate",
+          "source_kind": "agent",
+          "source_label": "Delivery promise vs ferry arrival",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_record_id": "win-xd989292fd4c1ccb9"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T10:18:00.150Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "An earlier agent attempt to book the later crossing is marked failed, and the check on what the provider actually did is still waiting for review. A booking could exist with the provider even though our records show none.",
+          "strength": "unknown",
+          "source_kind": "agent",
+          "source_label": "Earlier booking attempt",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_record_id": "agent-x4ac988b20000595f"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T10:18:00.150Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "The driver, Camille Emberwick, said the later sailing works for them if the overnight stop and return travel are arranged. They have not changed the pickup time.",
+          "strength": "reported",
+          "source_kind": "driver",
+          "source_actor": "Camille Emberwick",
+          "source_label": "Driver chat",
+          "source_at": "2026-10-21T08:05:00Z",
+          "source_record_id": "msg-xb315bf2f67bbfb61"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T10:18:00.150Z",
+        "tool": "note_fact",
+        "input": {
+          "text": "Hotel for 23 Oct near the terminal: Nordlicht Hotel €103, free cancellation, 13 min from the terminal. Quote only.",
+          "strength": "quote",
+          "source_kind": "provider",
+          "source_label": "Hotel quote",
+          "source_at": "2026-10-21T09:00:00Z",
+          "source_record_id": "hotel-1u7k"
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T10:18:06.800Z",
+        "tool": "propose",
+        "input": {
+          "action": "book_travel",
+          "title": "Book the 24 Oct 15:00 sailing and one hotel night for 23 Oct (€490)",
+          "rationale": "The overnight sailing is sold out. The next one still lands the car on 25 Oct 18:00, well before the 27 Oct promise, and the driver has said it works for them. The quotes are 2 h old and space can go.",
+          "changes": [
+            {
+              "label": "Ferry crossing",
+              "before": "None booked (24 Oct 01:00 overnight sailing sold out)",
+              "after": "24 Oct 15:00 Vela Coast Lines vehicle slot, arrives 25 Oct 18:00, check-in by 24 Oct 13:00, €387 quote"
+            },
+            {
+              "label": "Driver hotel",
+              "before": "None booked",
+              "after": "Nordlicht Hotel, night of 23 Oct, 13 min from terminal, free cancellation, €103 quote"
+            },
+            {
+              "label": "Total cost",
+              "before": "€0",
+              "after": "€490"
+            },
+            {
+              "label": "Delivery promise",
+              "before": "27 Oct 13:00–15:00",
+              "after": "Unchanged, 27 Oct 13:00–15:00"
+            }
+          ],
+          "what_happens_next": "Before I book anything, I check with the provider that the earlier failed attempt did not create a booking, so we do not pay for the crossing twice. Then I book the ferry, re-check the price, book the hotel and send the driver both references. Return travel for the driver still has to be arranged on its own.",
+          "what_happens_after": "The ferry and hotel are booked and the driver has the references. The delivery promise stays at 27 Oct 13:00–15:00, so the customer does not need to approve a new date."
+        },
+        "cost": "needs_approval"
+      },
+      {
+        "kind": "proposal",
+        "at": "2026-10-25T10:18:06.800Z",
+        "proposalId": "run-mvnobwngypa-p1"
+      },
+      {
+        "kind": "tool_call",
+        "at": "2026-10-25T10:18:10.184Z",
+        "tool": "finish",
+        "input": {
+          "outcome": "needs_person",
+          "headline": "Book the next-day ferry and a hotel night (€490)?",
+          "summary": "Overnight ferry sold out and nothing is booked; the next sailing still meets the 27 Oct promise, but the quoted space can go.",
+          "agent_did": "Read all records, re-checked sailings and hotels, proposed booking.",
+          "urgency": "today",
+          "decide_within_minutes": 240
+        },
+        "cost": "free"
+      },
+      {
+        "kind": "stop",
+        "at": "2026-10-25T10:18:10.184Z",
+        "reason": "needs_person",
+        "summary": "Overnight ferry sold out and nothing is booked; the next sailing still meets the 27 Oct promise, but the quoted space can go."
+      }
+    ]
+  },
+  "orderId": "ord-00299",
+  "orderReference": "CD-420299",
+  "car": "BMW M4",
+  "route": "Leipzig → Helsinki",
+  "customer": "Kavellora Car House",
+  "proposals": [
+    {
+      "id": "run-mvnobwngypa-p1",
+      "orderId": "ord-00299",
+      "action": "book_travel",
+      "title": "Book the 24 Oct 15:00 sailing and one hotel night for 23 Oct (€490)",
+      "rationale": "The overnight sailing is sold out. The next one still lands the car on 25 Oct 18:00, well before the 27 Oct promise, and the driver has said it works for them. The quotes are 2 h old and space can go.",
+      "changes": [
+        {
+          "label": "Ferry crossing",
+          "before": "None booked (24 Oct 01:00 overnight sailing sold out)",
+          "after": "24 Oct 15:00 Vela Coast Lines vehicle slot, arrives 25 Oct 18:00, check-in by 24 Oct 13:00, €387 quote"
+        },
+        {
+          "label": "Driver hotel",
+          "before": "None booked",
+          "after": "Nordlicht Hotel, night of 23 Oct, 13 min from terminal, free cancellation, €103 quote"
+        },
+        {
+          "label": "Total cost",
+          "before": "€0",
+          "after": "€490"
+        },
+        {
+          "label": "Delivery promise",
+          "before": "27 Oct 13:00–15:00",
+          "after": "Unchanged, 27 Oct 13:00–15:00"
+        }
+      ],
+      "evidence": [],
+      "status": "pending",
+      "createdAt": "2026-10-25T10:18:06.800Z",
+      "createdBy": "road-agent",
+      "whatHappensNext": "Before I book anything, I check with the provider that the earlier failed attempt did not create a booking, so we do not pay for the crossing twice. Then I book the ferry, re-check the price, book the hotel and send the driver both references. Return travel for the driver still has to be arranged on its own.",
+      "whatHappensAfter": "The ferry and hotel are booked and the driver has the references. The delivery promise stays at 27 Oct 13:00–15:00, so the customer does not need to approve a new date."
+    }
+  ],
+  "facts": [
+    {
+      "id": "run-mvnobwngypa-f1",
+      "text": "No crossing or hotel is booked for this order. The travel record has only a sold-out check and quotes.",
+      "strength": "verified",
+      "sources": [
+        {
+          "kind": "system",
+          "label": "Travel reservations",
+          "at": "2026-10-21T09:00:00Z",
+          "table": "travel_reservations"
+        }
+      ]
+    },
+    {
+      "id": "run-mvnobwngypa-f2",
+      "text": "The overnight sailing (24 Oct 01:00) had no vehicle space when checked 2 h ago.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "provider",
+          "label": "Ferry capacity check",
+          "actorName": "Vela Coast Lines",
+          "at": "2026-10-21T07:00:00Z",
+          "table": "travel_options",
+          "recordId": "travel-xc1d8163d5443a606"
+        }
+      ]
+    },
+    {
+      "id": "run-mvnobwngypa-f3",
+      "text": "Next sailing: 24 Oct 15:00, arrives 25 Oct 18:00, check-in closes 24 Oct 13:00. Vehicle slot €387. Quote is 2 h old; not booked.",
+      "strength": "quote",
+      "sources": [
+        {
+          "kind": "provider",
+          "label": "Ferry quote",
+          "actorName": "Vela Coast Lines",
+          "at": "2026-10-21T07:00:00Z",
+          "table": "travel_options",
+          "recordId": "travel-xf29ed1732d895f37"
+        }
+      ]
+    },
+    {
+      "id": "run-mvnobwngypa-f4",
+      "text": "Taking the 24 Oct 15:00 sailing should still deliver inside the customer promise of 27 Oct 13:00–15:00, about 1.5 days early. No date change looks needed.",
+      "strength": "estimate",
+      "sources": [
+        {
+          "kind": "agent",
+          "label": "Delivery promise vs ferry arrival",
+          "at": "2026-10-21T09:00:00Z",
+          "table": "time_windows",
+          "recordId": "win-xd989292fd4c1ccb9"
+        }
+      ]
+    },
+    {
+      "id": "run-mvnobwngypa-f5",
+      "text": "An earlier agent attempt to book the later crossing is marked failed, and the check on what the provider actually did is still waiting for review. A booking could exist with the provider even though our records show none.",
+      "strength": "unknown",
+      "sources": [
+        {
+          "kind": "agent",
+          "label": "Earlier booking attempt",
+          "at": "2026-10-21T09:00:00Z",
+          "table": "agent_proposals",
+          "recordId": "agent-x4ac988b20000595f"
+        }
+      ]
+    },
+    {
+      "id": "run-mvnobwngypa-f6",
+      "text": "The driver, Camille Emberwick, said the later sailing works for them if the overnight stop and return travel are arranged. They have not changed the pickup time.",
+      "strength": "reported",
+      "sources": [
+        {
+          "kind": "driver",
+          "label": "Driver chat",
+          "actorName": "Camille Emberwick",
+          "at": "2026-10-21T08:05:00Z",
+          "table": "messages",
+          "recordId": "msg-xb315bf2f67bbfb61"
+        }
+      ]
+    },
+    {
+      "id": "run-mvnobwngypa-f7",
+      "text": "Hotel for 23 Oct near the terminal: Nordlicht Hotel €103, free cancellation, 13 min from the terminal. Quote only.",
+      "strength": "quote",
+      "sources": [
+        {
+          "kind": "provider",
+          "label": "Hotel quote",
+          "at": "2026-10-21T09:00:00Z",
+          "recordId": "hotel-1u7k"
+        }
+      ]
+    }
+  ],
+  "model": "anthropic/claude-opus-5.5",
+  "usage": {
+    "inputTokens": 46044,
+    "outputTokens": 3880
+  },
+  "quoteIds": [
+    "hotel-1j9d",
+    "hotel-1u7k",
+    "hotel-x3s"
+  ],
+  "outcome": "needs_person",
+  "headline": "Book the next-day ferry and a hotel night (€490)?",
+  "summary": "Overnight ferry sold out and nothing is booked; the next sailing still meets the 27 Oct promise, but the quoted space can go.",
+  "agentDid": "Read all records, re-checked sailings and hotels, proposed booking.",
+  "urgency": "today",
+  "decideBy": "2026-10-21T13:00:00.000Z"
+}

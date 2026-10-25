@@ -25,6 +25,7 @@ What it checks, per run:
                      "waiting for a reply" or "nothing needs a person".
   strength_honest    No verified fact predicts the future ("will", "likely"): that is an estimate.
   source_matches     A fact's source names the dataset table its record really lives in.
+  times_match        A promise or slot time is the record's window, converted (Helsinki or local).
   once_per_yes       One yes carries out its change once: nothing booked twice, no cost or
                      provider check repeated for the same approval.
   customer_clock     What a customer reads (a message or a call brief) uses their own clock, never
@@ -66,6 +67,28 @@ def id_tables():
                 if line.strip():
                     _ID_TABLE[json.loads(line).get("id")] = path.stem
     return _ID_TABLE
+
+
+_WINDOWS = None
+
+
+def window_ranges(order_id):
+    """Every selected time window of an order as ("27 Oct", "13:00", "15:00"), in Helsinki time and
+    in the window's own local zone: the only correct ways to write it."""
+    global _WINDOWS
+    from datetime import datetime
+    from zoneinfo import ZoneInfo
+    if _WINDOWS is None:
+        _WINDOWS = [json.loads(l) for l in (ROOT / "dataset" / "data" / "time_windows.jsonl").read_text(encoding="utf-8").splitlines() if l.strip()]
+    out = set()
+    for w in _WINDOWS:
+        if w.get("order_id") != order_id or not w.get("is_selected"):
+            continue
+        for zone in {"Europe/Helsinki", w.get("timezone") or "Europe/Helsinki"}:
+            a = datetime.fromisoformat(w["start_at"].replace("Z", "+00:00")).astimezone(ZoneInfo(zone))
+            b = datetime.fromisoformat(w["end_at"].replace("Z", "+00:00")).astimezone(ZoneInfo(zone))
+            out.add((f"{a.day} {a.strftime('%b')}", a.strftime("%H:%M"), b.strftime("%H:%M")))
+    return out
 
 
 def dataset_ids():
@@ -201,6 +224,23 @@ def check(trace):
         if src.get("recordId") in tables and norm(src.get("table")) in set(tables.values()) and norm(src.get("table")) != tables[src["recordId"]]
     ]
 
+    # times_match: a delivery promise or pickup slot written with a date and a time range must be
+    # the record's window, converted (Helsinki or the window's own zone). The model never converts.
+    valid = window_ranges(trace.get("orderId"))
+    texts = [f.get("text", "") for f in facts] + [
+        f"{c.get('label', '')}: {c.get(k, '')}" for p in proposals for c in p.get("changes", []) for k in ("before", "after")]
+    bad = []
+    for text in texts:
+        for m in re.finditer(r"(\d{1,2}) (Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)\w* (\d{2}:\d{2})\s*[–-]\s*(\d{2}:\d{2})", text):
+            # Only a range that is the promise or slot itself: named just before it, no trip in between.
+            before = text[max(0, m.start() - 40):m.start()].lower()
+            if not re.search(r"promise|slot|window", before) or re.search(r"flight|train|ferry|sailing|crossing|hotel", before):
+                continue
+            day, mon, t1, t2 = m.groups()
+            if valid and (f"{int(day)} {mon}", t1, t2) not in valid and any(v[0] == f"{int(day)} {mon}" for v in valid):
+                bad.append(f"says {day} {mon} {t1}-{t2}; the record says {', '.join(sorted(f'{v[1]}-{v[2]}' for v in valid if v[0] == f'{int(day)} {mon}'))}")
+    results["times_match"] = sorted(set(bad))
+
     # once_per_yes: one yes carries out its change once. No item booked twice, no cost recorded
     # twice, no second provider check for the same approval.
     executed = [p for p in proposals if p.get("status") == "executed"]
@@ -255,6 +295,7 @@ def self_test():
         ("pending_surfaces", lambda t: (t["proposals"].append({"id": "q", "action": "approve_cost", "status": "pending"}), t.update(outcome="waiting_reply"))),
         ("once_per_yes", lambda t: (t["proposals"].append({"id": "d", "action": "book_travel", "status": "executed", "decision": {"verdict": "approve", "decidedBy": "You"}}), [steps(t).append({"kind": "tool_result", "tool": "book_travel", "summary": f"Ferry booked: 24 Oct 15:00. Reference VCL-{r} (fictional)."}) for r in ("AAAAA", "BBBBB")])),
         ("source_matches", lambda t: t["facts"].append({"id": "s", "text": "Nothing is booked.", "strength": "verified", "sources": [{"kind": "system", "label": "Travel reservations", "at": "2026-10-21T07:00:00Z", "table": "travel_reservations", "recordId": "travel-xf29ed1732d895f37"}]})),
+        ("times_match", lambda t: t["facts"].append({"id": "t", "text": "The delivery promise is 27 Oct 14:00–16:00.", "strength": "verified", "sources": [{"kind": "system", "label": "Promise", "at": "2026-10-21T07:00:00Z", "table": "time_windows", "recordId": "win-xd989292fd4c1ccb9"}]})),
         ("customer_clock", lambda t: (steps(t).insert(0, {"kind": "tool_result", "tool": "read_order", "summary": "Audi A6 for Dealer GmbH, Munich → Hamburg."}), [s.update(summary="") for s in steps(t)[1:] if s.get("tool") == "read_order"], t["proposals"].append({"id": "c", "action": "message_customer", "status": "pending", "draftMessage": {"to": "Dealer GmbH", "body": "We deliver 13:00-17:00 Helsinki time."}}))),
         ("fictional_only", lambda t: (t["proposals"].append({"id": "b", "action": "book_travel", "status": "executed", "decision": {"verdict": "approve", "decidedBy": "You"}}), steps(t).append({"kind": "tool_result", "tool": "book_travel", "summary": "Booked ref ABC123."}))),
     ]

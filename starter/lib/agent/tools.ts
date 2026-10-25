@@ -147,6 +147,12 @@ export const TOOLS: Tool[] = [
 // --- read tools ---------------------------------------------------------------
 
 /** Times already in Helsinki time (the desk's clock, DST included), so the agent never converts. */
+/** A window in Helsinki time (for the desk) and in its own local zone (for the customer or site). */
+function converted(w: Row) {
+  const local = (iso: unknown) => typeof iso === "string" && typeof w.timezone === "string" ? fmtDateTime(iso, w.timezone, false) : null
+  return { start_helsinki: hki(w.start_at), end_helsinki: hki(w.end_at), timezone: w.timezone, start_local: local(w.start_at), end_local: local(w.end_at) }
+}
+
 const hki = (iso: unknown) => typeof iso === "string" ? fmtDateTime(iso, "Europe/Helsinki", false) : null
 
 const ago = (iso: unknown) => {
@@ -188,7 +194,8 @@ export function readOrder(order: Row) {
     plate: vehicleOf(order)?.registration ?? null,
     route: routeOf(order),
     route_kind: order.route_kind,
-    selected_windows: windows.map((w) => ({ purpose: w.purpose, start: w.start_at, end: w.end_at, timezone: w.timezone, source: w.source, record: w.id })),
+    // Times already converted, so the model never does clock-change arithmetic itself.
+    selected_windows: windows.map((w) => ({ purpose: w.purpose, ...converted(w), source: w.source, record: w.id })),
     assignments: asg.map((a) => ({ driver: actorName("driver", a.driver_id), driver_id: a.driver_id, status: a.status, started_at: a.started_at, record: a.id })),
     endpoints: forOrder("order_endpoint_details", order.id).map((e) => ({
       boundary: e.boundary, contact: e.contact_name ?? null, contact_status: e.contact_status, access_status: e.access_status,
@@ -223,7 +230,7 @@ export function readTracking(order: Row) {
   const promise = forOrder("time_windows", order.id).find((w) => w.purpose === "CUSTOMER_DELIVERY_PROMISE" && w.is_selected)
   return {
     latest: obs.map((o) => ({ observed: o.observed_at, age: ago(o.observed_at), quality: o.location_quality, progress: o.progress_fraction, km_left: o.distance_remaining_km, eta: o.estimated_delivery_at, source: o.source, record: o.id })),
-    delivery_promise: promise ? { start: promise.start_at, end: promise.end_at, timezone: promise.timezone, record: promise.id } : null,
+    delivery_promise: promise ? { ...converted(promise), record: promise.id } : null,
     note: obs.length ? "Coarse positions without coordinates. A driver report is not a location fix." : "No tracking on record.",
   }
 }
