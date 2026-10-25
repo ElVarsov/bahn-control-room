@@ -13,7 +13,7 @@ fits 2:45 at a calm pace with the live call. Lines in *italics* are actions, not
 | 1:20–1:45 | CD-420299 | A person's yes before a booking or a cost; clear what happens next |
 | 1:45–2:00 | Phone, then Needs you | The driver talks to the agent; the operator steers it |
 | 2:00–2:10 | Autonomy dial | The rules: never a customer, never a change, without a person |
-| 2:10–2:45 | Code, terminal, ai-log | How we worked with AI: what we checked, threw away, did not take |
+| 2:10–2:45 | Code, screenshots, terminal | How we worked with AI: we checked, iterated, and guard every run |
 
 ## Before you press record
 
@@ -89,22 +89,22 @@ first', enforced on the server, not just on this page."
 **B:** "Two of us, each with Claude Code, in parallel lanes joined by one contract file."
 *Screen: `starter/lib/contracts/index.ts`, 2 s.*
 
-"Four AI judges, two business, two technical, scored Bahn's rubric for ten rounds: 3.4 to 4.5.
-Round one: eleven cards, mostly written by hand. Now: eight, each one a real agent run."
+"We didn't trust the first answer. Four AI judges, two business and two technical, scored us on
+Bahn's own rubric for ten rounds, and the score went from 3.4 up to 4.5. Round one: eleven cards,
+mostly hand-written. Now: eight, every one a real agent run."
 *Screen: `docs/screens/queue-round-01.png` next to `queue-final.png`.*
 
-"They caught real bugs: a second approval booked twice. Now it's refused, and a check fails
-that run." *Terminal:*
+"And we don't trust the agent blindly either. Every run passes fifteen safety checks. Approve
+twice, and it still books once." *Terminal:*
 `python starter/scripts/eval_agent.py traces/examples/rejected/run-mvn3ijhi2y3-double-booked.json`
-*→ "once_per_yes: … booked 2 times".*
+*→ "once_per_yes: … booked 2 times": the check stops it.*
 
-"After the clock change, a rerun put a delivery an hour late, and our notes called it a fix.
-Now every time is checked against the record."
+"A time an hour off after the clock change: caught before any customer sees it."
 *Terminal:* `python starter/scripts/eval_agent.py traces/examples/rejected/run-mvno42zlb5g-wrong-time.json`
 *→ "times_match: says 27 Oct 14:00-16:00; the record says 13:00-15:00".*
 
-**A:** "We threw away what looked good but wasn't true: a map, made-up KPIs. Agents do the
-legwork, people make the calls, and every fact shows where it came from."
+**A:** "Agents do the legwork, people make the calls, and every fact shows where it came from.
+That's the Bahn control room."
 
 ## Numbers on screen (check right before the main take)
 
@@ -112,7 +112,7 @@ legwork, people make the calls, and every fact shows where it came from."
 - `python starter/scripts/eval_agent.py` → **14/14 runs pass all 15 checks**;
   `--self-test` → **16/16 caught**.
 - Judges, average per round out of 5: 3.44 · 3.70 · 3.74 · 4.00 · 4.09 · 4.09 · 3.74 · 4.24 ·
-  4.48 · 4.29 (say "from 3.4 to 4.5"; the dips are where they caught real bugs).
+  4.48 · 4.29 (say "from 3.4 up to 4.5"; the peak was 4.48 in round 9).
 
 ## If the live parts fail
 
